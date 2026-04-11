@@ -1,11 +1,14 @@
 {
   "pieces": [
     {
-      "id": "untitled-series-i",
-      "title": "Untitled Series I",
-      "description": "Mixed media on canvas, 2024. An exploration of texture and negative space.",
+      "id": "1234",
+      "title": "Tigers-are-us",
+      "description": "Mixed media on canvas, 2026. An exploration of texture and negative space with tigers.",
       "images": [
-        { "src": "/images/placeholder.svg", "alt": "Untitled Series I" }
+        {
+          "src": "/uploads/ff_b-w2flowers_02.jpg",
+          "alt": "Untitled Series I"
+        }
       ]
     },
     {
@@ -13,7 +16,10 @@
       "title": "Fragments",
       "description": "Charcoal and ink on paper, 2023. Deconstructed forms, reassembled.",
       "images": [
-        { "src": "/images/placeholder.svg", "alt": "Fragments" }
+        {
+          "src": "/images/placeholder.svg",
+          "alt": "Fragments"
+        }
       ]
     },
     {
@@ -21,7 +27,10 @@
       "title": "Still Life Study",
       "description": "Oil on linen, 2023. Light and shadow in ordinary objects.",
       "images": [
-        { "src": "/images/placeholder.svg", "alt": "Still Life Study" }
+        {
+          "src": "/images/placeholder.svg",
+          "alt": "Still Life Study"
+        }
       ]
     },
     {
@@ -29,7 +38,10 @@
       "title": "Landscapes",
       "description": "Acrylic on wood panel, 2022. Memory of place.",
       "images": [
-        { "src": "/images/placeholder.svg", "alt": "Landscapes" }
+        {
+          "src": "/images/placeholder.svg",
+          "alt": "Landscapes"
+        }
       ]
     }
   ]

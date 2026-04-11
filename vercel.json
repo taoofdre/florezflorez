@@ -1,5 +1,5 @@
 {
-  "buildCommand": "",
+  "buildCommand": "sed -i'' '/^local_backend/d' admin/config.yml",
   "outputDirectory": ".",
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/:path*" }

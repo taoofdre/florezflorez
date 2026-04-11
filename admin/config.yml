@@ -1,7 +1,11 @@
+local_backend: true
+
 backend:
   name: github
   repo: taoofdre/florezflorez
   branch: main
+  base_url: https://florezflorez.vercel.app
+  auth_endpoint: /api/auth
 
 media_folder: "uploads"
 public_folder: "/uploads"
@@ -10,61 +14,73 @@ collections:
   # --- ART ---
   - name: "art"
     label: "Art"
-    file: "content/art.json"
-    format: "json"
-    fields:
-      - name: "pieces"
+    files:
+      - name: "art-pieces"
         label: "Art Pieces"
-        widget: "list"
+        file: "content/art.json"
+        format: "json"
         fields:
-          - { name: "id", label: "ID (lowercase, no spaces)", widget: "string" }
-          - { name: "title", label: "Title", widget: "string" }
-          - { name: "description", label: "Description", widget: "text" }
-          - name: "images"
-            label: "Images"
+          - name: "pieces"
+            label: "Art Pieces"
             widget: "list"
             fields:
-              - { name: "src", label: "Image", widget: "image" }
-              - { name: "alt", label: "Alt Text", widget: "string" }
+              - { name: "id", label: "ID (lowercase, no spaces)", widget: "string" }
+              - { name: "title", label: "Title", widget: "string" }
+              - { name: "description", label: "Description", widget: "text" }
+              - name: "images"
+                label: "Images"
+                widget: "list"
+                fields:
+                  - { name: "src", label: "Image", widget: "image" }
+                  - { name: "alt", label: "Alt Text", widget: "string" }
 
   # --- JEWELRY ---
   - name: "jewelry"
     label: "Jewelry"
-    file: "content/jewelry.json"
-    format: "json"
-    fields:
-      - name: "pieces"
+    files:
+      - name: "jewelry-pieces"
         label: "Jewelry Pieces"
-        widget: "list"
+        file: "content/jewelry.json"
+        format: "json"
         fields:
-          - { name: "id", label: "ID (lowercase, no spaces)", widget: "string" }
-          - { name: "title", label: "Title", widget: "string" }
-          - { name: "description", label: "Description", widget: "text" }
-          - { name: "price_display", label: "Display Price (e.g. $120)", widget: "string" }
-          - { name: "stripe_price_id", label: "Stripe Price ID (from Stripe dashboard)", widget: "string" }
-          - name: "images"
-            label: "Images"
+          - name: "pieces"
+            label: "Jewelry Pieces"
             widget: "list"
             fields:
-              - { name: "src", label: "Image", widget: "image" }
-              - { name: "alt", label: "Alt Text", widget: "string" }
+              - { name: "id", label: "ID (lowercase, no spaces)", widget: "string" }
+              - { name: "title", label: "Title", widget: "string" }
+              - { name: "description", label: "Description", widget: "text" }
+              - { name: "price_display", label: "Display Price (e.g. $120)", widget: "string" }
+              - { name: "stripe_price_id", label: "Stripe Price ID (from Stripe dashboard)", widget: "string" }
+              - name: "images"
+                label: "Images"
+                widget: "list"
+                fields:
+                  - { name: "src", label: "Image", widget: "image" }
+                  - { name: "alt", label: "Alt Text", widget: "string" }
 
   # --- CONSULTING ---
   - name: "consulting"
     label: "Consulting"
-    file: "content/consulting.json"
-    format: "json"
-    fields:
-      - { name: "heading", label: "Heading", widget: "string" }
-      - { name: "message", label: "Message", widget: "text" }
-      - { name: "background_image", label: "Background Image", widget: "image", required: false }
+    files:
+      - name: "consulting-page"
+        label: "Consulting Page"
+        file: "content/consulting.json"
+        format: "json"
+        fields:
+          - { name: "heading", label: "Heading", widget: "string" }
+          - { name: "message", label: "Message", widget: "text" }
+          - { name: "background_image", label: "Background Image", widget: "image", required: false }
 
   # --- HOMEPAGE ---
   - name: "homepage"
     label: "Homepage"
-    file: "content/homepage.json"
-    format: "json"
-    fields:
-      - { name: "art_background", label: "Art Panel Background", widget: "image", required: false }
-      - { name: "jewelry_background", label: "Jewelry Panel Background", widget: "image", required: false }
-      - { name: "consulting_background", label: "Consulting Panel Background", widget: "image", required: false }
+    files:
+      - name: "homepage-settings"
+        label: "Homepage Settings"
+        file: "content/homepage.json"
+        format: "json"
+        fields:
+          - { name: "art_background", label: "Art Panel Background", widget: "image", required: false }
+          - { name: "jewelry_background", label: "Jewelry Panel Background", widget: "image", required: false }
+          - { name: "consulting_background", label: "Consulting Panel Background", widget: "image", required: false }
