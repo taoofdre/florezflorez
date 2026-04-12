@@ -403,7 +403,11 @@
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
-        visibilityMap.set(entry.target.id, entry.intersectionRatio);
+        if (entry.isIntersecting) {
+          visibilityMap.set(entry.target.id, entry.intersectionRatio);
+        } else {
+          visibilityMap.delete(entry.target.id);
+        }
       });
 
       let bestId = null;
