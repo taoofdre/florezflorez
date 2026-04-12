@@ -1,19 +1,19 @@
 {
   "pieces": [
     {
-      "id": "12356",
-      "title": "Ring56",
-      "description": "Sterling silver, hand-forged. love it",
-      "price_display": "$150",
-      "stripe_price_id": "",
+      "id": "prod_UJs640Zim616GA",
+      "title": "Pearl Necklace",
+      "description": "Natural pearls and hand-woven black flowers | 950 silver brooch",
+      "price_display": "$170",
+      "stripe_price_id": "price_1TLEMbGZz3PbqlU6mgDgOG0W",
       "images": [
         {
-          "src": "/images/placeholder.svg",
-          "alt": "Ring I"
+          "src": "/uploads/image-4-11-26-at-11.06 pm.jpg",
+          "alt": "pearl necklaace on white background"
         },
         {
-          "src": "/uploads/dscf7783.jpg",
-          "alt": "cheesecake"
+          "src": "/uploads/image-4-11-26-at-11.05 pm.jpg",
+          "alt": "pearl necklace on black background"
         }
       ]
     },
