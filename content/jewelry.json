@@ -22,7 +22,7 @@
       "title": "Necklace I",
       "description": "Gold-filled chain, pendant.",
       "price_display": "$180",
-      "stripe_price_id": "",
+      "stripe_price_id": "1234",
       "images": [
         {
           "src": "/images/placeholder.svg",
@@ -35,7 +35,7 @@
       "title": "Bracelet I",
       "description": "Oxidized silver cuff.",
       "price_display": "$95",
-      "stripe_price_id": "",
+      "stripe_price_id": "12345",
       "images": [
         {
           "src": "/images/placeholder.svg",

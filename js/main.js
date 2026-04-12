@@ -4,15 +4,19 @@
   const header = document.getElementById('header');
   const lightbox = document.getElementById('lightbox');
   const lightboxImg = lightbox.querySelector('.lightbox-img');
+  const lightboxCounter = lightbox.querySelector('.lightbox-counter');
   const panels = document.querySelectorAll('.panel');
   const headerLinks = document.querySelectorAll('.header-link');
   const sections = document.querySelectorAll('.section');
 
   let activeSection = null;
 
+  // ---- Lightbox state ----
+  let lbImages = [];
+  let lbIndex = 0;
+
   // ---- Helpers ----
 
-  // Safely set text content (no innerHTML for user-supplied strings)
   function text(el, str) { el.textContent = str; }
 
   function escapeAttr(str) {
@@ -24,9 +28,96 @@
   // ---- Data fetching ----
 
   async function fetchJSON(path) {
-    const res = await fetch(path);
+    const res = await fetch(path + '?t=' + Date.now());
     if (!res.ok) throw new Error(`Failed to load ${path}`);
     return res.json();
+  }
+
+  // ---- Carousel builder ----
+
+  function buildCarousel(images) {
+    const carousel = document.createElement('div');
+    carousel.className = 'carousel';
+
+    const track = document.createElement('div');
+    track.className = 'carousel-track';
+
+    images.forEach((img, i) => {
+      const slide = document.createElement('div');
+      slide.className = 'carousel-slide' + (i === 0 ? ' active' : '');
+      const imgEl = document.createElement('img');
+      imgEl.src = img.src;
+      imgEl.alt = img.alt;
+      imgEl.className = 'art-image';
+      imgEl.loading = 'lazy';
+      slide.appendChild(imgEl);
+      track.appendChild(slide);
+
+      // Click to open lightbox at this slide
+      slide.addEventListener('click', () => {
+        openLightbox(images, i);
+      });
+    });
+
+    carousel.appendChild(track);
+
+    if (images.length > 1) {
+      const prevBtn = document.createElement('button');
+      prevBtn.className = 'carousel-prev';
+      prevBtn.innerHTML = '&#8249;';
+      prevBtn.setAttribute('aria-label', 'Previous image');
+
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'carousel-next';
+      nextBtn.innerHTML = '&#8250;';
+      nextBtn.setAttribute('aria-label', 'Next image');
+
+      const dots = document.createElement('div');
+      dots.className = 'carousel-dots';
+      images.forEach((_, i) => {
+        const dot = document.createElement('button');
+        dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+        dot.setAttribute('aria-label', `Image ${i + 1}`);
+        dots.appendChild(dot);
+      });
+
+      carousel.appendChild(prevBtn);
+      carousel.appendChild(nextBtn);
+      carousel.appendChild(dots);
+
+      let current = 0;
+
+      function goTo(index) {
+        const slides = track.querySelectorAll('.carousel-slide');
+        const dotEls = dots.querySelectorAll('.carousel-dot');
+        slides[current].classList.remove('active');
+        dotEls[current].classList.remove('active');
+        current = (index + images.length) % images.length;
+        slides[current].classList.add('active');
+        dotEls[current].classList.add('active');
+      }
+
+      prevBtn.addEventListener('click', (e) => { e.stopPropagation(); goTo(current - 1); });
+      nextBtn.addEventListener('click', (e) => { e.stopPropagation(); goTo(current + 1); });
+      dots.querySelectorAll('.carousel-dot').forEach((dot, i) => {
+        dot.addEventListener('click', (e) => { e.stopPropagation(); goTo(i); });
+      });
+
+      // Touch/swipe support
+      let touchStartX = 0;
+      let touchEndX = 0;
+      carousel.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+      carousel.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        const diff = touchStartX - touchEndX;
+        if (Math.abs(diff) > 50) {
+          if (diff > 0) goTo(current + 1);
+          else goTo(current - 1);
+        }
+      });
+    }
+
+    return carousel;
   }
 
   // ---- Render: Homepage backgrounds ----
@@ -45,7 +136,7 @@
         }
       }
     } catch (e) {
-      // Homepage backgrounds are optional; fall back to solid color
+      // Homepage backgrounds are optional
     }
   }
 
@@ -58,7 +149,6 @@
       const content = document.getElementById('art-content');
 
       data.pieces.forEach(piece => {
-        // Sidebar nav link
         const li = document.createElement('li');
         const a = document.createElement('a');
         a.href = '#' + piece.id;
@@ -67,25 +157,11 @@
         li.appendChild(a);
         nav.appendChild(li);
 
-        // Content article
         const article = document.createElement('article');
         article.id = piece.id;
         article.className = 'art-piece';
 
-        piece.images.forEach(img => {
-          const wrap = document.createElement('div');
-          wrap.className = 'art-image-wrap';
-          const imgEl = document.createElement('img');
-          imgEl.src = img.src;
-          imgEl.alt = img.alt;
-          imgEl.className = 'art-image';
-          imgEl.loading = 'lazy';
-          wrap.appendChild(imgEl);
-          article.appendChild(wrap);
-
-          // Lightbox click
-          wrap.addEventListener('click', () => openLightbox(img.src, img.alt));
-        });
+        article.appendChild(buildCarousel(piece.images));
 
         const desc = document.createElement('p');
         desc.className = 'art-description';
@@ -110,7 +186,6 @@
       const content = document.getElementById('jewelry-content');
 
       data.pieces.forEach(piece => {
-        // Sidebar nav link
         const li = document.createElement('li');
         const a = document.createElement('a');
         a.href = '#' + piece.id;
@@ -119,32 +194,17 @@
         li.appendChild(a);
         nav.appendChild(li);
 
-        // Content article
         const article = document.createElement('article');
         article.id = piece.id;
         article.className = 'art-piece';
 
-        piece.images.forEach(img => {
-          const wrap = document.createElement('div');
-          wrap.className = 'art-image-wrap';
-          const imgEl = document.createElement('img');
-          imgEl.src = img.src;
-          imgEl.alt = img.alt;
-          imgEl.className = 'art-image';
-          imgEl.loading = 'lazy';
-          wrap.appendChild(imgEl);
-          article.appendChild(wrap);
+        article.appendChild(buildCarousel(piece.images));
 
-          wrap.addEventListener('click', () => openLightbox(img.src, img.alt));
-        });
-
-        // Description + price
         const desc = document.createElement('p');
         desc.className = 'art-description';
         text(desc, piece.description);
         article.appendChild(desc);
 
-        // Price + buy button row
         const buyRow = document.createElement('div');
         buyRow.className = 'buy-row';
 
@@ -198,9 +258,6 @@
   // ---- Stripe Checkout ----
 
   function stripeCheckout(priceId) {
-    // Stripe Checkout requires a server-side session or a Stripe Payment Link.
-    // For now, we redirect to Stripe Checkout using a Vercel serverless function.
-    // Update this URL once your API endpoint is deployed.
     const checkoutUrl = `/api/checkout?price_id=${encodeURIComponent(priceId)}`;
     window.location.href = checkoutUrl;
   }
@@ -277,11 +334,36 @@
 
   // ---- Lightbox ----
 
-  function openLightbox(src, alt) {
-    lightboxImg.src = src;
-    lightboxImg.alt = alt;
+  function openLightbox(images, index) {
+    lbImages = images;
+    lbIndex = index;
+    showLightboxImage();
     lightbox.classList.add('open');
     document.body.style.overflow = 'hidden';
+  }
+
+  function showLightboxImage() {
+    lightboxImg.src = lbImages[lbIndex].src;
+    lightboxImg.alt = lbImages[lbIndex].alt;
+    text(lightboxCounter, (lbIndex + 1) + ' / ' + lbImages.length);
+
+    // Show/hide nav buttons
+    const prevBtn = lightbox.querySelector('.lightbox-prev');
+    const nextBtn = lightbox.querySelector('.lightbox-next');
+    const showNav = lbImages.length > 1;
+    prevBtn.style.display = showNav ? '' : 'none';
+    nextBtn.style.display = showNav ? '' : 'none';
+    lightboxCounter.style.display = showNav ? '' : 'none';
+  }
+
+  function lightboxPrev() {
+    lbIndex = (lbIndex - 1 + lbImages.length) % lbImages.length;
+    showLightboxImage();
+  }
+
+  function lightboxNext() {
+    lbIndex = (lbIndex + 1) % lbImages.length;
+    showLightboxImage();
   }
 
   function closeLightbox() {
@@ -293,9 +375,39 @@
     e.stopPropagation();
     closeLightbox();
   });
-  lightbox.addEventListener('click', closeLightbox);
+
+  lightbox.querySelector('.lightbox-prev').addEventListener('click', (e) => {
+    e.stopPropagation();
+    lightboxPrev();
+  });
+
+  lightbox.querySelector('.lightbox-next').addEventListener('click', (e) => {
+    e.stopPropagation();
+    lightboxNext();
+  });
+
+  // Click background to close (but not on the image or buttons)
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+
+  // Keyboard nav
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && lightbox.classList.contains('open')) closeLightbox();
+    if (!lightbox.classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') lightboxPrev();
+    if (e.key === 'ArrowRight') lightboxNext();
+  });
+
+  // Lightbox swipe
+  let lbTouchStartX = 0;
+  lightbox.addEventListener('touchstart', (e) => { lbTouchStartX = e.changedTouches[0].screenX; }, { passive: true });
+  lightbox.addEventListener('touchend', (e) => {
+    const diff = lbTouchStartX - e.changedTouches[0].screenX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) lightboxNext();
+      else lightboxPrev();
+    }
   });
 
   // ---- Init ----

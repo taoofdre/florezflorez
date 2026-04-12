@@ -222,16 +222,38 @@ a {
   margin-top: 6rem;
 }
 
-.art-image-wrap {
+/* ===== CAROUSEL ===== */
+.carousel {
   position: relative;
   width: 100%;
   max-height: 70vh;
-  cursor: pointer;
   overflow: hidden;
   background: #111;
+  cursor: pointer;
 }
 
-.art-image-wrap::after {
+.carousel-track {
+  position: relative;
+  width: 100%;
+  max-height: 70vh;
+}
+
+.carousel-slide {
+  display: none;
+  width: 100%;
+}
+
+.carousel-slide.active {
+  display: block;
+  animation: carouselFade 0.35s ease;
+}
+
+@keyframes carouselFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.carousel-slide::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -248,8 +270,69 @@ a {
   transition: transform 0.4s ease;
 }
 
-.art-image-wrap:hover .art-image {
+.carousel:hover .art-image {
   transform: scale(1.02);
+}
+
+/* Carousel arrows */
+.carousel-prev,
+.carousel-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  border: none;
+  font-size: 2rem;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  line-height: 1;
+}
+
+.carousel:hover .carousel-prev,
+.carousel:hover .carousel-next {
+  opacity: 1;
+}
+
+.carousel-prev { left: 0.75rem; }
+.carousel-next { right: 0.75rem; }
+
+.carousel-prev:hover,
+.carousel-next:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+/* Carousel dots */
+.carousel-dots {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  z-index: 3;
+}
+
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s ease;
+}
+
+.carousel-dot.active {
+  background: #fff;
 }
 
 .art-description {
@@ -379,6 +462,45 @@ a {
   opacity: 1;
 }
 
+.lightbox-prev,
+.lightbox-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 3.5rem;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  line-height: 1;
+  padding: 1rem;
+  z-index: 1001;
+}
+
+.lightbox-prev:hover,
+.lightbox-next:hover {
+  opacity: 1;
+}
+
+.lightbox-prev { left: 1rem; }
+.lightbox-next { right: 1rem; }
+
+.lightbox-counter {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.85rem;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.lightbox-img {
+  cursor: default;
+}
+
 /* ===== MOBILE ===== */
 @media (max-width: 768px) {
   /* Triptych stacks vertically */
@@ -447,4 +569,19 @@ a {
   .art-piece + .art-piece {
     margin-top: 4rem;
   }
+
+  /* Show carousel arrows on mobile (no hover) */
+  .carousel-prev,
+  .carousel-next {
+    opacity: 0.7;
+  }
+
+  /* Lightbox arrows smaller on mobile */
+  .lightbox-prev,
+  .lightbox-next {
+    font-size: 2.5rem;
+    padding: 0.5rem;
+  }
+  .lightbox-prev { left: 0.5rem; }
+  .lightbox-next { right: 0.5rem; }
 }
