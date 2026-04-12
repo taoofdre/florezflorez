@@ -422,10 +422,11 @@
           try {
             if (isLocal) {
               await saveLocal(blob, fullName);
+              setStatus('Downloaded ' + fullName + ' — save it to the uploads/ folder', 'success');
             } else {
               await saveProduction(blob, fullName);
+              setStatus('Saved as /uploads/' + fullName, 'success');
             }
-            setStatus('Saved as /uploads/' + fullName, 'success');
           } catch (err) {
             setStatus('Error: ' + err.message, 'error');
           }
@@ -433,20 +434,18 @@
         }, 'image/png');
       });
 
-      // ---- Save: Local (Decap proxy) ----
+      // ---- Save: Local (download to uploads/ folder) ----
 
       async function saveLocal(blob, filename) {
-        const formData = new FormData();
-        formData.append('file', blob, filename);
-
-        const res = await fetch('http://localhost:8081/api/media', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!res.ok) {
-          throw new Error('Failed to save locally (is decap-server running?)');
-        }
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        // File downloads — user saves it into the uploads/ folder
       }
 
       // ---- Save: Production (GitHub API via serverless function) ----
