@@ -38,6 +38,14 @@
   <header id="header" class="header">
     <nav class="header-nav">
       <img src="images/logo.png" alt="Florez Florez" id="header-logo" class="header-logo">
+      <button class="cart-toggle" id="cart-toggle" aria-label="Cart">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <path d="M16 10a4 4 0 01-8 0"></path>
+        </svg>
+        <span class="cart-badge" id="cart-badge" style="display:none;">0</span>
+      </button>
       <button class="hamburger" id="hamburger" aria-label="Menu">
         <span></span>
         <span></span>
@@ -100,6 +108,21 @@
       <div class="consulting-text" id="about-text"></div>
     </div>
   </section>
+
+  <!-- CART SLIDE-OUT PANEL -->
+  <div id="cart-overlay" class="cart-overlay"></div>
+  <aside id="cart-panel" class="cart-panel">
+    <div class="cart-header">
+      <h2 class="cart-title">CART</h2>
+      <button class="cart-close" id="cart-close" aria-label="Close cart">&times;</button>
+    </div>
+    <div class="cart-items" id="cart-items">
+      <p class="cart-empty" id="cart-empty">Your cart is empty.</p>
+    </div>
+    <div class="cart-footer" id="cart-footer" style="display:none;">
+      <button class="cart-checkout-btn" id="cart-checkout-btn">CHECKOUT</button>
+    </div>
+  </aside>
 
   <!-- FULLSCREEN LIGHTBOX -->
   <div id="lightbox" class="lightbox">
