@@ -681,14 +681,6 @@ a {
     transition: top 0.3s ease;
   }
 
-  /* When scrolling down, header hides and sidebar takes top */
-  body.scroll-down .header.visible {
-    transform: translateY(-100%);
-  }
-
-  body.scroll-down .art-sidebar {
-    top: 0;
-  }
 
   .art-nav {
     display: flex;

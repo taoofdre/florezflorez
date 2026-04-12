@@ -388,12 +388,16 @@
     }
 
     const observer = new IntersectionObserver((entries) => {
+      let best = null;
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          setActive(entry.target.id);
+          if (!best || entry.intersectionRatio > best.intersectionRatio) {
+            best = entry;
+          }
         }
       });
-    }, { rootMargin: '-30% 0px -60% 0px' });
+      if (best) setActive(best.target.id);
+    }, { rootMargin: '-20% 0px -70% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] });
 
     pieces.forEach(piece => observer.observe(piece));
 
