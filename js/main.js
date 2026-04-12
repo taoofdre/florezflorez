@@ -277,6 +277,7 @@
 
   function openSection(name) {
     home.classList.add('hidden');
+    homeLogo.style.display = 'none';
     setTimeout(() => { home.style.display = 'none'; }, 500);
     header.classList.add('visible');
 
@@ -295,6 +296,7 @@
 
   function goHome() {
     home.style.display = 'flex';
+    homeLogo.style.display = '';
     requestAnimationFrame(() => { home.classList.remove('hidden'); });
     header.classList.remove('visible');
 
