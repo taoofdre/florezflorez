@@ -616,7 +616,6 @@ a {
 
   .section {
     padding-top: 60px;
-    scroll-snap-type: y proximity;
   }
 
   .header-logo {
@@ -715,11 +714,6 @@ a {
     padding: 2rem 1.5rem 80vh;
     overflow-y: visible;
     height: auto;
-    scroll-snap-type: y proximity;
-  }
-
-  .art-piece {
-    scroll-snap-align: start;
   }
 
   .art-piece + .art-piece {

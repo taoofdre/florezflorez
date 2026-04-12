@@ -374,6 +374,59 @@
 
   window.addEventListener('scroll', onScroll, { passive: true });
 
+  // ---- Mobile JS snap scrolling ----
+
+  let snapTimeout = null;
+  let isProgammaticScroll = false;
+
+  function getActiveSection() {
+    if (!activeSection) return null;
+    return document.getElementById('section-' + activeSection);
+  }
+
+  function snapToNearest() {
+    if (isProgammaticScroll) return;
+    const isMobile = window.innerWidth <= 768;
+    if (!isMobile || !activeSection) return;
+
+    const sectionEl = getActiveSection();
+    if (!sectionEl) return;
+    const pieces = sectionEl.querySelectorAll('.art-piece');
+    if (!pieces.length) return;
+
+    // Calculate offset (header + sidebar)
+    const sidebar = sectionEl.querySelector('.art-sidebar');
+    const sidebarHeight = sidebar ? sidebar.offsetHeight : 0;
+    const headerHeight = document.body.classList.contains('scroll-down') ? 0 : header.offsetHeight;
+    const offset = headerHeight + sidebarHeight + 10;
+
+    let closest = null;
+    let closestDist = Infinity;
+
+    pieces.forEach(piece => {
+      const rect = piece.getBoundingClientRect();
+      const dist = Math.abs(rect.top - offset);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closest = piece;
+      }
+    });
+
+    // Only snap if within 150px of a piece (proximity behavior)
+    if (closest && closestDist > 5 && closestDist < 150) {
+      isProgammaticScroll = true;
+      const targetTop = closest.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top: targetTop, behavior: 'smooth' });
+      setTimeout(() => { isProgammaticScroll = false; }, 600);
+    }
+  }
+
+  window.addEventListener('scroll', () => {
+    if (isProgammaticScroll) return;
+    clearTimeout(snapTimeout);
+    snapTimeout = setTimeout(snapToNearest, 120);
+  }, { passive: true });
+
   // ---- Sidebar scroll tracking ----
 
   function setupScrollTracking(sectionEl) {
@@ -417,11 +470,13 @@
 
         if (isMobile) {
           // Mobile: page-level scroll, offset by header + sidebar
+          isProgammaticScroll = true;
           const sidebar = sectionEl.querySelector('.art-sidebar');
           const sidebarHeight = sidebar ? sidebar.offsetHeight : 0;
           const offset = header.offsetHeight + sidebarHeight + 10;
           const targetTop = target.getBoundingClientRect().top + window.scrollY - offset;
           window.scrollTo({ top: targetTop, behavior: 'smooth' });
+          setTimeout(() => { isProgammaticScroll = false; }, 600);
         } else {
           // Desktop: scroll inside the content container
           const containerTop = contentEl.getBoundingClientRect().top;
