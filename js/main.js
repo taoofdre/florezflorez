@@ -398,6 +398,8 @@
     pieces.forEach(piece => observer.observe(piece));
 
     // Click on nav link: force active state and scroll precisely
+    const contentEl = sectionEl.querySelector('.art-content');
+
     navLinks.forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
@@ -407,14 +409,22 @@
         const target = document.getElementById(id);
         if (!target) return;
 
-        // Calculate offset: header + sidebar (if sticky above content on mobile)
-        const headerHeight = header.offsetHeight;
-        const sidebar = sectionEl.querySelector('.art-sidebar');
-        const sidebarHeight = sidebar && window.innerWidth <= 768 ? sidebar.offsetHeight : 0;
-        const offset = headerHeight + sidebarHeight + 10;
+        const isMobile = window.innerWidth <= 768;
 
-        const targetTop = target.getBoundingClientRect().top + window.scrollY - offset;
-        window.scrollTo({ top: targetTop, behavior: 'smooth' });
+        if (isMobile) {
+          // Mobile: page-level scroll, offset by header + sidebar
+          const sidebar = sectionEl.querySelector('.art-sidebar');
+          const sidebarHeight = sidebar ? sidebar.offsetHeight : 0;
+          const offset = header.offsetHeight + sidebarHeight + 10;
+          const targetTop = target.getBoundingClientRect().top + window.scrollY - offset;
+          window.scrollTo({ top: targetTop, behavior: 'smooth' });
+        } else {
+          // Desktop: scroll inside the content container
+          const containerTop = contentEl.getBoundingClientRect().top;
+          const targetTop = target.getBoundingClientRect().top;
+          const scrollOffset = contentEl.scrollTop + (targetTop - containerTop);
+          contentEl.scrollTo({ top: scrollOffset, behavior: 'smooth' });
+        }
       });
     });
   }
