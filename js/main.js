@@ -9,6 +9,8 @@
   const lightboxCounter = lightbox.querySelector('.lightbox-counter');
   const panels = document.querySelectorAll('.panel');
   const headerLinks = document.querySelectorAll('.header-link');
+  const headerLinksWrap = document.getElementById('header-links');
+  const hamburger = document.getElementById('hamburger');
   const sections = document.querySelectorAll('.section');
 
   let activeSection = null;
@@ -295,6 +297,7 @@
   }
 
   function goHome() {
+    closeMenu();
     home.style.display = 'flex';
     homeLogo.style.display = '';
     requestAnimationFrame(() => { home.classList.remove('hidden'); });
@@ -315,9 +318,21 @@
     if (activeSection) goHome();
   });
 
+  // Hamburger toggle
+  hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('open');
+    headerLinksWrap.classList.toggle('open');
+  });
+
+  function closeMenu() {
+    hamburger.classList.remove('open');
+    headerLinksWrap.classList.remove('open');
+  }
+
   headerLinks.forEach(link => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
+      closeMenu();
       const name = link.dataset.section;
       if (name === activeSection) {
         goHome();
