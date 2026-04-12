@@ -381,9 +381,20 @@
     const navLinks = sectionEl.querySelectorAll('.art-nav-link');
     if (!pieces.length || !navLinks.length) return;
 
+    const navContainer = sectionEl.querySelector('.art-nav');
+
     function setActive(id) {
       navLinks.forEach(link => {
-        link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+        const isActive = link.getAttribute('href') === '#' + id;
+        link.classList.toggle('active', isActive);
+        // Scroll the nav bar to show the active link
+        if (isActive && navContainer) {
+          const linkLeft = link.offsetLeft;
+          const linkWidth = link.offsetWidth;
+          const containerWidth = navContainer.offsetWidth;
+          const scrollTarget = linkLeft - (containerWidth / 2) + (linkWidth / 2);
+          navContainer.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+        }
       });
     }
 
