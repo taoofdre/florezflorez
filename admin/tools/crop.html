@@ -157,11 +157,19 @@
     }
     .auth-overlay button:hover { background: #ccc; }
 
-    /* Crop area */
+    /* Side-by-side layout */
+    .workspace {
+      display: flex;
+      gap: 2rem;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
     .crop-container {
-      max-width: 1000px;
-      margin: 2rem auto;
-      padding: 0 2rem;
+      flex: 1;
+      min-width: 0;
+      max-width: 550px;
     }
 
     .crop-container img {
@@ -170,9 +178,7 @@
     }
 
     .preview-section {
-      max-width: 1000px;
-      margin: 2rem auto;
-      padding: 0 2rem;
+      flex-shrink: 0;
     }
 
     .preview-section h3 {
@@ -184,9 +190,17 @@
       margin-bottom: 1rem;
     }
 
+    .preview-info {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.3);
+      margin-top: 0.5rem;
+    }
+
     .preview-canvas {
       background: #111;
       border: 1px solid rgba(255,255,255,0.06);
+      max-width: 400px;
+      height: auto;
     }
 
     .empty-state {
@@ -196,6 +210,15 @@
       color: rgba(255,255,255,0.3);
       font-size: 0.9rem;
       letter-spacing: 0.1em;
+    }
+
+    @media (max-width: 768px) {
+      .workspace {
+        flex-direction: column;
+      }
+      .crop-container {
+        max-width: 100%;
+      }
     }
 
     /* Cropper.js overrides for dark theme */
@@ -231,23 +254,26 @@
   </div>
 
   <div id="empty-state" class="empty-state">
-    Choose an image to begin. It will be cropped to 800 x 600 pixels.
+    Choose an image to begin. Images are cropped to 600px tall, up to 800px wide.
   </div>
 
-  <div class="crop-container" style="display:none;" id="crop-container">
-    <img id="crop-image" src="" alt="Crop source">
-  </div>
+  <div class="workspace" style="display:none;" id="workspace">
+    <div class="crop-container" id="crop-container">
+      <img id="crop-image" src="" alt="Crop source">
+    </div>
 
-  <div class="preview-section" style="display:none;" id="preview-section">
-    <h3>Preview (800 x 600)</h3>
-    <canvas id="preview-canvas" class="preview-canvas" width="800" height="600"></canvas>
+    <div class="preview-section" id="preview-section">
+      <h3>Preview</h3>
+      <canvas id="preview-canvas" class="preview-canvas" width="800" height="600"></canvas>
+      <p class="preview-info" id="preview-info">800 x 600</p>
+    </div>
   </div>
 
   <script src="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.js"></script>
   <script>
     (() => {
-      const CROP_WIDTH = 800;
-      const CROP_HEIGHT = 600;
+      const MAX_WIDTH = 800;
+      const OUTPUT_HEIGHT = 600;
       const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 
       // DOM refs
@@ -258,10 +284,11 @@
       const saveBtn = document.getElementById('save-btn');
       const statusEl = document.getElementById('status');
       const emptyState = document.getElementById('empty-state');
+      const workspace = document.getElementById('workspace');
       const cropContainer = document.getElementById('crop-container');
       const cropImage = document.getElementById('crop-image');
-      const previewSection = document.getElementById('preview-section');
       const previewCanvas = document.getElementById('preview-canvas');
+      const previewInfo = document.getElementById('preview-info');
 
       let cropper = null;
       let ghToken = null;
@@ -337,15 +364,13 @@
         const reader = new FileReader();
         reader.onload = (ev) => {
           emptyState.style.display = 'none';
-          cropContainer.style.display = '';
-          previewSection.style.display = '';
+          workspace.style.display = '';
 
           // Destroy previous cropper
           if (cropper) cropper.destroy();
 
           cropImage.src = ev.target.result;
           cropper = new Cropper(cropImage, {
-            aspectRatio: CROP_WIDTH / CROP_HEIGHT,
             viewMode: 1,
             dragMode: 'move',
             autoCropArea: 1,
@@ -366,19 +391,35 @@
         reader.readAsDataURL(file);
       });
 
+      function getOutputDimensions() {
+        if (!cropper) return { width: MAX_WIDTH, height: OUTPUT_HEIGHT };
+        const data = cropper.getCropBoxData();
+        const imageData = cropper.getImageData();
+        // Get the actual crop aspect ratio
+        const cropData = cropper.getData(true);
+        const aspect = cropData.width / cropData.height;
+        // Height is always 600, width scales with aspect ratio, max 800
+        const width = Math.min(Math.round(OUTPUT_HEIGHT * aspect), MAX_WIDTH);
+        return { width: width, height: OUTPUT_HEIGHT };
+      }
+
       function updatePreview() {
         if (!cropper) return;
+        const dims = getOutputDimensions();
         const canvas = cropper.getCroppedCanvas({
-          width: CROP_WIDTH,
-          height: CROP_HEIGHT,
+          width: dims.width,
+          height: dims.height,
           imageSmoothingEnabled: true,
           imageSmoothingQuality: 'high',
         });
         if (!canvas) return;
 
+        previewCanvas.width = dims.width;
+        previewCanvas.height = dims.height;
         const ctx = previewCanvas.getContext('2d');
-        ctx.clearRect(0, 0, CROP_WIDTH, CROP_HEIGHT);
+        ctx.clearRect(0, 0, dims.width, dims.height);
         ctx.drawImage(canvas, 0, 0);
+        previewInfo.textContent = dims.width + ' x ' + dims.height;
       }
 
       // ---- Save ----
@@ -410,10 +451,11 @@
         saveBtn.disabled = true;
         setStatus('Processing...');
 
-        // Get cropped canvas
+        // Get cropped canvas at output dimensions
+        const dims = getOutputDimensions();
         const canvas = cropper.getCroppedCanvas({
-          width: CROP_WIDTH,
-          height: CROP_HEIGHT,
+          width: dims.width,
+          height: dims.height,
           imageSmoothingEnabled: true,
           imageSmoothingQuality: 'high',
         });
