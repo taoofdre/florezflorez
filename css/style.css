@@ -1,3 +1,20 @@
+/* ===== FONTS ===== */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('/fonts/IBMPlexMono-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('/fonts/IBMPlexMono-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ===== RESET & BASE ===== */
 *, *::before, *::after {
   margin: 0;
@@ -7,9 +24,6 @@
 
 html {
   scroll-behavior: smooth;
-}
-
-html {
   overflow-x: hidden;
 }
 
@@ -18,9 +32,10 @@ html, body {
 }
 
 body {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  background: #000;
-  color: #fff;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600;
+  background: #fff;
+  color: #333;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -32,7 +47,7 @@ a {
 /* ===== CUSTOM SCROLLBAR ===== */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -44,7 +59,7 @@ a {
 }
 
 *::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.1));
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.08));
   border-radius: 3px;
 }
 
@@ -101,19 +116,19 @@ a {
   inset: 0;
   background-size: cover;
   background-position: center;
-  background-color: #1a1a1a;
+  background-color: #eee;
   transition: transform 0.5s ease;
 }
 
 .panel-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(255, 255, 255, 0.35);
   transition: background 0.4s ease;
 }
 
 .panel:hover .panel-overlay {
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .panel:hover .panel-bg {
@@ -125,10 +140,10 @@ a {
   bottom: 1rem;
   left: 1.5rem;
   font-size: clamp(1.8rem, 5vw, 4rem);
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #fff;
+  color: #333;
   z-index: 2;
   pointer-events: none;
   white-space: nowrap;
@@ -136,7 +151,7 @@ a {
 
 /* Panel borders */
 .panel + .panel {
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 /* Hover: expand hovered, shrink others */
@@ -154,14 +169,14 @@ a {
   left: 0;
   right: 0;
   height: 120px;
-  background: #000;
+  background: #fff;
   z-index: 200;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   transform: translateY(-100%);
   transition: transform 0.5s cubic-bezier(0.65, 0, 0.35, 1);
 }
@@ -185,17 +200,17 @@ a {
 
 .header-link {
   font-size: 0.85rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(0, 0, 0, 0.35);
   transition: color 0.3s ease;
   padding: 0.5rem 0;
 }
 
 .header-link:hover,
 .header-link.active {
-  color: #fff;
+  color: #333;
 }
 
 /* Hamburger button (mobile only) */
@@ -217,7 +232,7 @@ a {
   left: 0;
   width: 100%;
   height: 2px;
-  background: #fff;
+  background: #333;
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
@@ -267,7 +282,7 @@ a {
   width: 280px;
   height: calc(100vh - 120px);
   padding: 3rem 2rem;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
   overflow-y: auto;
   flex-shrink: 0;
 }
@@ -286,15 +301,15 @@ a {
 
 .art-nav-link {
   font-size: 1rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.55);
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.35);
   transition: color 0.25s ease;
   display: block;
 }
 
 .art-nav-link:hover,
 .art-nav-link.active {
-  color: #fff;
+  color: #333;
 }
 
 /* Main content (right column) */
@@ -321,7 +336,7 @@ a {
   width: 100%;
   max-height: 70vh;
   overflow: hidden;
-  background: #111;
+  background: #f5f5f5;
   cursor: pointer;
 }
 
@@ -350,7 +365,7 @@ a {
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   pointer-events: none;
 }
 
@@ -374,8 +389,8 @@ a {
   top: 50%;
   transform: translateY(-50%);
   z-index: 3;
-  background: rgba(0, 0, 0, 0.5);
-  color: #fff;
+  background: rgba(255, 255, 255, 0.7);
+  color: #333;
   border: none;
   font-size: 2rem;
   width: 44px;
@@ -399,7 +414,7 @@ a {
 
 .carousel-prev:hover,
 .carousel-next:hover {
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 /* Carousel dots */
@@ -417,7 +432,7 @@ a {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.4);
   background: transparent;
   cursor: pointer;
   padding: 0;
@@ -425,14 +440,15 @@ a {
 }
 
 .carousel-dot.active {
-  background: #fff;
+  background: #333;
 }
 
 .art-description {
   margin-top: 1.25rem;
   font-size: 0.95rem;
+  font-weight: 400;
   line-height: 1.7;
-  color: rgba(255, 255, 255, 0.65);
+  color: rgba(0, 0, 0, 0.55);
   max-width: 600px;
 }
 
@@ -446,27 +462,27 @@ a {
 
 .buy-price {
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.05em;
-  color: #fff;
+  color: #333;
 }
 
 .buy-btn {
   padding: 0.6rem 2rem;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 0.8rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #000;
-  background: #fff;
+  color: #fff;
+  background: #333;
   border: none;
   cursor: pointer;
-  transition: background 0.25s ease, color 0.25s ease;
+  transition: background 0.25s ease;
 }
 
 .buy-btn:hover {
-  background: #ccc;
+  background: #555;
 }
 
 /* ===== CONSULTING ===== */
@@ -483,13 +499,13 @@ a {
   inset: 0;
   background-size: cover;
   background-position: center;
-  background-color: #111;
+  background-color: #eee;
 }
 
 .consulting-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .consulting-text {
@@ -500,14 +516,16 @@ a {
 
 .consulting-text h2 {
   font-size: clamp(2.5rem, 6vw, 5rem);
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.15em;
+  color: #333;
   margin-bottom: 1.5rem;
 }
 
 .consulting-text p {
   font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.5);
+  font-weight: 400;
+  color: rgba(0, 0, 0, 0.45);
   letter-spacing: 0.1em;
 }
 
@@ -639,11 +657,11 @@ a {
     top: 60px;
     left: 0;
     right: 0;
-    background: #000;
+    background: #fff;
     flex-direction: column;
     gap: 0;
     padding: 1rem 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   }
 
   .header-links.open {
@@ -654,7 +672,7 @@ a {
     font-size: 0.85rem;
     letter-spacing: 0.15em;
     padding: 0.75rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   }
 
   .header-link:last-child {
@@ -673,8 +691,8 @@ a {
     height: auto;
     padding: 1rem 1.5rem;
     border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    background: #000;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    background: #fff;
     z-index: 150;
     transition: top 0.3s ease;
   }
