@@ -1,13 +1,20 @@
 {
   "pieces": [
     {
-      "id": "ring-i",
-      "title": "Ring I",
-      "description": "Sterling silver, hand-forged.",
-      "price_display": "$120",
+      "id": "12356",
+      "title": "Ring56",
+      "description": "Sterling silver, hand-forged. love it",
+      "price_display": "$150",
       "stripe_price_id": "",
       "images": [
-        { "src": "/images/placeholder.svg", "alt": "Ring I" }
+        {
+          "src": "/images/placeholder.svg",
+          "alt": "Ring I"
+        },
+        {
+          "src": "/uploads/dscf7783.jpg",
+          "alt": "cheesecake"
+        }
       ]
     },
     {
@@ -17,7 +24,10 @@
       "price_display": "$180",
       "stripe_price_id": "",
       "images": [
-        { "src": "/images/placeholder.svg", "alt": "Necklace I" }
+        {
+          "src": "/images/placeholder.svg",
+          "alt": "Necklace I"
+        }
       ]
     },
     {
@@ -27,7 +37,10 @@
       "price_display": "$95",
       "stripe_price_id": "",
       "images": [
-        { "src": "/images/placeholder.svg", "alt": "Bracelet I" }
+        {
+          "src": "/images/placeholder.svg",
+          "alt": "Bracelet I"
+        }
       ]
     }
   ]
