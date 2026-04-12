@@ -141,7 +141,8 @@
         art: data.art_background,
         necklaces: data.necklaces_background,
         rings: data.rings_background,
-        consulting: data.consulting_background
+        consulting: data.consulting_background,
+        about: data.about_background
       };
       for (const [key, url] of Object.entries(map)) {
         if (url) {
@@ -265,6 +266,30 @@
       }
     } catch (e) {
       console.error('Failed to load consulting content:', e);
+    }
+  }
+
+  // ---- Render: About ----
+
+  async function renderAbout() {
+    try {
+      const data = await fetchJSON('content/about.json');
+      const textEl = document.getElementById('about-text');
+      const bgEl = document.getElementById('about-bg');
+
+      const h2 = document.createElement('h2');
+      text(h2, data.heading);
+      textEl.appendChild(h2);
+
+      const p = document.createElement('p');
+      text(p, data.message);
+      textEl.appendChild(p);
+
+      if (data.background_image) {
+        bgEl.style.backgroundImage = `url('${escapeAttr(data.background_image)}')`;
+      }
+    } catch (e) {
+      console.error('Failed to load about content:', e);
     }
   }
 
@@ -541,4 +566,5 @@
   renderStore('content/necklaces.json', 'necklaces-nav', 'necklaces-content', 'section-necklaces');
   renderStore('content/rings.json', 'rings-nav', 'rings-content', 'section-rings');
   renderConsulting();
+  renderAbout();
 })();

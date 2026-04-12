@@ -135,6 +135,21 @@
           }]
         },
         {
+          name: 'about',
+          label: 'About',
+          files: [{
+            name: 'about-page',
+            label: 'About Page',
+            file: 'content/about.json',
+            format: 'json',
+            fields: [
+              { name: 'heading', label: 'Heading', widget: 'string' },
+              { name: 'message', label: 'Message', widget: 'text' },
+              { name: 'background_image', label: 'Background Image', widget: 'image', required: false }
+            ]
+          }]
+        },
+        {
           name: 'homepage',
           label: 'Homepage',
           files: [{
@@ -147,7 +162,8 @@
               { name: 'art_background', label: 'Art Panel Background', widget: 'image', required: false },
               { name: 'necklaces_background', label: 'Necklaces Panel Background', widget: 'image', required: false },
               { name: 'rings_background', label: 'Rings Panel Background', widget: 'image', required: false },
-              { name: 'consulting_background', label: 'Consulting Panel Background', widget: 'image', required: false }
+              { name: 'consulting_background', label: 'Consulting Panel Background', widget: 'image', required: false },
+              { name: 'about_background', label: 'About Panel Background', widget: 'image', required: false }
             ]
           }]
         }
