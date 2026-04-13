@@ -1,176 +1,290 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Content Manager — Florez Florez</title>
+  <title>Admin — Florez Florez</title>
+  <style>
+    @font-face {
+      font-family: 'IBM Plex Mono';
+      src: url('/fonts/IBMPlexMono-SemiBold.ttf') format('truetype');
+      font-weight: 600;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'IBM Plex Mono';
+      src: url('/fonts/IBMPlexMono-Regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'IBM Plex Mono', monospace;
+      background: #fff;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .auth-screen {
+      text-align: center;
+    }
+
+    .auth-screen h1 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(0, 0, 0, 0.35);
+      margin-bottom: 2rem;
+    }
+
+    .auth-btn {
+      padding: 0.75rem 2.5rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #fff;
+      background: #333;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .auth-btn:hover { background: #555; }
+
+    .dashboard {
+      display: none;
+      width: 100%;
+      max-width: 500px;
+      padding: 2rem;
+    }
+
+    .dashboard-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 3rem;
+    }
+
+    .dashboard-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(0, 0, 0, 0.35);
+    }
+
+    .dashboard-user {
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: rgba(0, 0, 0, 0.3);
+    }
+
+    .tool-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .tool-link {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      padding: 1.25rem 1.5rem;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      text-decoration: none;
+      color: #333;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .tool-link:hover {
+      border-color: rgba(0, 0, 0, 0.3);
+      background: rgba(0, 0, 0, 0.02);
+    }
+
+    .tool-icon {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      color: rgba(0, 0, 0, 0.4);
+    }
+
+    .tool-info {
+      flex: 1;
+    }
+
+    .tool-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
+
+    .tool-desc {
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: rgba(0, 0, 0, 0.4);
+    }
+
+    .tool-arrow {
+      flex-shrink: 0;
+      color: rgba(0, 0, 0, 0.2);
+      font-size: 1.2rem;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 3rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(0, 0, 0, 0.3);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: #333; }
+  </style>
 </head>
 <body>
-  <script>
-    // Prevent auto-init so we can pass config manually
-    window.CMS_MANUAL_INIT = true;
-  </script>
-  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
-  <script>
-    var isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 
-    var config = {
-      backend: isLocal
-        ? { name: 'git-gateway' }
-        : {
-            name: 'github',
-            repo: 'taoofdre/florezflorez',
-            branch: 'main',
-            base_url: 'https://florezflorez.vercel.app',
-            auth_endpoint: '/api/auth'
-          },
-      local_backend: isLocal,
-      media_folder: 'uploads',
-      public_folder: '/uploads',
-      collections: [
-        {
-          name: 'art',
-          label: 'Art',
-          files: [{
-            name: 'art-pieces',
-            label: 'Art Pieces',
-            file: 'content/art.json',
-            format: 'json',
-            fields: [{
-              name: 'pieces',
-              label: 'Art Pieces',
-              widget: 'list',
-              fields: [
-                { name: 'id', label: 'ID (lowercase, no spaces)', widget: 'string' },
-                { name: 'title', label: 'Title', widget: 'string' },
-                { name: 'description', label: 'Description', widget: 'text' },
-                {
-                  name: 'images',
-                  label: 'Images',
-                  widget: 'list',
-                  fields: [
-                    { name: 'src', label: 'Image', widget: 'image' },
-                    { name: 'alt', label: 'Alt Text', widget: 'string' }
-                  ]
-                }
-              ]
-            }]
-          }]
-        },
-        {
-          name: 'necklaces',
-          label: 'Necklaces',
-          files: [{
-            name: 'necklaces-pieces',
-            label: 'Necklaces',
-            file: 'content/necklaces.json',
-            format: 'json',
-            fields: [{
-              name: 'pieces',
-              label: 'Necklaces',
-              widget: 'list',
-              fields: [
-                { name: 'id', label: 'ID (lowercase, no spaces)', widget: 'string' },
-                { name: 'title', label: 'Title', widget: 'string' },
-                { name: 'description', label: 'Description', widget: 'text' },
-                { name: 'price_display', label: 'Display Price (e.g. $120)', widget: 'string' },
-                { name: 'stripe_price_id', label: 'Stripe Price ID (from Stripe dashboard)', widget: 'string' },
-                {
-                  name: 'images',
-                  label: 'Images',
-                  widget: 'list',
-                  fields: [
-                    { name: 'src', label: 'Image', widget: 'image' },
-                    { name: 'alt', label: 'Alt Text', widget: 'string' }
-                  ]
-                }
-              ]
-            }]
-          }]
-        },
-        {
-          name: 'rings',
-          label: 'Rings',
-          files: [{
-            name: 'rings-pieces',
-            label: 'Rings',
-            file: 'content/rings.json',
-            format: 'json',
-            fields: [{
-              name: 'pieces',
-              label: 'Rings',
-              widget: 'list',
-              fields: [
-                { name: 'id', label: 'ID (lowercase, no spaces)', widget: 'string' },
-                { name: 'title', label: 'Title', widget: 'string' },
-                { name: 'description', label: 'Description', widget: 'text' },
-                { name: 'price_display', label: 'Display Price (e.g. $120)', widget: 'string' },
-                { name: 'stripe_price_id', label: 'Stripe Price ID (from Stripe dashboard)', widget: 'string' },
-                {
-                  name: 'images',
-                  label: 'Images',
-                  widget: 'list',
-                  fields: [
-                    { name: 'src', label: 'Image', widget: 'image' },
-                    { name: 'alt', label: 'Alt Text', widget: 'string' }
-                  ]
-                }
-              ]
-            }]
-          }]
-        },
-        {
-          name: 'consulting',
-          label: 'Consulting',
-          files: [{
-            name: 'consulting-page',
-            label: 'Consulting Page',
-            file: 'content/consulting.json',
-            format: 'json',
-            fields: [
-              { name: 'heading', label: 'Heading', widget: 'string' },
-              { name: 'message', label: 'Message', widget: 'text' },
-              { name: 'background_image', label: 'Background Image', widget: 'image', required: false }
-            ]
-          }]
-        },
-        {
-          name: 'about',
-          label: 'About',
-          files: [{
-            name: 'about-page',
-            label: 'About Page',
-            file: 'content/about.json',
-            format: 'json',
-            fields: [
-              { name: 'heading', label: 'Heading', widget: 'string' },
-              { name: 'message', label: 'Message', widget: 'text' },
-              { name: 'background_image', label: 'Background Image', widget: 'image', required: false }
-            ]
-          }]
-        },
-        {
-          name: 'homepage',
-          label: 'Homepage',
-          files: [{
-            name: 'homepage-settings',
-            label: 'Homepage Settings',
-            file: 'content/homepage.json',
-            format: 'json',
-            fields: [
-              { name: 'logo', label: 'Site Logo', widget: 'image', required: false },
-              { name: 'art_background', label: 'Art Panel Background', widget: 'image', required: false },
-              { name: 'necklaces_background', label: 'Necklaces Panel Background', widget: 'image', required: false },
-              { name: 'rings_background', label: 'Rings Panel Background', widget: 'image', required: false },
-              { name: 'consulting_background', label: 'Consulting Panel Background', widget: 'image', required: false },
-              { name: 'about_background', label: 'About Panel Background', widget: 'image', required: false }
-            ]
-          }]
+  <!-- Auth screen -->
+  <div class="auth-screen" id="auth-screen">
+    <h1>Admin</h1>
+    <button class="auth-btn" id="auth-btn">Sign in with GitHub</button>
+  </div>
+
+  <!-- Dashboard (shown after auth) -->
+  <div class="dashboard" id="dashboard">
+    <div class="dashboard-header">
+      <span class="dashboard-title">Admin</span>
+      <span class="dashboard-user" id="dashboard-user"></span>
+    </div>
+
+    <ul class="tool-list">
+      <li>
+        <a href="/admin/cms.html" class="tool-link">
+          <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+          </svg>
+          <div class="tool-info">
+            <div class="tool-name">Content Manager</div>
+            <div class="tool-desc">Edit pages, products, and images</div>
+          </div>
+          <span class="tool-arrow">&rsaquo;</span>
+        </a>
+      </li>
+      <li>
+        <a href="/admin/tools/crop.html" class="tool-link">
+          <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6.13 1L6 16a2 2 0 002 2h15"></path>
+            <path d="M1 6.13L16 6a2 2 0 012 2v15"></path>
+          </svg>
+          <div class="tool-info">
+            <div class="tool-name">Image Crop Tool</div>
+            <div class="tool-desc">Crop and resize images for the site</div>
+          </div>
+          <span class="tool-arrow">&rsaquo;</span>
+        </a>
+      </li>
+    </ul>
+
+    <a href="/" class="back-link">&larr; Back to site</a>
+  </div>
+
+  <script>
+    (() => {
+      const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+      const authScreen = document.getElementById('auth-screen');
+      const authBtn = document.getElementById('auth-btn');
+      const dashboard = document.getElementById('dashboard');
+      const dashboardUser = document.getElementById('dashboard-user');
+
+      function getStoredToken() {
+        return sessionStorage.getItem('gh_token') || localStorage.getItem('gh_token');
+      }
+
+      function storeToken(token) {
+        sessionStorage.setItem('gh_token', token);
+      }
+
+      function showDashboard(username) {
+        authScreen.style.display = 'none';
+        dashboard.style.display = '';
+        if (username) dashboardUser.textContent = username;
+      }
+
+      async function verifyToken(token) {
+        try {
+          const res = await fetch('https://api.github.com/user', {
+            headers: { 'Authorization': 'token ' + token }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            return data.login;
+          }
+        } catch (e) {}
+        return null;
+      }
+
+      async function init() {
+        if (isLocal) {
+          showDashboard('local');
+          return;
         }
-      ]
-    };
 
-    CMS.init({ config: config });
+        const stored = getStoredToken();
+        if (stored) {
+          const username = await verifyToken(stored);
+          if (username) {
+            showDashboard(username);
+            return;
+          }
+          // Token expired
+          sessionStorage.removeItem('gh_token');
+          localStorage.removeItem('gh_token');
+        }
+
+        // Show auth
+        authScreen.style.display = '';
+        authBtn.addEventListener('click', () => {
+          const popup = window.open('/api/auth', 'github-auth', 'width=600,height=700');
+
+          window.addEventListener('message', function onMessage(e) {
+            if (typeof e.data !== 'string') return;
+            if (e.data.startsWith('authorization:github:success:')) {
+              const payload = JSON.parse(e.data.replace('authorization:github:success:', ''));
+              storeToken(payload.token);
+              authScreen.style.display = 'none';
+              window.removeEventListener('message', onMessage);
+              if (popup) popup.close();
+              verifyToken(payload.token).then(username => showDashboard(username));
+            }
+          });
+
+          const interval = setInterval(() => {
+            if (popup && !popup.closed) {
+              popup.postMessage('authorizing:github', '*');
+            } else {
+              clearInterval(interval);
+            }
+          }, 250);
+        });
+      }
+
+      init();
+    })();
   </script>
 </body>
 </html>

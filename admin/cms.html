@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Content Manager — Florez Florez</title>
+</head>
+<body>
+  <script>
+    // Prevent auto-init so we can pass config manually
+    window.CMS_MANUAL_INIT = true;
+  </script>
+  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  <script>
+    var isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+    var config = {
+      backend: isLocal
+        ? { name: 'git-gateway' }
+        : {
+            name: 'github',
+            repo: 'taoofdre/florezflorez',
+            branch: 'main',
+            base_url: 'https://florezflorez.vercel.app',
+            auth_endpoint: '/api/auth'
+          },
+      local_backend: isLocal,
+      media_folder: 'uploads',
+      public_folder: '/uploads',
+      collections: [
+        {
+          name: 'art',
+          label: 'Art',
+          files: [{
+            name: 'art-pieces',
+            label: 'Art Pieces',
+            file: 'content/art.json',
+            format: 'json',
+            fields: [{
+              name: 'pieces',
+              label: 'Art Pieces',
+              widget: 'list',
+              fields: [
+                { name: 'id', label: 'ID (lowercase, no spaces)', widget: 'string' },
+                { name: 'title', label: 'Title', widget: 'string' },
+                { name: 'description', label: 'Description', widget: 'text' },
+                {
+                  name: 'images',
+                  label: 'Images',
+                  widget: 'list',
+                  fields: [
+                    { name: 'src', label: 'Image', widget: 'image' },
+                    { name: 'alt', label: 'Alt Text', widget: 'string' }
+                  ]
+                }
+              ]
+            }]
+          }]
+        },
+        {
+          name: 'necklaces',
+          label: 'Necklaces',
+          files: [{
+            name: 'necklaces-pieces',
+            label: 'Necklaces',
+            file: 'content/necklaces.json',
+            format: 'json',
+            fields: [{
+              name: 'pieces',
+              label: 'Necklaces',
+              widget: 'list',
+              fields: [
+                { name: 'id', label: 'ID (lowercase, no spaces)', widget: 'string' },
+                { name: 'title', label: 'Title', widget: 'string' },
+                { name: 'description', label: 'Description', widget: 'text' },
+                { name: 'price_display', label: 'Display Price (e.g. $120)', widget: 'string' },
+                { name: 'stripe_price_id', label: 'Stripe Price ID (from Stripe dashboard)', widget: 'string' },
+                {
+                  name: 'images',
+                  label: 'Images',
+                  widget: 'list',
+                  fields: [
+                    { name: 'src', label: 'Image', widget: 'image' },
+                    { name: 'alt', label: 'Alt Text', widget: 'string' }
+                  ]
+                }
+              ]
+            }]
+          }]
+        },
+        {
+          name: 'rings',
+          label: 'Rings',
+          files: [{
+            name: 'rings-pieces',
+            label: 'Rings',
+            file: 'content/rings.json',
+            format: 'json',
+            fields: [{
+              name: 'pieces',
+              label: 'Rings',
+              widget: 'list',
+              fields: [
+                { name: 'id', label: 'ID (lowercase, no spaces)', widget: 'string' },
+                { name: 'title', label: 'Title', widget: 'string' },
+                { name: 'description', label: 'Description', widget: 'text' },
+                { name: 'price_display', label: 'Display Price (e.g. $120)', widget: 'string' },
+                { name: 'stripe_price_id', label: 'Stripe Price ID (from Stripe dashboard)', widget: 'string' },
+                {
+                  name: 'images',
+                  label: 'Images',
+                  widget: 'list',
+                  fields: [
+                    { name: 'src', label: 'Image', widget: 'image' },
+                    { name: 'alt', label: 'Alt Text', widget: 'string' }
+                  ]
+                }
+              ]
+            }]
+          }]
+        },
+        {
+          name: 'consulting',
+          label: 'Consulting',
+          files: [{
+            name: 'consulting-page',
+            label: 'Consulting Page',
+            file: 'content/consulting.json',
+            format: 'json',
+            fields: [
+              { name: 'heading', label: 'Heading', widget: 'string' },
+              { name: 'message', label: 'Message', widget: 'text' },
+              { name: 'background_image', label: 'Background Image', widget: 'image', required: false }
+            ]
+          }]
+        },
+        {
+          name: 'about',
+          label: 'About',
+          files: [{
+            name: 'about-page',
+            label: 'About Page',
+            file: 'content/about.json',
+            format: 'json',
+            fields: [
+              { name: 'heading', label: 'Heading', widget: 'string' },
+              { name: 'message', label: 'Message', widget: 'text' },
+              { name: 'background_image', label: 'Background Image', widget: 'image', required: false }
+            ]
+          }]
+        },
+        {
+          name: 'homepage',
+          label: 'Homepage',
+          files: [{
+            name: 'homepage-settings',
+            label: 'Homepage Settings',
+            file: 'content/homepage.json',
+            format: 'json',
+            fields: [
+              { name: 'logo', label: 'Site Logo', widget: 'image', required: false },
+              { name: 'art_background', label: 'Art Panel Background', widget: 'image', required: false },
+              { name: 'necklaces_background', label: 'Necklaces Panel Background', widget: 'image', required: false },
+              { name: 'rings_background', label: 'Rings Panel Background', widget: 'image', required: false },
+              { name: 'consulting_background', label: 'Consulting Panel Background', widget: 'image', required: false },
+              { name: 'about_background', label: 'About Panel Background', widget: 'image', required: false }
+            ]
+          }]
+        }
+      ]
+    };
+
+    CMS.init({ config: config });
+  </script>
+</body>
+</html>
