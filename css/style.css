@@ -121,13 +121,14 @@ a {
 
 .panel-label {
   position: absolute;
-  bottom: 1rem;
-  left: 1.5rem;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   font-size: clamp(1.8rem, 5vw, 4rem);
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #fff;
+  color: #333;
   z-index: 2;
   pointer-events: none;
   white-space: nowrap;

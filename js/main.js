@@ -330,7 +330,7 @@
             ['#ee9ca7', '#ffdde1'],
             ['#2193b0', '#6dd5ed']
           ],
-          transitionSpeed: 2000
+          transitionSpeed: 6000
         }
       }
     });
