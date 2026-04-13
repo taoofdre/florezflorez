@@ -482,6 +482,31 @@
     }
   }
 
+  // ---- Header gradient ----
+
+  let headerGranim = null;
+
+  function initHeaderGradient() {
+    if (headerGranim) return;
+    headerGranim = new Granim({
+      element: '#header-gradient',
+      direction: 'left-right',
+      isPausedWhenNotInView: true,
+      stateTransitionSpeed: 300,
+      states: {
+        'default-state': {
+          gradients: [
+            ['#834d9b', '#d04ed6'],
+            ['#1CD8D2', '#93EDC7'],
+            ['#ee9ca7', '#ffdde1'],
+            ['#2193b0', '#6dd5ed']
+          ],
+          transitionSpeed: 6000
+        }
+      }
+    });
+  }
+
   // ---- Navigation ----
 
   function openSection(name) {
@@ -489,6 +514,7 @@
     homeLogo.style.display = 'none';
     setTimeout(() => { home.style.display = 'none'; }, 500);
     header.classList.add('visible');
+    initHeaderGradient();
 
     sections.forEach(s => s.classList.remove('active'));
     const target = document.getElementById('section-' + name);
