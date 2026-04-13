@@ -323,11 +323,11 @@
         states: {
           'default-state': {
             gradients: [
-              ['#e8d5b7', '#c4a882'],
-              ['#d4c4a8', '#b8a080'],
-              ['#f0e6d2', '#d8c8a8']
+              ['#8B4513', '#B8860B'],
+              ['#A0522D', '#CD853F'],
+              ['#6B3410', '#8B6914']
             ],
-            transitionSpeed: 4000
+            transitionSpeed: 1000
           }
         }
       },
@@ -336,11 +336,11 @@
         states: {
           'default-state': {
             gradients: [
-              ['#c8d8e4', '#a0b8c8'],
-              ['#b0c8d8', '#8ca8bc'],
-              ['#d4e4f0', '#b8d0e0']
+              ['#1a3a5c', '#2c5f8a'],
+              ['#0d2b45', '#1e4d6e'],
+              ['#243b60', '#3a6b94']
             ],
-            transitionSpeed: 4000
+            transitionSpeed: 1000
           }
         }
       },
@@ -349,11 +349,11 @@
         states: {
           'default-state': {
             gradients: [
-              ['#d4c4d8', '#b8a0bc'],
-              ['#c8b4cc', '#a890ac'],
-              ['#e0d4e4', '#c8b8cc']
+              ['#5c2d6e', '#8b3a8f'],
+              ['#4a1a5e', '#6d2878'],
+              ['#6e3580', '#9c4a9e']
             ],
-            transitionSpeed: 4000
+            transitionSpeed: 1000
           }
         }
       },
@@ -362,11 +362,11 @@
         states: {
           'default-state': {
             gradients: [
-              ['#c8d8c4', '#a8c0a0'],
-              ['#b8ccb4', '#98b490'],
-              ['#d8e8d4', '#c0d4b8']
+              ['#1a4a2e', '#2d6b42'],
+              ['#0d3820', '#1e5535'],
+              ['#245438', '#3a7a50']
             ],
-            transitionSpeed: 4000
+            transitionSpeed: 1000
           }
         }
       }
