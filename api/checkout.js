@@ -28,10 +28,19 @@ module.exports = async function handler(req, res) {
   }
 
   try {
+    // Look up prices to calculate order total for pixel tracking
+    const prices = await Promise.all(
+      line_items.map(li => stripe.prices.retrieve(li.price))
+    );
+    const totalCents = prices.reduce((sum, price, i) => {
+      return sum + (price.unit_amount * (line_items[i].quantity || 1));
+    }, 0);
+    const total = (totalCents / 100).toFixed(2);
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       line_items: line_items,
-      success_url: `${origin}/?checkout=success`,
+      success_url: `${origin}/?checkout=success&total=${total}`,
       cancel_url: `${origin}/?checkout=cancel`,
     });
 

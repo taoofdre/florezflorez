@@ -185,7 +185,8 @@
   // Clear cart and show thank you screen on successful checkout return
   const params = new URLSearchParams(window.location.search);
   if (params.get('checkout') === 'success') {
-    if (typeof fbq === 'function') fbq('track', 'Purchase', { currency: 'USD', value: 0 });
+    const orderTotal = parseFloat(params.get('total') || '0');
+    if (typeof fbq === 'function') fbq('track', 'Purchase', { currency: 'USD', value: orderTotal });
     cart = [];
     saveCart();
     window.history.replaceState(null, '', window.location.pathname);
