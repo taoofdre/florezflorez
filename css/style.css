@@ -540,6 +540,7 @@ a {
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  margin-left: auto;
 }
 
 .cart-badge {
@@ -583,6 +584,7 @@ a {
   width: 380px;
   max-width: 90vw;
   height: 100vh;
+  height: 100dvh;
   background: #fff;
   z-index: 950;
   display: flex;
@@ -602,6 +604,7 @@ a {
   justify-content: space-between;
   padding: 1.5rem;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
 }
 
 .cart-title {
@@ -729,6 +732,7 @@ a {
 .cart-footer {
   padding: 1.5rem;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
 }
 
 .cart-checkout-btn {
