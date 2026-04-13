@@ -46,6 +46,7 @@
                 { name: 'description', label: 'Description', widget: 'text' },
                 { name: 'for_sale', label: 'For Sale', widget: 'boolean', default: false, hint: 'Show a price and Add to Cart button for this item' },
                 { name: 'price_display', label: 'Price (e.g. $285)', widget: 'string', required: false, default: '' },
+                { name: 'stock', label: 'Stock', widget: 'number', required: false, value_type: 'int', hint: 'Number available. Leave blank for unlimited / made-to-order. Set to 0 to show Sold Out.' },
                 { name: 'stripe_price_id', label: 'Stripe Price ID', widget: 'string', required: false, default: '', hint: 'Auto-populated by the Stripe Sync tool — do not edit manually' },
                 { name: 'stripe_product_id', label: 'Stripe Product ID', widget: 'string', required: false, default: '', hint: 'Auto-populated by the Stripe Sync tool — do not edit manually' },
                 {
@@ -79,6 +80,7 @@
                 { name: 'description', label: 'Description', widget: 'text' },
                 { name: 'for_sale', label: 'For Sale', widget: 'boolean', default: true, hint: 'Show a price and Add to Cart button for this item' },
                 { name: 'price_display', label: 'Price (e.g. $120)', widget: 'string', required: false },
+                { name: 'stock', label: 'Stock', widget: 'number', required: false, value_type: 'int', hint: 'Number available. Leave blank for unlimited / made-to-order. Set to 0 to show Sold Out.' },
                 { name: 'stripe_price_id', label: 'Stripe Price ID', widget: 'string', required: false, hint: 'Auto-populated by the Stripe Sync tool — do not edit manually' },
                 { name: 'stripe_product_id', label: 'Stripe Product ID', widget: 'string', required: false, default: '', hint: 'Auto-populated by the Stripe Sync tool — do not edit manually' },
                 {
@@ -112,6 +114,7 @@
                 { name: 'description', label: 'Description', widget: 'text' },
                 { name: 'for_sale', label: 'For Sale', widget: 'boolean', default: true, hint: 'Show a price and Add to Cart button for this item' },
                 { name: 'price_display', label: 'Price (e.g. $120)', widget: 'string', required: false },
+                { name: 'stock', label: 'Stock', widget: 'number', required: false, value_type: 'int', hint: 'Number available. Leave blank for unlimited / made-to-order. Set to 0 to show Sold Out.' },
                 { name: 'stripe_price_id', label: 'Stripe Price ID', widget: 'string', required: false, hint: 'Auto-populated by the Stripe Sync tool — do not edit manually' },
                 { name: 'stripe_product_id', label: 'Stripe Product ID', widget: 'string', required: false, default: '', hint: 'Auto-populated by the Stripe Sync tool — do not edit manually' },
                 {

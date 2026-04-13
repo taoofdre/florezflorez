@@ -464,6 +464,15 @@ a {
   background: #555;
 }
 
+.sold-out {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
 /* ===== CONSULTING ===== */
 .section-consulting .consulting-inner {
   position: relative;

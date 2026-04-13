@@ -397,16 +397,24 @@
           priceEl.className = 'buy-price';
           text(priceEl, piece.price_display);
           buyRow.appendChild(priceEl);
-          const btn = document.createElement('button');
-          btn.className = 'buy-btn';
-          text(btn, 'Add to Cart');
-          btn.addEventListener('click', () => addToCart({
-            price_id: piece.stripe_price_id,
-            title: piece.title,
-            price_display: piece.price_display,
-            image: piece.images && piece.images.length > 0 ? piece.images[0].src : '',
-          }));
-          buyRow.appendChild(btn);
+          const isSoldOut = typeof piece.stock === 'number' && piece.stock === 0;
+          if (isSoldOut) {
+            const soldOut = document.createElement('span');
+            soldOut.className = 'sold-out';
+            text(soldOut, 'Sold Out');
+            buyRow.appendChild(soldOut);
+          } else {
+            const btn = document.createElement('button');
+            btn.className = 'buy-btn';
+            text(btn, 'Add to Cart');
+            btn.addEventListener('click', () => addToCart({
+              price_id: piece.stripe_price_id,
+              title: piece.title,
+              price_display: piece.price_display,
+              image: piece.images && piece.images.length > 0 ? piece.images[0].src : '',
+            }));
+            buyRow.appendChild(btn);
+          }
           article.appendChild(buyRow);
         }
 
@@ -457,18 +465,26 @@
           buyRow.appendChild(price);
 
           if (piece.stripe_price_id) {
-            const btn = document.createElement('button');
-            btn.className = 'buy-btn';
-            text(btn, 'Add to Cart');
-            btn.addEventListener('click', () => {
-              addToCart({
-                price_id: piece.stripe_price_id,
-                title: piece.title,
-                price_display: piece.price_display,
-                image: piece.images && piece.images.length > 0 ? piece.images[0].src : '',
+            const isSoldOut = typeof piece.stock === 'number' && piece.stock === 0;
+            if (isSoldOut) {
+              const soldOut = document.createElement('span');
+              soldOut.className = 'sold-out';
+              text(soldOut, 'Sold Out');
+              buyRow.appendChild(soldOut);
+            } else {
+              const btn = document.createElement('button');
+              btn.className = 'buy-btn';
+              text(btn, 'Add to Cart');
+              btn.addEventListener('click', () => {
+                addToCart({
+                  price_id: piece.stripe_price_id,
+                  title: piece.title,
+                  price_display: piece.price_display,
+                  image: piece.images && piece.images.length > 0 ? piece.images[0].src : '',
+                });
               });
-            });
-            buyRow.appendChild(btn);
+              buyRow.appendChild(btn);
+            }
           }
 
           article.appendChild(buyRow);
