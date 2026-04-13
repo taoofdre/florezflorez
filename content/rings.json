@@ -6,8 +6,8 @@
       "description": "Desert Garnet Ring",
       "for_sale": true,
       "price_display": "$260",
-      "stripe_price_id": "",
-      "stripe_product_id": "",
+      "stripe_price_id": "price_1TLrCRGZz3PbqlU6hhvRz7yd",
+      "stripe_product_id": "prod_UKWEFlzLZqKhPV",
       "images": [
         {
           "src": "/uploads/garnet-desert-ring01.png",
