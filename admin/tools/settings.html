@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Site Settings — Florez Florez</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background: #000;
+      color: #fff;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #000;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .toolbar h1 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-right: auto;
+    }
+
+    .toolbar a {
+      color: rgba(255,255,255,0.4);
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+    }
+    .toolbar a:hover { color: #fff; }
+
+    button.save-btn {
+      padding: 0.5rem 1.5rem;
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #000;
+      background: #fff;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button.save-btn:hover { background: #ccc; }
+    button.save-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .status {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.5);
+      min-height: 1.2em;
+    }
+    .status.error { color: #e55; }
+    .status.success { color: #5e5; }
+
+    /* Auth overlay */
+    .auth-overlay {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+    }
+    .auth-overlay h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+    .auth-overlay button {
+      padding: 0.75rem 2.5rem;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #000;
+      background: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    .auth-overlay button:hover { background: #ccc; }
+
+    /* Settings layout */
+    .settings-page {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 3rem 2rem 6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .settings-section {
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding: 2.5rem 0;
+    }
+
+    .settings-section h2 {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 1.75rem;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-bottom: 1.25rem;
+    }
+    .field-group:last-child { margin-bottom: 0; }
+
+    .field-group label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .field-desc {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.3);
+      line-height: 1.5;
+    }
+
+    .text-input {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      padding: 0.5rem 0.75rem;
+      font-family: inherit;
+      font-size: 0.85rem;
+      width: 100%;
+      margin-top: 0.25rem;
+    }
+    .text-input:focus {
+      outline: none;
+      border-color: rgba(255,255,255,0.5);
+    }
+    .text-input::placeholder { color: rgba(255,255,255,0.2); }
+
+    /* Env var info panels */
+    .section-desc {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.35);
+      line-height: 1.65;
+      margin-bottom: 1.25rem;
+    }
+
+    .env-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .env-item {
+      padding: 0.85rem 1rem;
+      border: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .env-key {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.82rem;
+      color: #fff;
+      letter-spacing: 0.03em;
+    }
+
+    .env-desc {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.35);
+      line-height: 1.5;
+    }
+
+    .section-link {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255,255,255,0.18);
+      padding-bottom: 1px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .section-link + .section-link {
+      margin-left: 2rem;
+    }
+    .section-link:hover {
+      color: #fff;
+      border-color: rgba(255,255,255,0.55);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="auth-overlay" class="auth-overlay" style="display:none;">
+    <h2>Sign in to use this tool</h2>
+    <button id="auth-btn">Sign in with GitHub</button>
+  </div>
+
+  <div class="toolbar">
+    <h1>Site Settings</h1>
+    <a href="/admin/">Back to Admin</a>
+    <button class="save-btn" id="save-btn">Save Settings</button>
+    <span class="status" id="status"></span>
+  </div>
+
+  <div class="settings-page">
+
+    <!-- Meta / Facebook Pixel -->
+    <div class="settings-section">
+      <h2>Meta / Facebook</h2>
+      <div class="field-group">
+        <label for="meta-pixel-id">Pixel ID</label>
+        <p class="field-desc">Found in Meta Events Manager under your pixel's settings.</p>
+        <input type="text" id="meta-pixel-id" class="text-input" placeholder="e.g. 1234567890123456">
+      </div>
+    </div>
+
+    <!-- Contact & Social -->
+    <div class="settings-section">
+      <h2>Contact &amp; Social</h2>
+      <div class="field-group">
+        <label for="instagram-url">Instagram DM URL</label>
+        <p class="field-desc">Linked in the order confirmation message shown after checkout. Format: https://ig.me/m/yourusername</p>
+        <input type="text" id="instagram-url" class="text-input" placeholder="https://ig.me/m/yourusername">
+      </div>
+    </div>
+
+    <!-- Stripe -->
+    <div class="settings-section">
+      <h2>Stripe</h2>
+      <p class="section-desc">Set in your Vercel project under Settings &rarr; Environment Variables. Your secret key is in the Stripe dashboard under Developers &rarr; API Keys.</p>
+      <div class="env-list">
+        <div class="env-item">
+          <span class="env-key">STRIPE_SECRET_KEY</span>
+          <span class="env-desc">Server-side key used to create checkout sessions. Starts with <code>sk_live_</code> (production) or <code>sk_test_</code> (test mode).</span>
+        </div>
+      </div>
+      <a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener" class="section-link">Stripe API Keys &rarr;</a>
+      <a href="https://vercel.com/dashboard" target="_blank" rel="noopener" class="section-link">Vercel Dashboard &rarr;</a>
+    </div>
+
+    <!-- GitHub OAuth -->
+    <div class="settings-section">
+      <h2>GitHub OAuth</h2>
+      <p class="section-desc">Powers the CMS and admin login. Set in Vercel under Settings &rarr; Environment Variables. Create or manage your OAuth app in GitHub developer settings.</p>
+      <div class="env-list">
+        <div class="env-item">
+          <span class="env-key">GITHUB_CLIENT_ID</span>
+          <span class="env-desc">OAuth App client ID. Public identifier for your GitHub OAuth app.</span>
+        </div>
+        <div class="env-item">
+          <span class="env-key">GITHUB_CLIENT_SECRET</span>
+          <span class="env-desc">OAuth App client secret. Keep this private &mdash; never commit it to your repository.</span>
+        </div>
+      </div>
+      <a href="https://github.com/settings/developers" target="_blank" rel="noopener" class="section-link">GitHub OAuth Apps &rarr;</a>
+      <a href="https://vercel.com/dashboard" target="_blank" rel="noopener" class="section-link">Vercel Dashboard &rarr;</a>
+    </div>
+
+  </div>
+
+  <script>
+    (() => {
+      const REPO = 'taoofdre/florezflorez';
+      const SETTINGS_PATH = 'content/settings.json';
+      const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+      const authOverlay = document.getElementById('auth-overlay');
+      const authBtn = document.getElementById('auth-btn');
+      const saveBtn = document.getElementById('save-btn');
+      const statusEl = document.getElementById('status');
+      const metaPixelInput = document.getElementById('meta-pixel-id');
+      const instagramInput = document.getElementById('instagram-url');
+
+      let ghToken = null;
+      let currentSha = null;
+
+      function setStatus(msg, type) {
+        statusEl.textContent = msg;
+        statusEl.className = 'status' + (type ? ' ' + type : '');
+      }
+
+      // ---- Auth ----
+
+      function getStoredToken() {
+        return sessionStorage.getItem('gh_token') || localStorage.getItem('gh_token');
+      }
+
+      function storeToken(token) {
+        sessionStorage.setItem('gh_token', token);
+      }
+
+      function initAuth() {
+        if (isLocal) {
+          loadCurrentSettings();
+          return;
+        }
+
+        const stored = getStoredToken();
+        if (stored) {
+          ghToken = stored;
+          loadCurrentSettings();
+          return;
+        }
+
+        authOverlay.style.display = '';
+        authBtn.addEventListener('click', () => {
+          const popup = window.open('/api/auth', 'github-auth', 'width=600,height=700');
+
+          window.addEventListener('message', function onMessage(e) {
+            if (typeof e.data !== 'string') return;
+            if (e.data.startsWith('authorization:github:success:')) {
+              const payload = JSON.parse(e.data.replace('authorization:github:success:', ''));
+              ghToken = payload.token;
+              storeToken(ghToken);
+              authOverlay.style.display = 'none';
+              window.removeEventListener('message', onMessage);
+              if (popup) popup.close();
+              loadCurrentSettings();
+            }
+          });
+
+          const interval = setInterval(() => {
+            if (popup && !popup.closed) {
+              popup.postMessage('authorizing:github', '*');
+            } else {
+              clearInterval(interval);
+            }
+          }, 250);
+        });
+      }
+
+      // ---- Load current settings ----
+
+      async function loadCurrentSettings() {
+        setStatus('Loading...');
+        try {
+          // Read displayed values from served file (works local and prod)
+          const res = await fetch('/content/settings.json?t=' + Date.now());
+          if (res.ok) {
+            const data = await res.json();
+            metaPixelInput.value = data.meta_pixel_id || '';
+            instagramInput.value = data.instagram_dm_url || '';
+          }
+
+          // Separately fetch SHA via GitHub API (needed to update the file)
+          if (ghToken) {
+            const ghRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${SETTINGS_PATH}`, {
+              headers: { 'Authorization': 'token ' + ghToken }
+            });
+            if (ghRes.ok) {
+              const file = await ghRes.json();
+              currentSha = file.sha;
+            }
+          }
+
+          setStatus('');
+        } catch (e) {
+          setStatus('Could not load current settings', 'error');
+        }
+      }
+
+      // ---- Save settings ----
+
+      saveBtn.addEventListener('click', async () => {
+        if (!ghToken) {
+          setStatus('Sign in with GitHub to save.', 'error');
+          return;
+        }
+
+        const settings = {
+          meta_pixel_id: metaPixelInput.value.trim(),
+          instagram_dm_url: instagramInput.value.trim(),
+        };
+
+        saveBtn.disabled = true;
+        setStatus('Saving...');
+
+        try {
+          // btoa with Unicode-safe encoding
+          const json = JSON.stringify(settings, null, 2) + '\n';
+          const encoded = btoa(unescape(encodeURIComponent(json)));
+
+          const body = {
+            message: 'Update site settings',
+            content: encoded,
+            branch: 'main',
+          };
+          if (currentSha) body.sha = currentSha;
+
+          const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${SETTINGS_PATH}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': 'token ' + ghToken,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+          });
+
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.message || 'Save failed');
+          }
+
+          const result = await res.json();
+          currentSha = result.content.sha;
+          setStatus('Saved — site will update on next deploy', 'success');
+        } catch (e) {
+          setStatus('Error: ' + e.message, 'error');
+        }
+
+        saveBtn.disabled = false;
+      });
+
+      initAuth();
+    })();
+  </script>
+</body>
+</html>

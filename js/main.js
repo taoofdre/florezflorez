@@ -25,6 +25,23 @@
 
   let activeSection = null;
 
+  // ---- Settings (pixel ID, Instagram URL) ----
+  // Start fetching immediately so pixel fires as early as possible
+  const settingsPromise = fetch('content/settings.json?t=' + Date.now())
+    .then(r => r.ok ? r.json() : {})
+    .catch(() => ({}));
+
+  settingsPromise.then(settings => {
+    if (settings.meta_pixel_id && typeof fbq === 'function') {
+      fbq('init', settings.meta_pixel_id);
+      fbq('track', 'PageView');
+    }
+    const igLink = document.getElementById('instagram-dm-link');
+    if (igLink && settings.instagram_dm_url) {
+      igLink.href = settings.instagram_dm_url;
+    }
+  });
+
   // ---- Cart state ----
   let cart = JSON.parse(localStorage.getItem('ff_cart') || '[]');
 
@@ -186,7 +203,9 @@
   const params = new URLSearchParams(window.location.search);
   if (params.get('checkout') === 'success') {
     const orderTotal = parseFloat(params.get('total') || '0');
-    if (typeof fbq === 'function') fbq('track', 'Purchase', { currency: 'USD', value: orderTotal });
+    settingsPromise.then(() => {
+      if (typeof fbq === 'function') fbq('track', 'Purchase', { currency: 'USD', value: orderTotal });
+    });
     cart = [];
     saveCart();
     window.history.replaceState(null, '', window.location.pathname);

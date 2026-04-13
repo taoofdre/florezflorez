@@ -5,19 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Florez Florez</title>
   <link rel="stylesheet" href="css/style.css">
-  <!-- Meta Pixel -->
+  <!-- Meta Pixel base (init called dynamically from content/settings.json) -->
   <script>
     !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
     n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
     n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
     t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
     document,'script','https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '3993733700852442');
-    fbq('track', 'PageView');
   </script>
-  <noscript><img height="1" width="1" style="display:none"
-    src="https://www.facebook.com/tr?id=3993733700852442&ev=PageView&noscript=1"
-  /></noscript>
   <!-- End Meta Pixel -->
 </head>
 <body>
@@ -135,7 +130,7 @@
   <div id="thankyou-overlay" class="thankyou-overlay" style="display:none;">
     <div class="thankyou-box">
       <p class="thankyou-primary">Thank you for choosing Florez Florez Studio. Your order is being processed and should ship in 1&ndash;2 business days.</p>
-      <p class="thankyou-secondary">You should receive an email from Stripe confirming your order &mdash; when it&rsquo;s ready, we will add tracking information to the order status page linked in this email. If you have any questions or concerns, <a href="https://ig.me/m/florezflorez.studio" target="_blank" rel="noopener">DM me on Instagram</a>.</p>
+      <p class="thankyou-secondary">You should receive an email from Stripe confirming your order &mdash; when it&rsquo;s ready, we will add tracking information to the order status page linked in this email. If you have any questions or concerns, <a href="https://ig.me/m/florezflorez.studio" id="instagram-dm-link" target="_blank" rel="noopener">DM me on Instagram</a>.</p>
       <button class="thankyou-close" id="thankyou-close">Continue</button>
     </div>
   </div>
