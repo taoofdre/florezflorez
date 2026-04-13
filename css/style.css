@@ -129,6 +129,8 @@ a {
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: #333;
+  -webkit-text-stroke: 1.5px #fff;
+  paint-order: stroke fill;
   z-index: 2;
   pointer-events: none;
   white-space: nowrap;
