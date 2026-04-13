@@ -111,13 +111,6 @@ a {
   transition: flex 0.7s cubic-bezier(0.65, 0, 0.35, 1);
 }
 
-.panel-gradient {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
 .panel-label {
   position: absolute;
   bottom: 1rem;
@@ -126,10 +119,13 @@ a {
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #f0ece8;
   z-index: 2;
   pointer-events: none;
   white-space: nowrap;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  background-size: 200% 200%;
 }
 
 /* Panel borders */
