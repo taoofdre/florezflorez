@@ -256,6 +256,33 @@
 
   <div class="settings-page">
 
+    <!-- Metadata -->
+    <div class="settings-section">
+      <h2>Metadata</h2>
+      <p class="section-desc">Controls how your site appears in Google search results and when shared on social media. Changes are written directly to your site's HTML so scrapers can read them.</p>
+      <div class="field-group">
+        <label for="site-title">Site Title</label>
+        <p class="field-desc">Used as the browser tab title, Google headline, and og:title for social sharing.</p>
+        <input type="text" id="site-title" class="text-input" placeholder="e.g. Florez Florez">
+      </div>
+      <div class="field-group">
+        <label for="site-description">Description</label>
+        <p class="field-desc">Shown below the title in Google results and social previews. Aim for 120–155 characters.</p>
+        <textarea id="site-description" class="text-input" rows="3" placeholder="e.g. Handmade jewelry and art by Florez Florez — based in ..." style="resize:vertical;"></textarea>
+        <span id="desc-counter" style="font-size:0.7rem;color:rgba(0,0,0,0.3);margin-top:0.15rem;"></span>
+      </div>
+      <div class="field-group">
+        <label for="og-image">Share Image URL</label>
+        <p class="field-desc">Image shown when shared on social media. Optimal size: <strong>1200 × 630 px</strong>. Must be an absolute URL (https://…). Upload the image first via the CMS, then paste its full URL here.</p>
+        <input type="text" id="og-image" class="text-input" placeholder="https://florezflorez.vercel.app/uploads/share.jpg">
+      </div>
+      <div class="field-group">
+        <label for="og-url">Canonical URL</label>
+        <p class="field-desc">The preferred URL for this site. Used as og:url. Usually your primary domain.</p>
+        <input type="text" id="og-url" class="text-input" placeholder="https://florezflorez.vercel.app">
+      </div>
+    </div>
+
     <!-- Meta / Facebook Pixel -->
     <div class="settings-section">
       <h2>Meta / Facebook</h2>
@@ -314,12 +341,18 @@
     (() => {
       const REPO = 'taoofdre/florezflorez';
       const SETTINGS_PATH = 'content/settings.json';
+      const INDEX_PATH = 'index.html';
       const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 
       const authOverlay = document.getElementById('auth-overlay');
       const authBtn = document.getElementById('auth-btn');
       const saveBtn = document.getElementById('save-btn');
       const statusEl = document.getElementById('status');
+      const siteTitleInput = document.getElementById('site-title');
+      const siteDescInput = document.getElementById('site-description');
+      const ogImageInput = document.getElementById('og-image');
+      const ogUrlInput = document.getElementById('og-url');
+      const descCounter = document.getElementById('desc-counter');
       const metaPixelInput = document.getElementById('meta-pixel-id');
       const instagramInput = document.getElementById('instagram-url');
 
@@ -381,6 +414,40 @@
         });
       }
 
+      // ---- Helpers ----
+
+      function escHtml(s) {
+        return String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function buildMetaBlock(title, desc, image, url) {
+        const t = (title || '').trim() || 'Florez Florez';
+        const d = (desc || '').trim();
+        const i = (image || '').trim();
+        const u = (url || '').trim();
+        const parts = ['<!-- META:START -->'];
+        parts.push('  <title>' + escHtml(t) + '</title>');
+        if (d) parts.push('  <meta name="description" content="' + escHtml(d) + '">');
+        parts.push('  <meta property="og:type" content="website">');
+        parts.push('  <meta property="og:title" content="' + escHtml(t) + '">');
+        if (d) parts.push('  <meta property="og:description" content="' + escHtml(d) + '">');
+        if (i) parts.push('  <meta property="og:image" content="' + escHtml(i) + '">');
+        if (u) parts.push('  <meta property="og:url" content="' + escHtml(u) + '">');
+        parts.push('  <meta name="twitter:card" content="summary_large_image">');
+        parts.push('  <meta name="twitter:title" content="' + escHtml(t) + '">');
+        if (d) parts.push('  <meta name="twitter:description" content="' + escHtml(d) + '">');
+        if (i) parts.push('  <meta name="twitter:image" content="' + escHtml(i) + '">');
+        parts.push('  <!-- META:END -->');
+        return parts.join('\n');
+      }
+
+      // Character counter for description
+      siteDescInput.addEventListener('input', () => {
+        const len = siteDescInput.value.length;
+        descCounter.textContent = len + ' / 155 characters';
+        descCounter.style.color = len > 155 ? '#c44' : 'rgba(0,0,0,0.3)';
+      });
+
       // ---- Load current settings ----
 
       async function loadCurrentSettings() {
@@ -390,8 +457,14 @@
           const res = await fetch('/content/settings.json?t=' + Date.now());
           if (res.ok) {
             const data = await res.json();
+            siteTitleInput.value = data.site_title || '';
+            siteDescInput.value = data.site_description || '';
+            ogImageInput.value = data.og_image || '';
+            ogUrlInput.value = data.og_url || '';
             metaPixelInput.value = data.meta_pixel_id || '';
             instagramInput.value = data.instagram_dm_url || '';
+            // Trigger counter
+            if (siteDescInput.value) siteDescInput.dispatchEvent(new Event('input'));
           }
 
           // Separately fetch SHA via GitHub API (needed to update the file)
@@ -420,6 +493,10 @@
         }
 
         const settings = {
+          site_title: siteTitleInput.value.trim(),
+          site_description: siteDescInput.value.trim(),
+          og_image: ogImageInput.value.trim(),
+          og_url: ogUrlInput.value.trim(),
           meta_pixel_id: metaPixelInput.value.trim(),
           instagram_dm_url: instagramInput.value.trim(),
         };
@@ -428,33 +505,77 @@
         setStatus('Saving...');
 
         try {
-          // btoa with Unicode-safe encoding
+          // 1. Save settings.json
           const json = JSON.stringify(settings, null, 2) + '\n';
-          const encoded = btoa(unescape(encodeURIComponent(json)));
+          const encodedSettings = btoa(unescape(encodeURIComponent(json)));
 
-          const body = {
+          const settingsBody = {
             message: 'Update site settings',
-            content: encoded,
+            content: encodedSettings,
             branch: 'main',
           };
-          if (currentSha) body.sha = currentSha;
+          if (currentSha) settingsBody.sha = currentSha;
 
-          const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${SETTINGS_PATH}`, {
+          const settingsRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${SETTINGS_PATH}`, {
             method: 'PUT',
             headers: {
               'Authorization': 'token ' + ghToken,
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify(body),
+            body: JSON.stringify(settingsBody),
           });
 
-          if (!res.ok) {
-            const data = await res.json().catch(() => ({}));
-            throw new Error(data.message || 'Save failed');
+          if (!settingsRes.ok) {
+            const data = await settingsRes.json().catch(() => ({}));
+            throw new Error(data.message || 'Settings save failed');
           }
 
-          const result = await res.json();
-          currentSha = result.content.sha;
+          const settingsResult = await settingsRes.json();
+          currentSha = settingsResult.content.sha;
+
+          // 2. Fetch index.html and update the META block
+          setStatus('Updating metadata in index.html...');
+
+          const indexRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${INDEX_PATH}`, {
+            headers: { 'Authorization': 'token ' + ghToken }
+          });
+          if (!indexRes.ok) throw new Error('Could not fetch index.html from GitHub');
+
+          const indexFile = await indexRes.json();
+          const indexContent = decodeURIComponent(escape(atob(indexFile.content.replace(/\n/g, ''))));
+          const indexSha = indexFile.sha;
+
+          const newMetaBlock = buildMetaBlock(settings.site_title, settings.site_description, settings.og_image, settings.og_url);
+
+          let updatedIndex;
+          if (/<!-- META:START -->[\s\S]*?<!-- META:END -->/.test(indexContent)) {
+            updatedIndex = indexContent.replace(/<!-- META:START -->[\s\S]*?<!-- META:END -->/, newMetaBlock);
+          } else {
+            // Fallback: replace bare <title> tag
+            updatedIndex = indexContent.replace(/<title>[^<]*<\/title>/, newMetaBlock);
+          }
+
+          const encodedIndex = btoa(unescape(encodeURIComponent(updatedIndex)));
+
+          const indexPutRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${INDEX_PATH}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': 'token ' + ghToken,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              message: 'Update site metadata',
+              content: encodedIndex,
+              sha: indexSha,
+              branch: 'main',
+            }),
+          });
+
+          if (!indexPutRes.ok) {
+            const data = await indexPutRes.json().catch(() => ({}));
+            throw new Error(data.message || 'index.html update failed');
+          }
+
           setStatus('Saved — site will update on next deploy', 'success');
         } catch (e) {
           setStatus('Error: ' + e.message, 'error');
