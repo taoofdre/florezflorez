@@ -129,7 +129,7 @@ a {
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: #333;
-  -webkit-text-stroke: 10px #fff;
+  -webkit-text-stroke: 50px #fff;
   paint-order: stroke fill;
   z-index: 2;
   pointer-events: none;
