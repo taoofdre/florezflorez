@@ -316,84 +316,23 @@
       // Homepage data is optional
     }
 
-    // Animated gradient text
-    const textGradients = [
-      {
-        id: 'label-art',
-        colors: [
-          ['#8B4513', '#B8860B', '#A0522D'],
-          ['#A0522D', '#CD853F', '#6B3410'],
-          ['#6B3410', '#8B6914', '#8B4513']
-        ]
-      },
-      {
-        id: 'label-necklaces',
-        colors: [
-          ['#1a3a5c', '#2c5f8a', '#0d2b45'],
-          ['#0d2b45', '#1e4d6e', '#243b60'],
-          ['#243b60', '#3a6b94', '#1a3a5c']
-        ]
-      },
-      {
-        id: 'label-rings',
-        colors: [
-          ['#5c2d6e', '#8b3a8f', '#4a1a5e'],
-          ['#4a1a5e', '#6d2878', '#6e3580'],
-          ['#6e3580', '#9c4a9e', '#5c2d6e']
-        ]
-      },
-      {
-        id: 'label-consulting',
-        colors: [
-          ['#1a4a2e', '#2d6b42', '#0d3820'],
-          ['#0d3820', '#1e5535', '#245438'],
-          ['#245438', '#3a7a50', '#1a4a2e']
-        ]
+    // Single animated gradient across entire homepage
+    new Granim({
+      element: '#home-gradient',
+      direction: 'diagonal',
+      isPausedWhenNotInView: true,
+      stateTransitionSpeed: 300,
+      states: {
+        'default-state': {
+          gradients: [
+            ['#834d9b', '#d04ed6'],
+            ['#1CD8D2', '#93EDC7'],
+            ['#ee9ca7', '#ffdde1'],
+            ['#2193b0', '#6dd5ed']
+          ],
+          transitionSpeed: 2000
+        }
       }
-    ];
-
-    textGradients.forEach(config => {
-      const el = document.getElementById(config.id);
-      if (!el) return;
-
-      let step = 0;
-      const colors = config.colors;
-
-      function animateGradient() {
-        const current = colors[step % colors.length];
-        const next = colors[(step + 1) % colors.length];
-        let progress = 0;
-
-        function lerp(a, b, t) {
-          return Math.round(a + (b - a) * t);
-        }
-
-        function lerpColor(c1, c2, t) {
-          const r1 = parseInt(c1.slice(1, 3), 16), g1 = parseInt(c1.slice(3, 5), 16), b1 = parseInt(c1.slice(5, 7), 16);
-          const r2 = parseInt(c2.slice(1, 3), 16), g2 = parseInt(c2.slice(3, 5), 16), b2 = parseInt(c2.slice(5, 7), 16);
-          const r = lerp(r1, r2, t), g = lerp(g1, g2, t), b = lerp(b1, b2, t);
-          return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-        }
-
-        function tick() {
-          progress += 0.02;
-          if (progress >= 1) {
-            step++;
-            animateGradient();
-            return;
-          }
-
-          const c0 = lerpColor(current[0], next[0], progress);
-          const c1 = lerpColor(current[1], next[1], progress);
-          const c2 = lerpColor(current[2], next[2], progress);
-          el.style.backgroundImage = 'linear-gradient(135deg, ' + c0 + ', ' + c1 + ', ' + c2 + ')';
-          requestAnimationFrame(tick);
-        }
-
-        tick();
-      }
-
-      animateGradient();
     });
   }
 
