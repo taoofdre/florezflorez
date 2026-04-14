@@ -332,11 +332,9 @@ a {
   max-width: 900px;
   overflow-y: auto;
   height: calc(100vh - 120px);
-  scroll-snap-type: y mandatory;
 }
 
 .art-piece {
-  scroll-snap-align: start;
   text-align: center;
 }
 
