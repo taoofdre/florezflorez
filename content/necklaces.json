@@ -43,6 +43,26 @@
         }
       ],
       "stock": 1
+    },
+    {
+      "id": "prod_UKv1AIJPziK0Wz",
+      "title": "Lily",
+      "description": "Carnelian and amethyst glass beads are the star, 950 silver brooch",
+      "for_sale": true,
+      "price_display": "180",
+      "stripe_price_id": "price_1TMFB6GZz3PbqlU6v3A0GRGR",
+      "stripe_product_id": "prod_UKv1AIJPziK0Wz",
+      "images": [
+        {
+          "src": "/uploads/lily-1776204682247-0.png",
+          "alt": "necklace being worn from front"
+        },
+        {
+          "src": "/uploads/lily-1776204685432-1.png",
+          "alt": "necklace being worn 3/4 view"
+        }
+      ],
+      "stock": 1
     }
   ]
 }
