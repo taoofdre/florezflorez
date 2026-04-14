@@ -1,7 +1,7 @@
 {
   "pieces": [
     {
-      "id": "001",
+      "id": "ring005",
       "title": "Desert Garnet Ring",
       "description": "Desert Garnet Ring",
       "for_sale": true,
@@ -12,6 +12,72 @@
         {
           "src": "/uploads/garnet-desert-ring01.png",
           "alt": "Desert Garnet Ring"
+        }
+      ]
+    },
+    {
+      "for_sale": true,
+      "stripe_product_id": "",
+      "id": "ring001",
+      "title": "Triangle (size 8.5)",
+      "description": "Statement, triangular ring, 27 grams, size 8.5 | 950 silver",
+      "price_display": "510",
+      "stock": 1,
+      "images": [
+        {
+          "src": "/uploads/amy-s-rings-01.png"
+        }
+      ]
+    },
+    {
+      "for_sale": true,
+      "stripe_product_id": "",
+      "id": "ring002",
+      "title": "Triangle (size 9.5)",
+      "description": "Statement, triangular ring, 28 grams, size 9.5 | 950 silver",
+      "price_display": "510",
+      "stock": 1,
+      "images": [
+        {
+          "src": "/uploads/amy-s-rings-01.png"
+        }
+      ]
+    },
+    {
+      "for_sale": true,
+      "stripe_product_id": "",
+      "id": "ring003",
+      "title": "Peak",
+      "description": "Organic false-stone ring, 17 grams, size 9 | 950 silver",
+      "price_display": "310",
+      "stock": 1,
+      "images": [
+        {
+          "src": "/uploads/anillo02-dsf8710.png",
+          "alt": "peak ring black background"
+        },
+        {
+          "src": "/uploads/thepeakring_01.png",
+          "alt": "peak ring close neutral background"
+        }
+      ]
+    },
+    {
+      "for_sale": true,
+      "stripe_product_id": "",
+      "id": "ring004",
+      "title": "Ovo with stone",
+      "description": "Rounded ring with garnet stone, 12 grams, size 8 | 950 silver",
+      "price_display": "320",
+      "stock": 0,
+      "images": [
+        {
+          "src": "/uploads/ovo-ring-02.png",
+          "alt": "ovo rings on a fork"
+        },
+        {
+          "src": "/uploads/ovo-ring-01.png",
+          "alt": "ovo ring next to a fork and orange"
         }
       ]
     }
