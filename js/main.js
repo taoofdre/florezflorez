@@ -67,6 +67,15 @@
     } else {
       cart.push({ ...item, quantity: 1 });
     }
+    if (typeof fbq === 'function') {
+      fbq('track', 'AddToCart', {
+        content_ids: [item.price_id],
+        content_name: item.title,
+        content_type: 'product',
+        value: parsePrice(item.price_display),
+        currency: 'USD'
+      });
+    }
     saveCart();
     openCart();
   }
@@ -193,6 +202,16 @@
 
   cartCheckoutBtn.addEventListener('click', async () => {
     if (cart.length === 0) return;
+    if (typeof fbq === 'function') {
+      const totalValue = cart.reduce((sum, item) => sum + parsePrice(item.price_display) * item.quantity, 0);
+      fbq('track', 'InitiateCheckout', {
+        content_ids: cart.map(item => item.price_id),
+        content_type: 'product',
+        num_items: cart.reduce((sum, item) => sum + item.quantity, 0),
+        value: totalValue,
+        currency: 'USD'
+      });
+    }
     cartCheckoutBtn.textContent = 'PROCESSING...';
     cartCheckoutBtn.disabled = true;
 
@@ -226,7 +245,13 @@
   if (params.get('checkout') === 'success') {
     const orderTotal = parseFloat(params.get('total') || '0');
     settingsPromise.then(() => {
-      if (typeof fbq === 'function') fbq('track', 'Purchase', { currency: 'USD', value: orderTotal });
+      if (typeof fbq === 'function') fbq('track', 'Purchase', {
+        content_ids: cart.map(item => item.price_id),
+        content_type: 'product',
+        num_items: cart.reduce((sum, item) => sum + item.quantity, 0),
+        value: orderTotal,
+        currency: 'USD'
+      });
     });
     cart = [];
     saveCart();
@@ -581,7 +606,20 @@
 
   // ---- Render: Product page ----
 
+  function parsePrice(display) { return parseFloat((display || '').replace(/[^0-9.]/g, '')) || 0; }
+
   function renderProductView(sectionId, piece, categorySlug) {
+    if (typeof fbq === 'function') {
+      fbq('track', 'ViewContent', {
+        content_ids: [piece.id],
+        content_name: piece.title,
+        content_type: 'product',
+        content_category: categorySlug,
+        value: parsePrice(piece.price_display),
+        currency: 'USD'
+      });
+    }
+
     const section = document.getElementById(sectionId);
     const artLayout = section.querySelector('.art-layout');
 
