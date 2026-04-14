@@ -519,6 +519,7 @@
 
     // Remove product view if present
     section.classList.remove('product-view');
+    document.body.classList.remove('product-open');
     const existingProduct = section.querySelector('.product-page');
     if (existingProduct) existingProduct.remove();
 
@@ -598,6 +599,7 @@
     if (productPage) productPage.remove();
 
     section.classList.add('product-view');
+    document.body.classList.add('product-open');
 
     // Build product page
     productPage = document.createElement('div');
@@ -734,6 +736,7 @@
     sections.forEach(s => s.classList.remove('active'));
     headerLinks.forEach(l => l.classList.remove('active'));
     document.body.classList.remove('scroll-down');
+    document.body.classList.remove('product-open');
     activeSection = null;
 
     if (activeObserver) {

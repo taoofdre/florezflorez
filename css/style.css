@@ -1199,6 +1199,15 @@ a {
   }
 
   /* ---- Mobile product page ---- */
+  body:has(.product-view),
+  body.product-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+  }
+
   .section.active.product-view {
     height: 100vh;
     height: 100dvh;
