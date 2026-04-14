@@ -1203,12 +1203,13 @@ a {
     height: 100vh;
     height: 100dvh;
     overflow: hidden;
+    padding-top: 0;
   }
 
   .product-page {
     flex-direction: column;
-    height: calc(100vh - 60px);
-    height: calc(100dvh - 60px);
+    height: 100vh;
+    height: 100dvh;
     overflow: hidden;
   }
 
@@ -1217,6 +1218,7 @@ a {
     width: 100%;
     height: auto;
     padding: 0.75rem 1.5rem;
+    padding-top: calc(60px + 0.75rem);
     border-right: none;
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
     background: #fff;
