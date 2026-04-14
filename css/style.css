@@ -1230,11 +1230,11 @@ a {
   .product-media {
     flex-direction: column;
     align-items: stretch;
-    padding: 0.5rem 1.5rem 1.5rem;
+    padding: 0 1.5rem 1.5rem;
   }
 
   .product-media .carousel {
-    height: 350px;
+    height: 45vh;
     max-height: none;
   }
 
@@ -1244,8 +1244,8 @@ a {
     font-weight: 600;
     color: #333;
     letter-spacing: 0.05em;
-    margin-top: 1rem;
-    margin-bottom: 0.5rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0.75rem;
   }
 
   .product-description-mobile {

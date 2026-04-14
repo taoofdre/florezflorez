@@ -646,12 +646,13 @@
       media.appendChild(buildCarousel(piece.images));
     }
 
-    // Mobile title + description (below carousel, hidden on desktop)
+    // Mobile title (above carousel, hidden on desktop)
     const mobileTitle = document.createElement('h2');
     mobileTitle.className = 'product-title-mobile';
     text(mobileTitle, piece.title);
-    media.appendChild(mobileTitle);
+    media.insertBefore(mobileTitle, media.firstChild);
 
+    // Mobile description (below carousel, hidden on desktop)
     const mobileDesc = document.createElement('p');
     mobileDesc.className = 'product-description-mobile';
     text(mobileDesc, piece.description);
