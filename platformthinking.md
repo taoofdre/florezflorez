@@ -231,6 +231,60 @@ All four ad platforms offer APIs for programmatic campaign creation. However, bu
 
 ---
 
+## Affiliate Program
+
+### How It Works
+
+Merchants create affiliate links (e.g., `mystore.com?ref=creator123`) and set a revenue share percentage per creator. Creators share the link, and when a purchase happens, the affiliate's cut is paid out automatically via Stripe.
+
+**Flow:**
+1. Merchant creates an affiliate link in the CMS admin — generates a unique `ref` code, sets commission rate
+2. Creator connects their Stripe account via Stripe Connect Express (lightweight onboarding, Stripe handles tax forms)
+3. Customer clicks the affiliate link — the `ref` param is stored in a cookie or localStorage
+4. At checkout, the `ref` value is passed as metadata on the Stripe session
+5. After successful purchase, Stripe transfers the affiliate's cut to their connected account
+
+### No-Database Approach (Recommended for v1)
+
+Affiliate metadata (ref codes, creator names, commission rates) lives in JSON in the merchant's repo — same git-based pattern as product content. Conversion tracking leans entirely on Stripe:
+
+- Every checkout session includes the `ref` code in its metadata
+- The admin dashboard queries Stripe's API for sessions with affiliate metadata
+- Shows: conversions, revenue, and payout amount per affiliate
+- Payouts happen via Stripe transfers API after successful charges
+
+**What this gives you:** Link generation, automatic payouts, conversion tracking, per-affiliate revenue dashboards — all without a database.
+
+**What you lose:** Click-through rates. Without a database to log click events, you only see conversions, not clicks. For most small merchants this is fine — they care about "how much revenue did this creator drive?" not click-through rates. If click tracking becomes important later, a minimal Supabase table (one row per click) would add it cheaply.
+
+### Stripe Implementation
+
+Creators onboard as Stripe Connect Express accounts (same pattern as merchant onboarding). After a referred purchase:
+
+```javascript
+await stripe.transfers.create({
+  amount: Math.round(orderTotal * affiliatePercent),
+  currency: 'usd',
+  destination: affiliateStripeAccountId,
+}, {
+  stripeAccount: merchantStripeAccountId
+});
+```
+
+### Tax Reporting (1099s)
+
+Stripe handles all 1099 issuance and IRS filing for Connect accounts. The platform does not issue any 1099s itself.
+
+- **Store owners:** Stripe issues 1099-K forms for sales revenue to any merchant exceeding IRS thresholds ($600/year)
+- **Affiliate creators:** Stripe tracks transfers made via `stripe.transfers.create()` and includes them in 1099 reporting automatically
+- **Requirement:** Use Express or Standard Connect account types (not Custom). Custom accounts shift the tax reporting burden to the platform. Express is the right choice for both merchants and affiliates — lightest onboarding, Stripe collects W-9/tax info, Stripe handles all compliance.
+
+### Why This Is a Differentiator
+
+Shopify merchants need third-party affiliate apps ($30-49/month). Offering built-in affiliate tracking with automatic tax reporting at $5/month total is a strong selling point for the creator-economy merchants this platform targets.
+
+---
+
 ## Build Order
 
 1. **Generalize the template** — remove hardcoded repo names, domains, credentials. Everything merchant-specific becomes an env var.
