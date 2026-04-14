@@ -1234,7 +1234,7 @@ a {
   }
 
   .product-media .carousel {
-    height: 45vh;
+    height: 350px;
     max-height: none;
   }
 
@@ -1244,8 +1244,8 @@ a {
     font-weight: 600;
     color: #333;
     letter-spacing: 0.05em;
-    margin-top: 0.75rem;
-    margin-bottom: 0.75rem;
+    margin-top: 0.25rem;
+    margin-bottom: 0.5rem;
   }
 
   .product-description-mobile {
