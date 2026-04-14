@@ -521,8 +521,6 @@
     section.classList.remove('product-view');
     const existingProduct = section.querySelector('.product-page');
     if (existingProduct) existingProduct.remove();
-    const existingBar = section.querySelector('.product-bottom-bar');
-    if (existingBar) existingBar.remove();
 
     artLayout.style.display = '';
     sidebar.innerHTML = '';
@@ -598,8 +596,6 @@
     // Remove existing product view
     let productPage = section.querySelector('.product-page');
     if (productPage) productPage.remove();
-    let bottomBar = section.querySelector('.product-bottom-bar');
-    if (bottomBar) bottomBar.remove();
 
     section.classList.add('product-view');
 
@@ -674,7 +670,7 @@
 
     // Only add bottom bar if it has content
     if (bottomBar.children.length > 0) {
-      section.appendChild(bottomBar);
+      productPage.appendChild(bottomBar);
     }
   }
 
