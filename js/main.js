@@ -607,6 +607,8 @@
   function formatPrice(display) { const v = (display || '').replace(/[^0-9.]/g, ''); return v ? '$' + v : ''; }
 
   function renderProductView(sectionId, piece, categorySlug) {
+    window.scrollTo(0, 0);
+
     if (typeof fbq === 'function') {
       fbq('track', 'ViewContent', {
         content_ids: [piece.id],
