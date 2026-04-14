@@ -27,7 +27,7 @@
     {
       "id": "prod_UKui8UhSX35Qq9",
       "title": "Chameleon",
-      "description": "A necklace that you can wear three different ways, glass beads, natural pearls, 950 silver brooch",
+      "description": "A necklace that you can wear in many ways, glass beads, natural pearls, 950 silver brooch",
       "for_sale": true,
       "price_display": "100",
       "stripe_price_id": "price_1TMEsdGZz3PbqlU6v7PNfSLg",
@@ -35,6 +35,10 @@
       "images": [
         {
           "src": "/uploads/chameleon-1776203539092-0.png",
+          "alt": ""
+        },
+        {
+          "src": "/uploads/chameleon-1776204147583-1.png",
           "alt": ""
         }
       ],
