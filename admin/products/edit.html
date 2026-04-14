@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Product — Florez Florez</title>
+  <link rel="stylesheet" href="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.css">
+  <style>
+    @font-face {
+      font-family: 'IBM Plex Mono';
+      src: url('/fonts/IBMPlexMono-SemiBold.ttf') format('truetype');
+      font-weight: 600;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'IBM Plex Mono';
+      src: url('/fonts/IBMPlexMono-Regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'IBM Plex Mono', monospace;
+      background: #fff;
+      color: #333;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #fff;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .toolbar h1 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(0,0,0,0.35);
+      margin-right: auto;
+    }
+
+    .toolbar a {
+      color: rgba(0,0,0,0.35);
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .toolbar a:hover { color: #333; }
+
+    .btn {
+      padding: 0.5rem 1.5rem;
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #fff;
+      background: #333;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: #555; }
+    .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .btn-danger {
+      color: #c44;
+      background: transparent;
+      border: 1px solid #c44;
+    }
+    .btn-danger:hover { background: #c44; color: #fff; }
+
+    .status {
+      font-size: 0.8rem;
+      color: rgba(0,0,0,0.4);
+      min-height: 1.2em;
+    }
+    .status.error { color: #c44; }
+    .status.success { color: #3a3; }
+
+    /* Auth overlay */
+    .auth-overlay {
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+    }
+    .auth-overlay h2 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(0,0,0,0.35);
+    }
+    .auth-overlay button {
+      padding: 0.75rem 2.5rem;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #fff;
+      background: #333;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .auth-overlay button:hover { background: #555; }
+
+    /* Form layout */
+    .editor-page {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 3rem 2rem 6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .editor-section {
+      border-top: 1px solid rgba(0,0,0,0.1);
+      padding: 2.5rem 0;
+    }
+
+    .editor-section h2 {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(0,0,0,0.35);
+      margin-bottom: 1.75rem;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-bottom: 1.25rem;
+    }
+    .field-group:last-child { margin-bottom: 0; }
+
+    .field-group label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(0,0,0,0.5);
+    }
+
+    .field-desc {
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: rgba(0,0,0,0.4);
+      line-height: 1.5;
+    }
+
+    .text-input {
+      background: transparent;
+      border: 1px solid rgba(0,0,0,0.15);
+      color: #333;
+      padding: 0.5rem 0.75rem;
+      font-family: inherit;
+      font-size: 0.85rem;
+      width: 100%;
+      margin-top: 0.25rem;
+    }
+    .text-input:focus { outline: none; border-color: rgba(0,0,0,0.4); }
+    .text-input::placeholder { color: rgba(0,0,0,0.25); }
+
+    textarea.text-input { resize: vertical; min-height: 80px; }
+
+    select.text-input { cursor: pointer; }
+
+    /* Toggle */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 0.25rem;
+    }
+    .toggle-row .toggle-track {
+      width: 32px;
+      height: 18px;
+      border-radius: 9px;
+      background: rgba(0,0,0,0.15);
+      position: relative;
+      transition: background 0.2s;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .toggle-row input { display: none; }
+    .toggle-row input:checked + .toggle-track { background: #333; }
+    .toggle-row .toggle-track::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.2s;
+    }
+    .toggle-row input:checked + .toggle-track::after { transform: translateX(14px); }
+    .toggle-row .toggle-label {
+      font-size: 0.82rem;
+      color: #333;
+    }
+
+    /* Image manager */
+    .image-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .image-card {
+      position: relative;
+      width: 120px;
+      cursor: grab;
+    }
+    .image-card.dragging { opacity: 0.4; }
+    .image-card.drag-over { outline: 2px solid #333; outline-offset: 2px; }
+
+    .image-card img {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      display: block;
+      background: #f2f2f2;
+    }
+
+    .image-card .image-alt {
+      width: 100%;
+      font-family: inherit;
+      font-size: 0.68rem;
+      border: 1px solid rgba(0,0,0,0.1);
+      border-top: none;
+      padding: 0.3rem 0.4rem;
+      color: #333;
+      background: transparent;
+    }
+    .image-card .image-alt:focus { outline: none; border-color: rgba(0,0,0,0.3); }
+    .image-card .image-alt::placeholder { color: rgba(0,0,0,0.25); }
+
+    .image-remove {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      line-height: 20px;
+      text-align: center;
+      transition: background 0.2s;
+    }
+    .image-remove:hover { background: #c44; }
+
+    .image-new-badge {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: #333;
+      color: #fff;
+      padding: 0.1rem 0.4rem;
+    }
+
+    .add-image-label {
+      display: inline-block;
+      padding: 0.5rem 1.5rem;
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #333;
+      background: transparent;
+      border: 1px solid rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .add-image-label:hover { border-color: rgba(0,0,0,0.4); }
+    .add-image-label input { display: none; }
+
+    /* Crop modal */
+    .crop-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: rgba(255,255,255,0.97);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .crop-modal.open { display: flex; }
+
+    .crop-modal-inner {
+      max-width: 600px;
+      width: 100%;
+    }
+
+    .crop-modal-inner img {
+      display: block;
+      max-width: 100%;
+    }
+
+    .crop-modal-bar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .crop-modal-bar .field-group {
+      margin-bottom: 0;
+      flex: 1;
+      min-width: 150px;
+    }
+
+    /* Stripe info */
+    .stripe-ids {
+      font-size: 0.72rem;
+      color: rgba(0,0,0,0.3);
+      line-height: 1.6;
+      word-break: break-all;
+    }
+
+    .loading {
+      padding: 4rem 0;
+      text-align: center;
+      font-size: 0.8rem;
+      color: rgba(0,0,0,0.3);
+      letter-spacing: 0.1em;
+    }
+
+    /* Cropper overrides */
+    .cropper-modal { background: rgba(0,0,0,0.5); }
+    .cropper-view-box { outline: 1px solid rgba(0,0,0,0.6); }
+    .cropper-line { background-color: rgba(0,0,0,0.3); }
+    .cropper-point { background-color: #333; }
+    .cropper-dashed { border-color: rgba(0,0,0,0.3); }
+  </style>
+</head>
+<body>
+
+  <div id="auth-overlay" class="auth-overlay" style="display:none;">
+    <h2>Sign in to use this tool</h2>
+    <button id="auth-btn">Sign in with GitHub</button>
+  </div>
+
+  <div class="toolbar">
+    <h1 id="page-title">Edit Product</h1>
+    <a href="/admin/products/">Back to Products</a>
+    <button class="btn" id="save-btn" disabled>Save</button>
+    <button class="btn btn-danger" id="delete-btn" style="display:none;">Delete</button>
+    <span class="status" id="status"></span>
+  </div>
+
+  <div class="editor-page" id="editor" style="display:none;">
+
+    <!-- Details -->
+    <div class="editor-section">
+      <h2>Details</h2>
+      <div class="field-group" id="cat-field">
+        <label for="field-cat">Category</label>
+        <select id="field-cat" class="text-input">
+          <option value="necklaces">Necklaces</option>
+          <option value="rings">Rings</option>
+          <option value="art">Art</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label for="field-title">Title</label>
+        <input type="text" id="field-title" class="text-input" placeholder="Product title">
+      </div>
+      <div class="field-group">
+        <label for="field-desc">Description</label>
+        <textarea id="field-desc" class="text-input" placeholder="Product description"></textarea>
+      </div>
+      <div class="field-group">
+        <label for="field-price">Price</label>
+        <p class="field-desc">Enter the number only (e.g. 120). The $ is added automatically on the site.</p>
+        <input type="number" id="field-price" class="text-input" placeholder="e.g. 120" min="0" step="0.01">
+      </div>
+      <div class="field-group">
+        <label>For Sale</label>
+        <label class="toggle-row">
+          <input type="checkbox" id="field-forsale">
+          <div class="toggle-track"></div>
+          <span class="toggle-label" id="forsale-label">Hidden</span>
+        </label>
+      </div>
+      <div class="field-group">
+        <label for="field-stock">Stock</label>
+        <p class="field-desc">Leave blank for unlimited / made-to-order. Set to 0 for Sold Out.</p>
+        <input type="number" id="field-stock" class="text-input" placeholder="Unlimited" min="0" step="1">
+      </div>
+    </div>
+
+    <!-- Images -->
+    <div class="editor-section">
+      <h2>Images</h2>
+      <div class="image-list" id="image-list"></div>
+      <label class="add-image-label">
+        Add Image
+        <input type="file" id="image-input" accept="image/*">
+      </label>
+    </div>
+
+    <!-- Stripe -->
+    <div class="editor-section" id="stripe-section" style="display:none;">
+      <h2>Stripe</h2>
+      <div class="stripe-ids" id="stripe-ids"></div>
+    </div>
+
+  </div>
+
+  <!-- Crop Modal -->
+  <div class="crop-modal" id="crop-modal">
+    <div class="crop-modal-inner">
+      <img id="crop-image" src="" alt="Crop">
+    </div>
+    <div class="crop-modal-bar">
+      <div class="field-group">
+        <label for="crop-alt">Alt Text</label>
+        <input type="text" id="crop-alt" class="text-input" placeholder="Describe this image">
+      </div>
+      <button class="btn" id="crop-confirm">Add Image</button>
+      <button class="btn btn-danger" id="crop-cancel" style="border-color:rgba(0,0,0,0.2);color:#333;">Cancel</button>
+    </div>
+  </div>
+
+  <div class="loading" id="loading">Loading...</div>
+
+  <script src="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.js"></script>
+  <script>
+    (() => {
+      const REPO = 'taoofdre/florezflorez';
+      const OUTPUT_SIZE = 1000;
+      const SECTIONS = {
+        necklaces: 'content/necklaces.json',
+        rings: 'content/rings.json',
+        art: 'content/art.json',
+      };
+      const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+      // URL params
+      const params = new URLSearchParams(location.search);
+      const paramCat = params.get('cat');
+      const paramId = params.get('id');
+      const isNew = !paramId;
+
+      // DOM refs
+      const authOverlay = document.getElementById('auth-overlay');
+      const authBtn = document.getElementById('auth-btn');
+      const pageTitle = document.getElementById('page-title');
+      const saveBtn = document.getElementById('save-btn');
+      const deleteBtn = document.getElementById('delete-btn');
+      const statusEl = document.getElementById('status');
+      const editor = document.getElementById('editor');
+      const loadingEl = document.getElementById('loading');
+      const catField = document.getElementById('field-cat');
+      const catFieldGroup = document.getElementById('cat-field');
+      const titleField = document.getElementById('field-title');
+      const descField = document.getElementById('field-desc');
+      const priceField = document.getElementById('field-price');
+      const forSaleField = document.getElementById('field-forsale');
+      const forSaleLabel = document.getElementById('forsale-label');
+      const stockField = document.getElementById('field-stock');
+      const imageListEl = document.getElementById('image-list');
+      const imageInput = document.getElementById('image-input');
+      const stripeSection = document.getElementById('stripe-section');
+      const stripeIds = document.getElementById('stripe-ids');
+      const cropModal = document.getElementById('crop-modal');
+      const cropImageEl = document.getElementById('crop-image');
+      const cropAlt = document.getElementById('crop-alt');
+      const cropConfirm = document.getElementById('crop-confirm');
+      const cropCancel = document.getElementById('crop-cancel');
+
+      let ghToken = null;
+      let fileCache = {};
+      let images = []; // { src, alt, isNew, blob? }
+      let cropper = null;
+      let originalPiece = null;
+
+      function setStatus(msg, type) {
+        statusEl.textContent = msg;
+        statusEl.className = 'status' + (type ? ' ' + type : '');
+      }
+
+      // ---- Auth ----
+
+      function getStoredToken() {
+        return sessionStorage.getItem('gh_token') || localStorage.getItem('gh_token');
+      }
+      function storeToken(t) { sessionStorage.setItem('gh_token', t); }
+
+      function initAuth() {
+        if (isLocal) { loadProduct(); return; }
+        const stored = getStoredToken();
+        if (stored) { ghToken = stored; loadProduct(); return; }
+        authOverlay.style.display = '';
+        loadingEl.style.display = 'none';
+        authBtn.addEventListener('click', () => {
+          const popup = window.open('/api/auth', 'github-auth', 'width=600,height=700');
+          window.addEventListener('message', function onMsg(e) {
+            if (typeof e.data !== 'string') return;
+            if (e.data.startsWith('authorization:github:success:')) {
+              const payload = JSON.parse(e.data.replace('authorization:github:success:', ''));
+              ghToken = payload.token;
+              storeToken(ghToken);
+              authOverlay.style.display = 'none';
+              window.removeEventListener('message', onMsg);
+              if (popup) popup.close();
+              loadProduct();
+            }
+          });
+          const interval = setInterval(() => {
+            if (popup && !popup.closed) popup.postMessage('authorizing:github', '*');
+            else clearInterval(interval);
+          }, 250);
+        });
+      }
+
+      // ---- GitHub file I/O ----
+
+      async function loadFile(file) {
+        if (ghToken) {
+          const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${file}`, {
+            headers: { Authorization: 'token ' + ghToken },
+          });
+          if (!res.ok) throw new Error('Failed to load ' + file);
+          const f = await res.json();
+          const content = JSON.parse(atob(f.content.replace(/\n/g, '')));
+          fileCache[file] = { content, sha: f.sha };
+          return fileCache[file];
+        } else {
+          const res = await fetch('/' + file + '?t=' + Date.now());
+          if (!res.ok) throw new Error('Failed to load ' + file);
+          const content = await res.json();
+          fileCache[file] = { content, sha: null };
+          return fileCache[file];
+        }
+      }
+
+      async function saveFile(file, content, message) {
+        if (!ghToken) throw new Error('Sign in required');
+        // Always reload for fresh SHA
+        await loadFile(file);
+        const cached = fileCache[file];
+        const json = JSON.stringify(content, null, 2) + '\n';
+        const encoded = btoa(unescape(encodeURIComponent(json)));
+        const body = { message: message || 'Update product', content: encoded, branch: 'main' };
+        if (cached.sha) body.sha = cached.sha;
+        const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${file}`, {
+          method: 'PUT',
+          headers: { Authorization: 'token ' + ghToken, 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          throw new Error(d.message || 'Save failed');
+        }
+        const result = await res.json();
+        fileCache[file].sha = result.content.sha;
+        fileCache[file].content = content;
+      }
+
+      // ---- Stripe sync ----
+
+      async function callStripeSync(action, product) {
+        const res = await fetch('/api/stripe-sync', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(ghToken ? { Authorization: 'Bearer ' + ghToken } : {}),
+          },
+          body: JSON.stringify({ action, product }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Stripe sync failed');
+        return data;
+      }
+
+      // ---- Image upload ----
+
+      async function uploadImage(blob, filename) {
+        const buffer = await blob.arrayBuffer();
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+        const base64 = btoa(binary);
+
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(ghToken ? { Authorization: 'Bearer ' + ghToken } : {}),
+          },
+          body: JSON.stringify({ filename, content: base64 }),
+        });
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          throw new Error(d.error || 'Upload failed');
+        }
+        return await res.json();
+      }
+
+      // ---- Load product ----
+
+      async function loadProduct() {
+        try {
+          if (isNew) {
+            pageTitle.textContent = 'New Product';
+            if (paramCat && SECTIONS[paramCat]) catField.value = paramCat;
+            loadingEl.style.display = 'none';
+            editor.style.display = '';
+            saveBtn.disabled = false;
+            forSaleField.addEventListener('change', () => {
+              forSaleLabel.textContent = forSaleField.checked ? 'For Sale' : 'Hidden';
+            });
+            return;
+          }
+
+          // Editing existing
+          if (!paramCat || !SECTIONS[paramCat]) throw new Error('Invalid category');
+          const { content } = await loadFile(SECTIONS[paramCat]);
+          const piece = (content.pieces || []).find(p => p.id === paramId);
+          if (!piece) throw new Error('Product not found');
+
+          originalPiece = piece;
+          pageTitle.textContent = 'Edit Product';
+
+          // Hide category selector for existing products
+          catFieldGroup.style.display = 'none';
+          catField.value = paramCat;
+
+          // Populate fields
+          titleField.value = piece.title || '';
+          descField.value = piece.description || '';
+          priceField.value = (piece.price_display || '').replace(/[^0-9.]/g, '') || '';
+          forSaleField.checked = !!piece.for_sale;
+          forSaleLabel.textContent = piece.for_sale ? 'For Sale' : 'Hidden';
+          if (typeof piece.stock === 'number') stockField.value = piece.stock;
+
+          // Images
+          images = (piece.images || []).map(img => ({ src: img.src, alt: img.alt || '', isNew: false }));
+          renderImages();
+
+          // Stripe IDs
+          if (piece.stripe_product_id || piece.stripe_price_id) {
+            stripeSection.style.display = '';
+            const parts = [];
+            if (piece.stripe_product_id) parts.push('Product: ' + piece.stripe_product_id);
+            if (piece.stripe_price_id) parts.push('Price: ' + piece.stripe_price_id);
+            stripeIds.textContent = parts.join('\n');
+          }
+
+          // Show delete button
+          deleteBtn.style.display = '';
+
+          loadingEl.style.display = 'none';
+          editor.style.display = '';
+          saveBtn.disabled = false;
+
+          forSaleField.addEventListener('change', () => {
+            forSaleLabel.textContent = forSaleField.checked ? 'For Sale' : 'Hidden';
+          });
+
+        } catch (e) {
+          loadingEl.textContent = 'Error: ' + e.message;
+        }
+      }
+
+      // ---- Image rendering ----
+
+      let dragIdx = null;
+
+      function renderImages() {
+        imageListEl.innerHTML = '';
+        images.forEach((img, i) => {
+          const card = document.createElement('div');
+          card.className = 'image-card';
+          card.draggable = true;
+          card.dataset.idx = i;
+
+          card.addEventListener('dragstart', (e) => {
+            dragIdx = i;
+            card.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+          });
+          card.addEventListener('dragend', () => {
+            card.classList.remove('dragging');
+            dragIdx = null;
+            document.querySelectorAll('.image-card').forEach(c => c.classList.remove('drag-over'));
+          });
+          card.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            card.classList.add('drag-over');
+          });
+          card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+          card.addEventListener('drop', (e) => {
+            e.preventDefault();
+            card.classList.remove('drag-over');
+            if (dragIdx === null || dragIdx === i) return;
+            const moved = images.splice(dragIdx, 1)[0];
+            images.splice(i, 0, moved);
+            renderImages();
+          });
+
+          const imgEl = document.createElement('img');
+          imgEl.src = img.isNew ? img.previewUrl : img.src;
+          imgEl.alt = img.alt;
+          card.appendChild(imgEl);
+
+          if (img.isNew) {
+            const badge = document.createElement('span');
+            badge.className = 'image-new-badge';
+            badge.textContent = 'New';
+            card.appendChild(badge);
+          }
+
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'image-remove';
+          removeBtn.textContent = '\u00d7';
+          removeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (img.previewUrl) URL.revokeObjectURL(img.previewUrl);
+            images.splice(i, 1);
+            renderImages();
+          });
+          card.appendChild(removeBtn);
+
+          const altInput = document.createElement('input');
+          altInput.className = 'image-alt';
+          altInput.type = 'text';
+          altInput.placeholder = 'Alt text';
+          altInput.value = img.alt;
+          altInput.addEventListener('input', () => { images[i].alt = altInput.value; });
+          card.appendChild(altInput);
+
+          imageListEl.appendChild(card);
+        });
+      }
+
+      // ---- Crop modal ----
+
+      imageInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        imageInput.value = '';
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          // Check source dimensions
+          const testImg = new Image();
+          testImg.onload = () => {
+            if (testImg.naturalWidth < OUTPUT_SIZE || testImg.naturalHeight < OUTPUT_SIZE) {
+              alert('Image must be at least ' + OUTPUT_SIZE + 'x' + OUTPUT_SIZE + ' pixels. This image is ' + testImg.naturalWidth + 'x' + testImg.naturalHeight + '.');
+              return;
+            }
+            openCropModal(ev.target.result);
+          };
+          testImg.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      function openCropModal(src) {
+        cropModal.classList.add('open');
+        cropAlt.value = '';
+        cropImageEl.src = src;
+
+        if (cropper) cropper.destroy();
+
+        let ready = false;
+        let minCropW = 0, minCropH = 0;
+
+        cropper = new Cropper(cropImageEl, {
+          viewMode: 1,
+          dragMode: 'move',
+          aspectRatio: 1,
+          autoCropArea: 1,
+          restore: false,
+          guides: true,
+          center: true,
+          highlight: false,
+          cropBoxMovable: true,
+          cropBoxResizable: true,
+          toggleDragModeOnDblclick: false,
+          minCropBoxWidth: 0,
+          minCropBoxHeight: 0,
+          ready() {
+            if (!ready) {
+              ready = true;
+              const c = this.cropper;
+              const imageData = c.getImageData();
+              const ratio = imageData.width / imageData.naturalWidth;
+              const minPx = Math.ceil(OUTPUT_SIZE * ratio);
+              minCropW = minPx;
+              minCropH = minPx;
+              c.destroy();
+              cropper = new Cropper(cropImageEl, {
+                viewMode: 1,
+                dragMode: 'move',
+                aspectRatio: 1,
+                autoCropArea: 1,
+                restore: false,
+                guides: true,
+                center: true,
+                highlight: false,
+                cropBoxMovable: true,
+                cropBoxResizable: true,
+                toggleDragModeOnDblclick: false,
+                minCropBoxWidth: minCropW,
+                minCropBoxHeight: minCropH,
+              });
+            }
+          },
+        });
+      }
+
+      function closeCropModal() {
+        cropModal.classList.remove('open');
+        if (cropper) { cropper.destroy(); cropper = null; }
+      }
+
+      cropCancel.addEventListener('click', closeCropModal);
+
+      cropConfirm.addEventListener('click', () => {
+        if (!cropper) return;
+        const canvas = cropper.getCroppedCanvas({
+          width: OUTPUT_SIZE,
+          height: OUTPUT_SIZE,
+          imageSmoothingEnabled: true,
+          imageSmoothingQuality: 'high',
+        });
+        if (!canvas) return;
+
+        canvas.toBlob((blob) => {
+          const previewUrl = URL.createObjectURL(blob);
+          images.push({
+            src: '',
+            alt: cropAlt.value.trim(),
+            isNew: true,
+            blob,
+            previewUrl,
+          });
+          renderImages();
+          closeCropModal();
+        }, 'image/png');
+      });
+
+      // ---- Save ----
+
+      saveBtn.addEventListener('click', async () => {
+        const title = titleField.value.trim();
+        if (!title) { setStatus('Title is required', 'error'); return; }
+
+        const forSale = forSaleField.checked;
+        const price = priceField.value.trim();
+        if (forSale && !price) { setStatus('Price is required for items marked for sale', 'error'); return; }
+
+        saveBtn.disabled = true;
+        setStatus('Saving...');
+
+        try {
+          const cat = catField.value;
+          const file = SECTIONS[cat];
+
+          // Step 1: Upload new images
+          for (let i = 0; i < images.length; i++) {
+            const img = images[i];
+            if (!img.isNew) continue;
+            setStatus('Uploading image ' + (i + 1) + '...');
+            const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            const filename = slug + '-' + Date.now() + '-' + i + '.png';
+            const result = await uploadImage(img.blob, filename);
+            img.src = result.path;
+            img.isNew = false;
+            if (img.previewUrl) { URL.revokeObjectURL(img.previewUrl); delete img.previewUrl; }
+            delete img.blob;
+          }
+
+          // Step 2: Stripe sync (if for sale and has price)
+          let stripeProductId = originalPiece ? originalPiece.stripe_product_id : null;
+          let stripePriceId = originalPiece ? originalPiece.stripe_price_id : null;
+
+          if (forSale && price) {
+            setStatus('Syncing with Stripe...');
+            const imagePath = images.length > 0 ? images[0].src : null;
+            const hasProduct = !!stripeProductId;
+            const hasPriceOnly = !stripeProductId && !!stripePriceId;
+            const action = (hasProduct || hasPriceOnly) ? 'update' : 'create';
+
+            const result = await callStripeSync(action, {
+              title,
+              description: descField.value.trim(),
+              price_display: price,
+              image_path: imagePath,
+              stripe_price_id: stripePriceId || null,
+              stripe_product_id: stripeProductId || null,
+            });
+
+            stripeProductId = result.stripe_product_id;
+            stripePriceId = result.stripe_price_id;
+          }
+
+          // Step 3: Build piece and save JSON
+          setStatus('Saving to GitHub...');
+          const { content } = await loadFile(file); // Fresh load for SHA
+
+          const piece = {
+            id: isNew ? (stripeProductId || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')) : paramId,
+            title,
+            description: descField.value.trim(),
+            for_sale: forSale,
+            price_display: price,
+            stripe_price_id: stripePriceId || '',
+            stripe_product_id: stripeProductId || '',
+            images: images.map(img => ({ src: img.src, alt: img.alt })),
+          };
+
+          const stockVal = stockField.value.trim();
+          if (stockVal !== '') piece.stock = parseInt(stockVal, 10);
+
+          if (isNew) {
+            content.pieces.push(piece);
+          } else {
+            const idx = content.pieces.findIndex(p => p.id === paramId);
+            if (idx === -1) throw new Error('Product not found in file');
+            content.pieces[idx] = piece;
+          }
+
+          await saveFile(file, content, (isNew ? 'Add' : 'Update') + ' product: ' + title);
+
+          setStatus('Saved — site will update on next deploy', 'success');
+
+          // If new, redirect to edit page with the new ID
+          if (isNew) {
+            setTimeout(() => {
+              location.href = '/admin/products/edit.html?cat=' + cat + '&id=' + encodeURIComponent(piece.id);
+            }, 800);
+          } else {
+            originalPiece = piece;
+            saveBtn.disabled = false;
+            // Update stripe IDs display
+            if (stripeProductId || stripePriceId) {
+              stripeSection.style.display = '';
+              const parts = [];
+              if (stripeProductId) parts.push('Product: ' + stripeProductId);
+              if (stripePriceId) parts.push('Price: ' + stripePriceId);
+              stripeIds.textContent = parts.join('\n');
+            }
+          }
+
+        } catch (e) {
+          setStatus('Error: ' + e.message, 'error');
+          saveBtn.disabled = false;
+        }
+      });
+
+      // ---- Delete ----
+
+      deleteBtn.addEventListener('click', async () => {
+        if (!confirm('Delete this product? This cannot be undone.')) return;
+
+        deleteBtn.disabled = true;
+        setStatus('Deleting...');
+
+        try {
+          const file = SECTIONS[paramCat];
+          const { content } = await loadFile(file);
+          const idx = content.pieces.findIndex(p => p.id === paramId);
+          if (idx === -1) throw new Error('Product not found');
+          content.pieces.splice(idx, 1);
+          await saveFile(file, content, 'Delete product: ' + (originalPiece ? originalPiece.title : paramId));
+
+          setStatus('Deleted — redirecting...', 'success');
+          setTimeout(() => { location.href = '/admin/products/'; }, 800);
+        } catch (e) {
+          setStatus('Error: ' + e.message, 'error');
+          deleteBtn.disabled = false;
+        }
+      });
+
+      initAuth();
+    })();
+  </script>
+</body>
+</html>
