@@ -320,14 +320,15 @@
       background: rgba(255,255,255,0.97);
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       padding: 2rem;
+      overflow-y: auto;
     }
     .crop-modal.open { display: flex; }
 
     .crop-modal-inner {
       max-width: 600px;
       width: 100%;
+      flex-shrink: 0;
     }
 
     .crop-modal-inner img {
@@ -340,13 +341,14 @@
       align-items: center;
       gap: 1rem;
       margin-top: 1.5rem;
-      flex-wrap: wrap;
+      flex-shrink: 0;
+      max-width: 600px;
+      width: 100%;
     }
 
-    .crop-modal-bar .field-group {
-      margin-bottom: 0;
-      flex: 1;
-      min-width: 150px;
+    .crop-modal-bar .text-input {
+      width: 200px;
+      margin-top: 0;
     }
 
     /* Stripe info */
@@ -453,10 +455,7 @@
       <img id="crop-image" src="" alt="Crop">
     </div>
     <div class="crop-modal-bar">
-      <div class="field-group">
-        <label for="crop-alt">Alt Text</label>
-        <input type="text" id="crop-alt" class="text-input" placeholder="Describe this image">
-      </div>
+      <input type="text" id="crop-alt" class="text-input" placeholder="Alt text">
       <button class="btn" id="crop-confirm">Add Image</button>
       <button class="btn btn-danger" id="crop-cancel" style="border-color:rgba(0,0,0,0.2);color:#333;">Cancel</button>
     </div>
@@ -514,6 +513,11 @@
       let images = []; // { src, alt, isNew, blob? }
       let cropper = null;
       let originalPiece = null;
+
+      function markDirty() {
+        saveBtn.disabled = false;
+        if (statusEl.classList.contains('success')) setStatus('');
+      }
 
       function setStatus(msg, type) {
         statusEl.textContent = msg;
@@ -739,6 +743,7 @@
             const moved = images.splice(dragIdx, 1)[0];
             images.splice(i, 0, moved);
             renderImages();
+            markDirty();
           });
 
           const imgEl = document.createElement('img');
@@ -761,6 +766,7 @@
             if (img.previewUrl) URL.revokeObjectURL(img.previewUrl);
             images.splice(i, 1);
             renderImages();
+            markDirty();
           });
           card.appendChild(removeBtn);
 
@@ -880,6 +886,7 @@
             previewUrl,
           });
           renderImages();
+          markDirty();
           closeCropModal();
         }, 'image/png');
       });
@@ -976,7 +983,7 @@
             }, 800);
           } else {
             originalPiece = piece;
-            saveBtn.disabled = false;
+            // Save button stays disabled until user makes a change
             // Update stripe IDs display
             if (stripeProductId || stripePriceId) {
               stripeSection.style.display = '';
@@ -1016,6 +1023,10 @@
           deleteBtn.disabled = false;
         }
       });
+
+      // Re-enable save when user changes anything
+      [titleField, descField, priceField, stockField].forEach(f => f.addEventListener('input', markDirty));
+      [forSaleField, catField].forEach(f => f.addEventListener('change', markDirty));
 
       initAuth();
     })();

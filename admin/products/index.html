@@ -76,6 +76,12 @@
       transition: background 0.2s;
     }
     .btn:hover { background: #555; }
+    .btn-outline {
+      color: rgba(0,0,0,0.35);
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.2);
+    }
+    .btn-outline:hover { background: rgba(0,0,0,0.04); color: #333; border-color: rgba(0,0,0,0.35); }
 
     .status {
       font-size: 0.8rem;
@@ -242,7 +248,7 @@
   <div class="toolbar">
     <h1>Products</h1>
     <a href="/admin/">Back to Admin</a>
-    <a class="btn" href="/admin/products/edit.html">Add Product</a>
+    <a class="btn btn-outline" href="/admin/products/edit.html">Add Product</a>
     <span class="status" id="status"></span>
   </div>
 
