@@ -1223,39 +1223,16 @@ a {
   }
 
   .product-sidebar {
-    position: static;
-    width: 100%;
-    height: auto;
-    padding: 0.75rem 1.5rem;
-    padding-top: calc(60px + 0.75rem);
-    border-right: none;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    background: #fff;
-    flex-direction: row;
-    align-items: center;
-    gap: 1rem;
-    overflow: visible;
-    flex-shrink: 0;
-    flex-grow: 0;
-  }
-
-  .product-sidebar .product-back {
-    margin-bottom: 0;
-    flex-shrink: 0;
-  }
-
-  .product-sidebar .product-title,
-  .product-sidebar .product-description,
-  .product-sidebar .buy-row,
-  .product-sidebar .rings-dm-banner {
     display: none;
   }
+
 
   .product-media {
     flex: 1;
     flex-direction: column;
     align-items: stretch;
     padding: 0 1.5rem 1.5rem;
+    padding-top: calc(60px + 0.75rem);
     overflow-y: hidden;
   }
 

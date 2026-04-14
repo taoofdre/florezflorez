@@ -131,6 +131,61 @@ The platform's database only stores provisioning metadata — a fraction of what
 
 ---
 
+## Dynamic Shipping with USPS
+
+### How It Works
+
+Use the USPS API to calculate real shipping rates after the customer enters their address during Stripe Checkout. This replaces flat-rate shipping with accurate, per-order pricing based on package weight, dimensions, and destination.
+
+**Flow using Stripe's `onShippingDetailsChange` callback:**
+
+1. Customer starts checkout, enters their shipping address
+2. Stripe fires `onShippingDetailsChange` with the address
+3. Your callback calls the USPS rate API with package details + destination zip
+4. Return the calculated shipping options to Stripe for the customer to see
+
+```javascript
+onShippingDetailsChange(address) {
+  const uspsRate = await getUSPSRate(address, packageDetails);
+
+  if (cartTotal >= 20000) { // $200 in cents
+    return {
+      shippingOptions: [
+        { name: "Free Shipping", amount: 0 }
+      ]
+    };
+  }
+
+  return {
+    shippingOptions: [
+      { name: `USPS ${uspsRate.service}`, amount: uspsRate.price }
+    ]
+  };
+}
+```
+
+### Free Shipping on Orders Over $200
+
+The free shipping decision happens inside the same `onShippingDetailsChange` callback, before the customer ever sees shipping options:
+
+- **Cart >= $200** → return a single option: "Free Shipping" at $0. The platform absorbs the real USPS cost.
+- **Cart < $200** → return the real USPS rates for the customer to pay.
+
+Even when shipping is free, you still need the customer's address to fulfill the order. You can also still calculate the real USPS cost internally for margin tracking — just don't charge the customer for it.
+
+**Important margin consideration:** Unlike a flat $10 coupon, free shipping means absorbing whatever USPS returns — could be $8 or $22 depending on weight and destination. Consider capping it (e.g., free shipping up to $15, customer pays the difference) to protect margins on heavy or distant orders.
+
+### Platform Implications (Stripe Connect)
+
+In the multi-tenant model, each merchant configures their own:
+- Product weights and dimensions
+- Free shipping threshold (if any)
+- Whether to offer free shipping at all
+
+The USPS rate call and free shipping logic live in the merchant's checkout serverless function. The platform template provides the wiring; merchants customize the thresholds via env vars or CMS config.
+
+---
+
 ## Build Order
 
 1. **Generalize the template** — remove hardcoded repo names, domains, credentials. Everything merchant-specific becomes an env var.
