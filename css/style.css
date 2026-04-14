@@ -245,8 +245,36 @@ a {
   animation: fadeIn 0.5s ease forwards;
 }
 
-.section.active ~ .site-footer {
+/* ===== ABOUT SECTION (policy links) ===== */
+.section-about {
   display: none;
+}
+
+.section-about.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.about-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.about-links a {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.3);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.about-links a:hover {
+  color: #333;
 }
 
 @keyframes fadeIn {
@@ -912,34 +940,6 @@ a {
   cursor: default;
 }
 
-/* ===== FOOTER ===== */
-.site-footer {
-  padding: 3rem 2rem;
-  text-align: center;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.footer-links {
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-  flex-wrap: wrap;
-}
-
-.footer-links a {
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(0, 0, 0, 0.3);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.footer-links a:hover {
-  color: #333;
-}
-
 /* ===== RINGS DM BANNER ===== */
 #section-rings .art-sidebar {
   padding-top: 1.5rem;
@@ -1107,10 +1107,6 @@ a {
     text-align: center;
     font-size: 0.72rem;
     white-space: normal;
-  }
-
-  .footer-links {
-    gap: 1.25rem;
   }
 
   .carousel {

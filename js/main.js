@@ -560,25 +560,7 @@
   // ---- Render: About ----
 
   async function renderAbout() {
-    try {
-      const data = await fetchJSON('content/about.json');
-      const textEl = document.getElementById('about-text');
-      const bgEl = document.getElementById('about-bg');
-
-      const h2 = document.createElement('h2');
-      text(h2, data.heading);
-      textEl.appendChild(h2);
-
-      const p = document.createElement('p');
-      text(p, data.message);
-      textEl.appendChild(p);
-
-      if (data.background_image) {
-        bgEl.style.backgroundImage = `url('${escapeAttr(data.background_image)}')`;
-      }
-    } catch (e) {
-      console.error('Failed to load about content:', e);
-    }
+    // About section is static HTML (policy links) — nothing to render
   }
 
   // ---- Navigation ----
