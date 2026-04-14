@@ -22,21 +22,6 @@
           "alt": "vertical flower"
         }
       ]
-    },
-    {
-      "id": "necklace-i",
-      "title": "Necklace I",
-      "description": "Gold-filled chain, pendant.",
-      "for_sale": true,
-      "price_display": "180",
-      "stripe_price_id": "",
-      "stripe_product_id": "",
-      "images": [
-        {
-          "src": "/images/placeholder.svg",
-          "alt": "Necklace I"
-        }
-      ]
     }
   ]
 }
