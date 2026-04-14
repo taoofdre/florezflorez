@@ -16,21 +16,6 @@
       ]
     },
     {
-      "id": "fragments",
-      "title": "Fragments",
-      "description": "Charcoal and ink on paper, 2023. Deconstructed forms, reassembled.",
-      "for_sale": false,
-      "price_display": "",
-      "stripe_price_id": "",
-      "stripe_product_id": "",
-      "images": [
-        {
-          "src": "/images/placeholder.svg",
-          "alt": "Fragments"
-        }
-      ]
-    },
-    {
       "id": "still-life-study",
       "title": "Still Life Study",
       "description": "Oil on linen, 2023. Light and shadow in ordinary objects.",
@@ -57,18 +42,6 @@
         {
           "src": "/images/placeholder.svg",
           "alt": "Landscapes"
-        }
-      ]
-    },
-    {
-      "for_sale": false,
-      "price_display": "",
-      "stripe_price_id": "",
-      "stripe_product_id": "",
-      "images": [
-        {
-          "src": "/uploads/los-colores-de-lo-cotidiano-02.png",
-          "alt": "The sun or the moon"
         }
       ]
     }
