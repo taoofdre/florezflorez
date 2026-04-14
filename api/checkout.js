@@ -91,6 +91,7 @@ module.exports = async function handler(req, res) {
       shipping_options: [
         { shipping_rate: 'shr_1TLE6gGZz3PbqlU6QUzZfFdG' },
       ],
+      allow_promotion_codes: true,
       success_url: `${origin}/?checkout=success&total=${total}`,
       cancel_url: `${origin}/?checkout=cancel`,
     };
@@ -98,6 +99,8 @@ module.exports = async function handler(req, res) {
     // Auto-apply free shipping coupon on orders over $200
     if (totalCents > 20000) {
       sessionParams.discounts = [{ coupon: 'yfDilCGY' }];
+      // discounts and allow_promotion_codes are mutually exclusive in Stripe
+      delete sessionParams.allow_promotion_codes;
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams);

@@ -238,6 +238,45 @@
       color: #333;
       border-color: rgba(0,0,0,0.4);
     }
+    /* Coupon list items */
+    .coupon-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.85rem 1rem;
+      border: 1px solid rgba(0,0,0,0.1);
+      margin-bottom: 0.5rem;
+    }
+    .coupon-item .coupon-code {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #333;
+      min-width: 120px;
+    }
+    .coupon-item .coupon-detail {
+      font-size: 0.75rem;
+      color: rgba(0,0,0,0.45);
+      flex: 1;
+    }
+    .coupon-item .coupon-deactivate {
+      font-family: inherit;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #c44;
+      background: none;
+      border: 1px solid #c44;
+      padding: 0.3rem 0.75rem;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      flex-shrink: 0;
+    }
+    .coupon-item .coupon-deactivate:hover {
+      background: #c44;
+      color: #fff;
+    }
   </style>
 </head>
 <body>
@@ -334,6 +373,60 @@
       </div>
       <a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener" class="section-link">Stripe API Keys &rarr;</a>
       <a href="https://vercel.com/dashboard" target="_blank" rel="noopener" class="section-link">Vercel Dashboard &rarr;</a>
+    </div>
+
+    <!-- Coupons & Promotion Codes -->
+    <div class="settings-section">
+      <h2>Coupons &amp; Promotion Codes</h2>
+      <p class="section-desc">Create promotion codes that customers can enter at checkout. Codes are stored in Stripe and validated automatically.</p>
+
+      <div id="coupons-list" style="margin-bottom:1.5rem;">
+        <p class="field-desc" id="coupons-loading">Loading coupons...</p>
+      </div>
+
+      <div style="border:1px solid rgba(0,0,0,0.1);padding:1.25rem;margin-bottom:1rem;">
+        <p style="font-size:0.72rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:rgba(0,0,0,0.35);margin-bottom:1.25rem;">New Coupon</p>
+        <div class="field-group">
+          <label for="coupon-code">Code</label>
+          <p class="field-desc">What the customer types at checkout (e.g., SUMMER20)</p>
+          <input type="text" id="coupon-code" class="text-input" placeholder="e.g. SUMMER20" style="text-transform:uppercase;">
+        </div>
+        <div class="field-group">
+          <label for="coupon-name">Name (optional)</label>
+          <p class="field-desc">Internal label shown in Stripe dashboard</p>
+          <input type="text" id="coupon-name" class="text-input" placeholder="e.g. Summer sale 20% off">
+        </div>
+        <div class="field-group">
+          <label>Discount Type</label>
+          <div style="display:flex;gap:1rem;margin-top:0.25rem;">
+            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;font-weight:400;text-transform:none;letter-spacing:0;color:#333;cursor:pointer;">
+              <input type="radio" name="discount-type" value="percent" checked> Percentage
+            </label>
+            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;font-weight:400;text-transform:none;letter-spacing:0;color:#333;cursor:pointer;">
+              <input type="radio" name="discount-type" value="amount"> Fixed amount
+            </label>
+          </div>
+        </div>
+        <div class="field-group" id="percent-field">
+          <label for="coupon-percent">Percent Off</label>
+          <input type="number" id="coupon-percent" class="text-input" placeholder="e.g. 20" min="1" max="100">
+        </div>
+        <div class="field-group" id="amount-field" style="display:none;">
+          <label for="coupon-amount">Amount Off (USD)</label>
+          <input type="number" id="coupon-amount" class="text-input" placeholder="e.g. 10.00" min="0.01" step="0.01">
+        </div>
+        <div class="field-group">
+          <label for="coupon-max">Max Redemptions (optional)</label>
+          <p class="field-desc">Leave blank for unlimited uses</p>
+          <input type="number" id="coupon-max" class="text-input" placeholder="e.g. 100" min="1">
+        </div>
+        <div class="field-group">
+          <label for="coupon-expires">Expiration Date (optional)</label>
+          <input type="date" id="coupon-expires" class="text-input">
+        </div>
+        <button type="button" id="coupon-create-btn" class="save-btn" style="margin-top:0.5rem;">Create Coupon</button>
+        <span class="status" id="coupon-status" style="margin-left:1rem;"></span>
+      </div>
     </div>
 
     <!-- GitHub OAuth -->
@@ -510,6 +603,7 @@
         } catch (e) {
           setStatus('Could not load current settings', 'error');
         }
+        loadCoupons();
       }
 
       // ---- Save settings ----
@@ -611,6 +705,161 @@
         }
 
         saveBtn.disabled = false;
+      });
+
+      // ---- Coupons ----
+
+      const couponsListEl = document.getElementById('coupons-list');
+      const couponCreateBtn = document.getElementById('coupon-create-btn');
+      const couponStatusEl = document.getElementById('coupon-status');
+
+      function setCouponStatus(msg, type) {
+        couponStatusEl.textContent = msg;
+        couponStatusEl.className = 'status' + (type ? ' ' + type : '');
+      }
+
+      // Toggle percent/amount fields
+      document.querySelectorAll('input[name="discount-type"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+          document.getElementById('percent-field').style.display = radio.value === 'percent' ? '' : 'none';
+          document.getElementById('amount-field').style.display = radio.value === 'amount' ? '' : 'none';
+        });
+      });
+
+      function formatDiscount(item) {
+        if (item.percent_off) return item.percent_off + '% off';
+        if (item.amount_off) return '$' + (item.amount_off / 100).toFixed(2) + ' off';
+        return '';
+      }
+
+      function formatExpiry(ts) {
+        if (!ts) return '';
+        const d = new Date(ts * 1000);
+        return 'expires ' + d.toLocaleDateString();
+      }
+
+      function renderCouponList(coupons) {
+        couponsListEl.innerHTML = '';
+        if (coupons.length === 0) {
+          couponsListEl.innerHTML = '<p class="field-desc">No active promotion codes.</p>';
+          return;
+        }
+        coupons.forEach(item => {
+          const row = document.createElement('div');
+          row.className = 'coupon-item';
+
+          const code = document.createElement('span');
+          code.className = 'coupon-code';
+          code.textContent = item.code;
+          row.appendChild(code);
+
+          const detail = document.createElement('span');
+          detail.className = 'coupon-detail';
+          const parts = [formatDiscount(item)];
+          if (item.max_redemptions) parts.push(item.times_redeemed + '/' + item.max_redemptions + ' used');
+          const expiry = formatExpiry(item.expires_at);
+          if (expiry) parts.push(expiry);
+          detail.textContent = parts.join(' · ');
+          row.appendChild(detail);
+
+          const btn = document.createElement('button');
+          btn.className = 'coupon-deactivate';
+          btn.textContent = 'Deactivate';
+          btn.addEventListener('click', async () => {
+            if (!confirm('Deactivate promotion code "' + item.code + '"?')) return;
+            btn.disabled = true;
+            btn.textContent = '...';
+            try {
+              const r = await fetch('/api/coupons', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: item.id }),
+              });
+              if (!r.ok) {
+                const d = await r.json().catch(() => ({}));
+                throw new Error(d.error || 'Failed');
+              }
+              row.remove();
+              if (couponsListEl.children.length === 0) {
+                couponsListEl.innerHTML = '<p class="field-desc">No active promotion codes.</p>';
+              }
+            } catch (e) {
+              btn.textContent = 'Deactivate';
+              btn.disabled = false;
+              alert('Error: ' + e.message);
+            }
+          });
+          row.appendChild(btn);
+
+          couponsListEl.appendChild(row);
+        });
+      }
+
+      async function loadCoupons() {
+        try {
+          const r = await fetch('/api/coupons');
+          if (!r.ok) throw new Error('Failed to load');
+          const data = await r.json();
+          renderCouponList(data);
+        } catch (e) {
+          couponsListEl.innerHTML = '<p class="field-desc">Could not load coupons. Stripe key may not be configured.</p>';
+        }
+      }
+
+      couponCreateBtn.addEventListener('click', async () => {
+        const code = document.getElementById('coupon-code').value.trim();
+        if (!code) { setCouponStatus('Enter a code', 'error'); return; }
+
+        const discountType = document.querySelector('input[name="discount-type"]:checked').value;
+        const percent = document.getElementById('coupon-percent').value;
+        const amount = document.getElementById('coupon-amount').value;
+
+        if (discountType === 'percent' && (!percent || percent <= 0 || percent > 100)) {
+          setCouponStatus('Enter a valid percentage (1-100)', 'error'); return;
+        }
+        if (discountType === 'amount' && (!amount || amount <= 0)) {
+          setCouponStatus('Enter a valid amount', 'error'); return;
+        }
+
+        couponCreateBtn.disabled = true;
+        setCouponStatus('Creating...');
+
+        try {
+          const body = {
+            code,
+            name: document.getElementById('coupon-name').value.trim(),
+            discount_type: discountType,
+            percent: discountType === 'percent' ? percent : undefined,
+            amount: discountType === 'amount' ? amount : undefined,
+            duration: 'once',
+            max_redemptions: document.getElementById('coupon-max').value || undefined,
+            expires_at: document.getElementById('coupon-expires').value || undefined,
+          };
+
+          const r = await fetch('/api/coupons', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+
+          const data = await r.json();
+          if (!r.ok) throw new Error(data.error || 'Create failed');
+
+          setCouponStatus('Created "' + data.code + '"', 'success');
+          // Clear form
+          document.getElementById('coupon-code').value = '';
+          document.getElementById('coupon-name').value = '';
+          document.getElementById('coupon-percent').value = '';
+          document.getElementById('coupon-amount').value = '';
+          document.getElementById('coupon-max').value = '';
+          document.getElementById('coupon-expires').value = '';
+          // Reload list
+          await loadCoupons();
+        } catch (e) {
+          setCouponStatus('Error: ' + e.message, 'error');
+        }
+
+        couponCreateBtn.disabled = false;
       });
 
       document.getElementById('copy-feed-url').addEventListener('click', () => {
