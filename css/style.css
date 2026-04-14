@@ -240,7 +240,13 @@ a {
 
 .section.active {
   display: block;
+  height: 100vh;
+  overflow: hidden;
   animation: fadeIn 0.5s ease forwards;
+}
+
+.section.active ~ .site-footer {
+  display: none;
 }
 
 @keyframes fadeIn {
@@ -984,6 +990,11 @@ a {
 
   .section {
     padding-top: 60px;
+  }
+
+  .section.active {
+    height: auto;
+    overflow: visible;
   }
 
   .header-logo {
