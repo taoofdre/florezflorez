@@ -2,16 +2,44 @@
   "logo": "/uploads/florez-florez-black-logo.png",
   "font": "IBM Plex Mono",
   "gradients": [
-    ["#834d9b", "#d04ed6"],
-    ["#1CD8D2", "#93EDC7"],
-    ["#ee9ca7", "#ffdde1"],
-    ["#2193b0", "#6dd5ed"]
+    [
+      "#834d9b",
+      "#d04ed6"
+    ],
+    [
+      "#1CD8D2",
+      "#93EDC7"
+    ],
+    [
+      "#ee9ca7",
+      "#ffdde1"
+    ],
+    [
+      "#2193b0",
+      "#6dd5ed"
+    ]
   ],
   "categories": [
-    { "slug": "art", "label": "ART" },
-    { "slug": "necklaces", "label": "NECKLACES" },
-    { "slug": "rings", "label": "RINGS" },
-    { "slug": "consulting", "label": "CONSULTING" }
+    {
+      "slug": "art",
+      "label": "ART"
+    },
+    {
+      "slug": "necklaces",
+      "label": "NECKLACES"
+    },
+    {
+      "slug": "rings",
+      "label": "RINGS"
+    },
+    {
+      "slug": "consulting",
+      "label": "CONSULTING"
+    },
+    {
+      "slug": "earrings",
+      "label": "EARRINGS"
+    }
   ],
   "art_background": "/uploads/whatsapp-image-2026-04-12-at-20.23.36.jpeg",
   "necklaces_background": "/uploads/image-4-11-26-at-11.05 pm.jpg",
