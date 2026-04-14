@@ -309,10 +309,17 @@
     <div class="section-block">
       <h2>Logo</h2>
       <div class="field-group">
-        <label for="logo-url">Logo Image URL</label>
-        <p class="field-desc">Path to the logo image shown on the homepage and header. Upload via the CMS first, then paste the path here.</p>
-        <input type="text" id="logo-url" class="text-input" placeholder="/uploads/my-logo.png">
+        <label>Upload Logo</label>
+        <p class="field-desc">PNG with transparent background. Recommended width: 200-400px. Displayed at 80px on the site.</p>
+        <div style="display:flex;gap:0.75rem;align-items:center;margin-top:0.25rem;">
+          <label class="btn btn-outline" style="cursor:pointer;">
+            Choose File
+            <input type="file" id="logo-file" accept="image/png,image/svg+xml" style="display:none;">
+          </label>
+          <span class="field-desc" id="logo-upload-status"></span>
+        </div>
         <img id="logo-preview" class="logo-preview" src="" alt="Logo preview" style="display:none;">
+        <input type="hidden" id="logo-url">
       </div>
     </div>
 
@@ -321,11 +328,21 @@
       <h2>Site Font</h2>
       <div class="field-group">
         <label for="font-select">Font Family</label>
-        <p class="field-desc">The font used across the entire site. Changing this requires uploading the font files to /fonts/ and updating the CSS.</p>
+        <p class="field-desc">The font used across the entire site.</p>
         <select id="font-select" class="text-input">
           <option value="IBM Plex Mono">IBM Plex Mono</option>
         </select>
-        <p class="field-desc" style="margin-top:0.5rem;">Currently only IBM Plex Mono is available. To add fonts, upload .ttf files to /fonts/ and they will appear here.</p>
+      </div>
+      <div class="field-group" style="margin-top:1.25rem;">
+        <label>Upload New Font</label>
+        <p class="field-desc">Upload a .ttf or .woff2 file. The font name is taken from the filename (e.g., <strong>Inter-Regular.ttf</strong> becomes "Inter").</p>
+        <div style="display:flex;gap:0.75rem;align-items:center;margin-top:0.25rem;">
+          <label class="btn btn-outline" style="cursor:pointer;">
+            Choose Font File
+            <input type="file" id="font-file" accept=".ttf,.woff2" style="display:none;">
+          </label>
+          <span class="field-desc" id="font-upload-status"></span>
+        </div>
       </div>
     </div>
 
@@ -342,10 +359,20 @@
       <h2>Categories</h2>
       <p class="field-desc" style="margin-bottom:1rem;">Homepage panels and navigation links. Drag to reorder. The slug determines the URL path (e.g., /necklaces).</p>
       <div class="cat-list" id="cat-list"></div>
-      <div style="display:flex;gap:0.75rem;align-items:center;">
-        <input type="text" id="new-cat-slug" class="text-input" placeholder="slug (e.g. earrings)" style="width:200px;margin-top:0;">
-        <input type="text" id="new-cat-label" class="text-input" placeholder="Label (e.g. EARRINGS)" style="width:200px;margin-top:0;text-transform:uppercase;">
-        <button class="btn btn-outline" id="add-cat" type="button">Add</button>
+      <div style="border:1px solid rgba(0,0,0,0.1);padding:1.25rem;margin-top:1rem;">
+        <p style="font-size:0.72rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:rgba(0,0,0,0.35);margin-bottom:1rem;">Add Category</p>
+        <div class="field-group">
+          <label for="new-cat-slug">Slug</label>
+          <p class="field-desc">URL path for the category (lowercase, no spaces). E.g., earrings</p>
+          <input type="text" id="new-cat-slug" class="text-input" placeholder="e.g. earrings">
+        </div>
+        <div class="field-group">
+          <label for="new-cat-label">Label</label>
+          <p class="field-desc">Display name shown on the homepage panel and navigation.</p>
+          <input type="text" id="new-cat-label" class="text-input" placeholder="e.g. EARRINGS" style="text-transform:uppercase;">
+        </div>
+        <button class="btn btn-outline" id="add-cat" type="button" style="margin-top:0.5rem;">Add Category</button>
+        <span class="field-desc" id="add-cat-status" style="margin-left:0.75rem;"></span>
       </div>
     </div>
 
@@ -367,11 +394,16 @@
       const loadingEl = document.getElementById('loading');
       const logoUrl = document.getElementById('logo-url');
       const logoPreview = document.getElementById('logo-preview');
+      const logoFile = document.getElementById('logo-file');
+      const logoUploadStatus = document.getElementById('logo-upload-status');
       const fontSelect = document.getElementById('font-select');
+      const fontFile = document.getElementById('font-file');
+      const fontUploadStatus = document.getElementById('font-upload-status');
       const gradientListEl = document.getElementById('gradient-list');
       const addGradientBtn = document.getElementById('add-gradient');
       const catListEl = document.getElementById('cat-list');
       const addCatBtn = document.getElementById('add-cat');
+      const addCatStatus = document.getElementById('add-cat-status');
       const newCatSlug = document.getElementById('new-cat-slug');
       const newCatLabel = document.getElementById('new-cat-label');
 
@@ -444,7 +476,15 @@
 
           logoUrl.value = data.logo || '';
           if (data.logo) { logoPreview.src = data.logo; logoPreview.style.display = ''; }
-          if (data.font) fontSelect.value = data.font;
+          if (data.font) {
+            if (![...fontSelect.options].some(o => o.value === data.font)) {
+              const opt = document.createElement('option');
+              opt.value = data.font;
+              opt.textContent = data.font;
+              fontSelect.appendChild(opt);
+            }
+            fontSelect.value = data.font;
+          }
           gradients = data.gradients || [['#834d9b', '#d04ed6']];
           categories = data.categories || [];
 
@@ -458,13 +498,93 @@
         }
       }
 
-      // ---- Logo preview ----
+      // ---- Upload helper ----
 
-      logoUrl.addEventListener('input', () => {
-        markDirty();
-        const v = logoUrl.value.trim();
-        if (v) { logoPreview.src = v; logoPreview.style.display = ''; }
-        else { logoPreview.style.display = 'none'; }
+      async function uploadFile(blob, filename, folder) {
+        const buffer = await blob.arrayBuffer();
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+        const base64 = btoa(binary);
+
+        const path = (folder || 'uploads') + '/' + filename;
+        let sha = null;
+        // Check if file exists
+        if (ghToken) {
+          const existsRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}?ref=main`, {
+            headers: { Authorization: 'token ' + ghToken },
+          });
+          if (existsRes.ok) sha = (await existsRes.json()).sha;
+        }
+
+        const body = { message: 'Upload: ' + filename, content: base64, branch: 'main' };
+        if (sha) body.sha = sha;
+
+        const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
+          method: 'PUT',
+          headers: { Authorization: 'token ' + ghToken, 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          throw new Error(d.message || 'Upload failed');
+        }
+        return '/' + path;
+      }
+
+      // ---- Logo upload ----
+
+      logoFile.addEventListener('change', async () => {
+        const file = logoFile.files[0];
+        if (!file) return;
+        logoFile.value = '';
+        logoUploadStatus.textContent = 'Uploading...';
+        logoUploadStatus.style.color = '';
+        try {
+          const safeName = file.name.toLowerCase().replace(/[^a-z0-9._-]/g, '-');
+          const path = await uploadFile(file, safeName, 'uploads');
+          logoUrl.value = path;
+          logoPreview.src = path;
+          logoPreview.style.display = '';
+          logoUploadStatus.textContent = 'Uploaded';
+          logoUploadStatus.style.color = '#3a3';
+          markDirty();
+        } catch (e) {
+          logoUploadStatus.textContent = 'Error: ' + e.message;
+          logoUploadStatus.style.color = '#c44';
+        }
+      });
+
+      // ---- Font upload ----
+
+      fontFile.addEventListener('change', async () => {
+        const file = fontFile.files[0];
+        if (!file) return;
+        fontFile.value = '';
+        fontUploadStatus.textContent = 'Uploading...';
+        fontUploadStatus.style.color = '';
+        try {
+          const safeName = file.name.toLowerCase().replace(/[^a-z0-9._-]/g, '-');
+          await uploadFile(file, safeName, 'fonts');
+          // Derive font family name from filename (e.g., "Inter-Regular.ttf" -> "Inter")
+          const fontName = safeName.replace(/\.(ttf|woff2)$/, '').replace(/[-_](regular|bold|semibold|medium|light|italic|thin|black|extra)/gi, '').replace(/-+$/, '');
+          // Capitalize
+          const displayName = fontName.charAt(0).toUpperCase() + fontName.slice(1);
+          // Add to selector if not already there
+          if (![...fontSelect.options].some(o => o.value === displayName)) {
+            const opt = document.createElement('option');
+            opt.value = displayName;
+            opt.textContent = displayName;
+            fontSelect.appendChild(opt);
+          }
+          fontSelect.value = displayName;
+          fontUploadStatus.textContent = 'Uploaded "' + displayName + '"';
+          fontUploadStatus.style.color = '#3a3';
+          markDirty();
+        } catch (e) {
+          fontUploadStatus.textContent = 'Error: ' + e.message;
+          fontUploadStatus.style.color = '#c44';
+        }
       });
 
       fontSelect.addEventListener('change', markDirty);
@@ -576,14 +696,16 @@
       }
 
       addCatBtn.addEventListener('click', () => {
+        addCatStatus.style.color = '#c44';
         const slug = newCatSlug.value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
         const label = newCatLabel.value.trim().toUpperCase();
-        if (!slug) { setStatus('Enter a slug', 'error'); return; }
-        if (!label) { setStatus('Enter a label', 'error'); return; }
-        if (categories.some(c => c.slug === slug)) { setStatus('Slug already exists', 'error'); return; }
+        if (!slug) { addCatStatus.textContent = 'Enter a slug'; return; }
+        if (!label) { addCatStatus.textContent = 'Enter a label'; return; }
+        if (categories.some(c => c.slug === slug)) { addCatStatus.textContent = 'Slug already exists'; return; }
         categories.push({ slug, label });
         newCatSlug.value = '';
         newCatLabel.value = '';
+        addCatStatus.textContent = '';
         renderCategories();
         markDirty();
       });
