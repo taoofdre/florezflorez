@@ -49,7 +49,7 @@
       "id": "ring003",
       "title": "Peak",
       "description": "Organic false-stone ring, 17 grams, size 9 | 950 silver",
-      "price_display": "310",
+      "price_display": "285",
       "stock": 1,
       "images": [
         {
@@ -68,7 +68,7 @@
       "id": "ring004",
       "title": "Ovo with stone",
       "description": "Rounded ring with garnet stone, 12 grams, size 8 | 950 silver",
-      "price_display": "320",
+      "price_display": "280",
       "stock": 0,
       "images": [
         {
@@ -78,6 +78,25 @@
         {
           "src": "/uploads/ovo-ring-01.png",
           "alt": "ovo ring next to a fork and orange"
+        }
+      ]
+    },
+    {
+      "for_sale": true,
+      "stripe_product_id": "",
+      "id": "ring006",
+      "title": "Three circles",
+      "description": "Bubbly ring with multiple false stones, size 6.5, 14 grams | 950 silver",
+      "price_display": "290",
+      "stock": 1,
+      "images": [
+        {
+          "src": "/uploads/ffanillo-trescirculos-03-1-3.png",
+          "alt": "three circles ring on hand"
+        },
+        {
+          "src": "/uploads/ffanillo-trescirculos01.png",
+          "alt": "three circles ring on flower"
         }
       ]
     }
