@@ -321,14 +321,15 @@
       flex-direction: column;
       align-items: center;
       padding: 2rem;
-      overflow-y: auto;
+      overflow: hidden;
     }
     .crop-modal.open { display: flex; }
 
     .crop-modal-inner {
       max-width: 600px;
       width: 100%;
-      flex-shrink: 0;
+      flex: 1;
+      min-height: 0;
     }
 
     .crop-modal-inner img {
