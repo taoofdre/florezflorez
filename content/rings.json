@@ -106,7 +106,7 @@
     },
     {
       "for_sale": true,
-      "stripe_product_id": "",
+      "stripe_product_id": "prod_UKruduih3YRXNz",
       "id": "ring007",
       "title": "Desert",
       "description": "Organic, thin and broad ring, size 10, 7 grams | 950 silver",
@@ -121,7 +121,8 @@
           "src": "/uploads/ff-desertring-ig-01.png",
           "alt": "desert ring straight"
         }
-      ]
+      ],
+      "stripe_price_id": "price_1TMCApGZz3PbqlU6InR1mjYG"
     },
     {
       "for_sale": true,
