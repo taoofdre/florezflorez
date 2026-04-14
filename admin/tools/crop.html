@@ -426,11 +426,32 @@
           cropBoxMovable: true,
           cropBoxResizable: true,
           toggleDragModeOnDblclick: false,
-          ready: updatePreview,
+          ready() {
+            enforceMinCropSize(this.cropper);
+            updatePreview();
+          },
           crop: updatePreview,
         };
         if (squareLock.checked) opts.aspectRatio = 1;
         return opts;
+      }
+
+      function enforceMinCropSize(c) {
+        // Calculate the minimum crop box size (in display pixels) that corresponds
+        // to OUTPUT_HEIGHT source pixels — prevents crops that would require upscaling.
+        const imageData = c.getImageData();
+        const ratio = imageData.width / imageData.naturalWidth;
+        if (squareLock.checked) {
+          // Square: min 1000x1000 source pixels
+          const minPx = Math.ceil(OUTPUT_HEIGHT * ratio);
+          c.options.minCropBoxWidth = minPx;
+          c.options.minCropBoxHeight = minPx;
+        } else {
+          // Free crop: min 1000 source pixels tall, proportional width up to MAX_WIDTH
+          const minH = Math.ceil(OUTPUT_HEIGHT * ratio);
+          c.options.minCropBoxHeight = minH;
+          c.options.minCropBoxWidth = 0;
+        }
       }
 
       function rebuildCropper() {
@@ -499,7 +520,14 @@
         const ctx = previewCanvas.getContext('2d');
         ctx.clearRect(0, 0, dims.width, dims.height);
         ctx.drawImage(canvas, 0, 0);
-        previewInfo.textContent = dims.width + ' x ' + dims.height;
+        const cropData = cropper.getData(true);
+        const srcW = cropData.width;
+        const srcH = cropData.height;
+        const upscaled = (squareLock.checked && (srcW < OUTPUT_HEIGHT || srcH < OUTPUT_HEIGHT))
+          || (!squareLock.checked && srcH < OUTPUT_HEIGHT);
+        previewInfo.textContent = dims.width + ' x ' + dims.height + '  (source: ' + srcW + ' x ' + srcH + ')';
+        previewInfo.style.color = upscaled ? '#c44' : '';
+        if (upscaled) previewInfo.textContent += ' — image too small, will upscale';
       }
 
       // ---- Save ----
