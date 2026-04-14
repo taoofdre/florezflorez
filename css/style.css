@@ -935,6 +935,10 @@ a {
 }
 
 /* ===== RINGS DM BANNER ===== */
+#section-rings .art-sidebar {
+  padding-top: 1.5rem;
+}
+
 .rings-dm-banner {
   font-size: 0.78rem;
   font-weight: 400;

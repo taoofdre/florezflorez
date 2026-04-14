@@ -522,8 +522,7 @@
         link.href = 'https://ig.me/m/florezflorez.studio';
         link.target = '_blank';
         link.rel = 'noopener';
-        link.textContent = 'DM us';
-        banner.appendChild(document.createTextNode("Don\u2019t see your size? "));
+        link.textContent = 'DM us for more sizes';
         banner.appendChild(link);
         sidebar.insertBefore(banner, nav);
       }
