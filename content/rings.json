@@ -87,7 +87,7 @@
     },
     {
       "for_sale": true,
-      "stripe_product_id": "",
+      "stripe_product_id": "prod_UKrusohOyshCUM",
       "id": "ring006",
       "title": "Three circles",
       "description": "Bubbly ring with multiple false stones, size 6.5, 14 grams | 950 silver",
@@ -102,7 +102,8 @@
           "src": "/uploads/ffanillo-trescirculos01.png",
           "alt": "three circles ring on flower"
         }
-      ]
+      ],
+      "stripe_price_id": "price_1TMCAtGZz3PbqlU6g043SVEf"
     },
     {
       "for_sale": true,
