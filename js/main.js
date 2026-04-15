@@ -58,14 +58,17 @@
   }
 
   function addToCart(item) {
-    const stock = stockByPriceId[item.price_id];
-    const existing = cart.find(c => c.price_id === item.price_id);
+    const cartKey = item.size ? item.price_id + ':' + item.size : item.price_id;
+    const stock = item._sizeStock !== undefined ? item._sizeStock : stockByPriceId[item.price_id];
+    const existing = cart.find(c => (c.size ? c.price_id + ':' + c.size : c.price_id) === cartKey);
     const currentQty = existing ? existing.quantity : 0;
     if (typeof stock === 'number' && currentQty >= stock) return;
     if (existing) {
       existing.quantity += 1;
     } else {
-      cart.push({ ...item, quantity: 1 });
+      const cartItem = { ...item, quantity: 1 };
+      delete cartItem._sizeStock;
+      cart.push(cartItem);
     }
     if (typeof fbq === 'function') {
       fbq('track', 'AddToCart', {
@@ -80,20 +83,22 @@
     openCart();
   }
 
-  function removeFromCart(priceId) {
-    cart = cart.filter(c => c.price_id !== priceId);
+  function cartKey(item) { return item.size ? item.price_id + ':' + item.size : item.price_id; }
+
+  function removeFromCart(key) {
+    cart = cart.filter(c => cartKey(c) !== key);
     saveCart();
   }
 
-  function updateQuantity(priceId, delta) {
-    const item = cart.find(c => c.price_id === priceId);
+  function updateQuantity(key, delta) {
+    const item = cart.find(c => cartKey(c) === key);
     if (!item) return;
     const newQty = item.quantity + delta;
     if (newQty <= 0) {
-      removeFromCart(priceId);
+      removeFromCart(key);
       return;
     }
-    const stock = stockByPriceId[priceId];
+    const stock = stockByPriceId[item.price_id];
     if (typeof stock === 'number' && newQty > stock) return;
     item.quantity = newQty;
     saveCart();
@@ -134,7 +139,7 @@
 
       const title = document.createElement('div');
       title.className = 'cart-item-title';
-      title.textContent = item.title;
+      title.textContent = item.title + (item.size ? ' — ' + item.size : '');
       info.appendChild(title);
 
       const price = document.createElement('div');
@@ -148,7 +153,7 @@
       const minusBtn = document.createElement('button');
       minusBtn.className = 'cart-qty-btn';
       minusBtn.textContent = '-';
-      minusBtn.addEventListener('click', () => updateQuantity(item.price_id, -1));
+      minusBtn.addEventListener('click', () => updateQuantity(cartKey(item), -1));
       controls.appendChild(minusBtn);
 
       const qty = document.createElement('span');
@@ -165,13 +170,13 @@
         plusBtn.style.opacity = '0.3';
         plusBtn.style.cursor = 'default';
       }
-      plusBtn.addEventListener('click', () => updateQuantity(item.price_id, 1));
+      plusBtn.addEventListener('click', () => updateQuantity(cartKey(item), 1));
       controls.appendChild(plusBtn);
 
       const removeBtn = document.createElement('button');
       removeBtn.className = 'cart-item-remove';
       removeBtn.textContent = 'Remove';
-      removeBtn.addEventListener('click', () => removeFromCart(item.price_id));
+      removeBtn.addEventListener('click', () => removeFromCart(cartKey(item)));
 
       info.appendChild(controls);
       info.appendChild(removeBtn);
@@ -223,6 +228,7 @@
           items: cart.map(item => ({
             price_id: item.price_id,
             quantity: item.quantity,
+            size: item.size || null,
           })),
         }),
       });
@@ -491,15 +497,70 @@
     const wrap = document.createElement('div');
     wrap.className = 'buy-actions';
 
-    const isSoldOut = typeof piece.stock === 'number' && piece.stock === 0;
+    const hasSizes = piece.sizes && piece.sizes.length > 0;
+    const isSoldOut = !hasSizes && typeof piece.stock === 'number' && piece.stock === 0;
+    const allSizesSoldOut = hasSizes && piece.sizes.every(s => typeof s.stock === 'number' && s.stock === 0);
 
     if (piece.for_sale && piece.stripe_price_id) {
-      if (isSoldOut) {
+      if (isSoldOut || allSizesSoldOut) {
         const btn = document.createElement('button');
         btn.className = 'buy-btn buy-btn-disabled';
         btn.disabled = true;
         text(btn, 'Sold Out');
         wrap.appendChild(btn);
+      } else if (hasSizes) {
+        // Size picker
+        const picker = document.createElement('div');
+        picker.className = 'size-picker';
+
+        const label = document.createElement('span');
+        label.className = 'size-picker-label';
+        text(label, 'Select size');
+        picker.appendChild(label);
+
+        const options = document.createElement('div');
+        options.className = 'size-picker-options';
+
+        let selectedSize = null;
+
+        piece.sizes.forEach(s => {
+          const sizeBtn = document.createElement('button');
+          sizeBtn.className = 'size-option';
+          const sizeSoldOut = typeof s.stock === 'number' && s.stock === 0;
+          if (sizeSoldOut) {
+            sizeBtn.classList.add('size-option-soldout');
+            sizeBtn.disabled = true;
+          }
+          text(sizeBtn, s.label);
+          sizeBtn.addEventListener('click', () => {
+            options.querySelectorAll('.size-option').forEach(b => b.classList.remove('size-option-active'));
+            sizeBtn.classList.add('size-option-active');
+            selectedSize = s;
+            addBtn.disabled = false;
+            addBtn.classList.remove('buy-btn-disabled');
+          });
+          options.appendChild(sizeBtn);
+        });
+
+        picker.appendChild(options);
+        wrap.appendChild(picker);
+
+        const addBtn = document.createElement('button');
+        addBtn.className = 'buy-btn buy-btn-disabled';
+        addBtn.disabled = true;
+        text(addBtn, 'Add to Cart');
+        addBtn.addEventListener('click', () => {
+          if (!selectedSize) return;
+          addToCart({
+            price_id: piece.stripe_price_id,
+            title: piece.title,
+            price_display: piece.price_display,
+            image: piece.images && piece.images.length > 0 ? piece.images[0].src : '',
+            size: selectedSize.label,
+            _sizeStock: typeof selectedSize.stock === 'number' ? selectedSize.stock : undefined,
+          });
+        });
+        wrap.appendChild(addBtn);
       } else {
         const btn = document.createElement('button');
         btn.className = 'buy-btn';

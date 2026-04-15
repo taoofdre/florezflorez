@@ -62,6 +62,8 @@ module.exports = async function handler(req, res) {
       price: item.price_id,
       quantity: item.quantity || 1,
     }));
+    // Collect size info for metadata
+    var sizeInfo = items.filter(item => item.size).map(item => item.size + ' x' + (item.quantity || 1)).join(', ');
   } else {
     // Legacy single-item checkout (GET)
     const priceId = req.query.price_id;
@@ -112,6 +114,10 @@ module.exports = async function handler(req, res) {
       success_url: `${origin}/?checkout=success&total=${total}`,
       cancel_url: `${origin}/?checkout=cancel`,
     };
+
+    if (sizeInfo) {
+      sessionParams.metadata = { sizes: sizeInfo };
+    }
 
     // Auto-apply free shipping coupon on orders over $200
     if (totalCents > 20000) {

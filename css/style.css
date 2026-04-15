@@ -522,6 +522,61 @@ a {
   border-color: rgba(0, 0, 0, 0.5);
 }
 
+/* Size picker */
+.size-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.size-picker-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.size-picker-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.size-option {
+  padding: 0.4rem 0.85rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #333;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.size-option:hover {
+  border-color: #333;
+}
+
+.size-option-active {
+  background: #333;
+  color: #fff;
+  border-color: #333;
+}
+
+.size-option-soldout {
+  color: rgba(0, 0, 0, 0.2);
+  border-color: rgba(0, 0, 0, 0.08);
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.size-option-soldout:hover {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
 /* ===== PRODUCT PAGE ===== */
 .product-page {
   display: flex;

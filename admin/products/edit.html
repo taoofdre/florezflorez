@@ -226,6 +226,52 @@
       color: #333;
     }
 
+    /* Size items */
+    .size-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid rgba(0,0,0,0.1);
+      margin-bottom: 0.5rem;
+    }
+    .size-item .size-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      min-width: 60px;
+    }
+    .size-item .size-stock {
+      width: 80px;
+      background: transparent;
+      border: 1px solid rgba(0,0,0,0.1);
+      color: #333;
+      padding: 0.3rem 0.5rem;
+      font-family: inherit;
+      font-size: 0.82rem;
+    }
+    .size-item .size-stock:focus { outline: none; border-color: rgba(0,0,0,0.3); }
+    .size-item .size-stock::placeholder { color: rgba(0,0,0,0.25); }
+    .size-stock-label {
+      font-size: 0.68rem;
+      color: rgba(0,0,0,0.4);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .size-remove {
+      margin-left: auto;
+      font-family: inherit;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #c44;
+      background: none;
+      border: 1px solid #c44;
+      padding: 0.2rem 0.6rem;
+      cursor: pointer;
+    }
+    .size-remove:hover { background: #c44; color: #fff; }
+
     /* Image manager */
     .image-list {
       display: flex;
@@ -428,6 +474,17 @@
       </div>
     </div>
 
+    <!-- Sizes -->
+    <div class="editor-section">
+      <h2>Sizes</h2>
+      <p class="field-desc" style="margin-bottom:1rem;">Optional. Add sizes if this product comes in multiple options. Per-size inventory is optional (leave blank for unlimited).</p>
+      <div id="sizes-list"></div>
+      <div style="display:flex;gap:0.75rem;align-items:center;margin-top:0.75rem;">
+        <input type="text" id="new-size-label" class="text-input" placeholder="e.g. S, M, L or 6, 7, 8" style="width:200px;margin-top:0;">
+        <button class="btn btn-outline" id="add-size-btn" type="button" style="white-space:nowrap;">Add Size</button>
+      </div>
+    </div>
+
     <!-- Images -->
     <div class="editor-section">
       <h2>Images</h2>
@@ -492,6 +549,9 @@
       const forSaleField = document.getElementById('field-forsale');
       const forSaleLabel = document.getElementById('forsale-label');
       const stockField = document.getElementById('field-stock');
+      const sizesListEl = document.getElementById('sizes-list');
+      const addSizeBtn = document.getElementById('add-size-btn');
+      const newSizeLabel = document.getElementById('new-size-label');
       const imageListEl = document.getElementById('image-list');
       const imageInput = document.getElementById('image-input');
       const stripeSection = document.getElementById('stripe-section');
@@ -505,6 +565,7 @@
       let ghToken = null;
       let fileCache = {};
       let images = []; // { src, alt, isNew, blob? }
+      let sizes = []; // { label, stock }
       let cropper = null;
       let originalPiece = null;
 
@@ -682,6 +743,10 @@
           forSaleField.checked = !!piece.for_sale;
           forSaleLabel.textContent = piece.for_sale ? 'For Sale' : 'Hidden';
           if (typeof piece.stock === 'number') stockField.value = piece.stock;
+
+          // Sizes
+          sizes = (piece.sizes || []).map(s => ({ label: s.label, stock: typeof s.stock === 'number' ? s.stock : null }));
+          renderSizes();
 
           // Images
           images = (piece.images || []).map(img => ({ src: img.src, alt: img.alt || '', isNew: false }));
@@ -965,6 +1030,11 @@
 
           const stockVal = stockField.value.trim();
           if (stockVal !== '') piece.stock = parseInt(stockVal, 10);
+          if (sizes.length > 0) piece.sizes = sizes.map(s => {
+            const o = { label: s.label };
+            if (typeof s.stock === 'number') o.stock = s.stock;
+            return o;
+          });
 
           const categoryChanged = !isNew && paramCat && cat !== paramCat;
 
@@ -1040,6 +1110,57 @@
           setStatus('Error: ' + e.message, 'error');
           deleteBtn.disabled = false;
         }
+      });
+
+      // ---- Sizes ----
+
+      function renderSizes() {
+        sizesListEl.innerHTML = '';
+        sizes.forEach((s, i) => {
+          const row = document.createElement('div');
+          row.className = 'size-item';
+
+          const label = document.createElement('span');
+          label.className = 'size-label';
+          label.textContent = s.label;
+          row.appendChild(label);
+
+          const stockLabel = document.createElement('span');
+          stockLabel.className = 'size-stock-label';
+          stockLabel.textContent = 'Stock';
+          row.appendChild(stockLabel);
+
+          const stockInput = document.createElement('input');
+          stockInput.className = 'size-stock';
+          stockInput.type = 'number';
+          stockInput.min = '0';
+          stockInput.step = '1';
+          stockInput.placeholder = '\u221e';
+          if (typeof s.stock === 'number') stockInput.value = s.stock;
+          stockInput.addEventListener('input', () => {
+            sizes[i].stock = stockInput.value.trim() !== '' ? parseInt(stockInput.value) : null;
+            markDirty();
+          });
+          row.appendChild(stockInput);
+
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'size-remove';
+          removeBtn.textContent = 'Remove';
+          removeBtn.addEventListener('click', () => { sizes.splice(i, 1); renderSizes(); markDirty(); });
+          row.appendChild(removeBtn);
+
+          sizesListEl.appendChild(row);
+        });
+      }
+
+      addSizeBtn.addEventListener('click', () => {
+        const label = newSizeLabel.value.trim();
+        if (!label) return;
+        if (sizes.some(s => s.label === label)) return;
+        sizes.push({ label, stock: null });
+        newSizeLabel.value = '';
+        renderSizes();
+        markDirty();
       });
 
       // Re-enable save when user changes anything
