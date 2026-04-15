@@ -487,45 +487,42 @@
 
   // ---- Build helpers ----
 
-  function buildBuyRow(piece) {
-    const buyRow = document.createElement('div');
-    buyRow.className = 'buy-row';
-    const priceEl = document.createElement('span');
-    priceEl.className = 'buy-price';
-    text(priceEl, formatPrice(piece.price_display));
-    buyRow.appendChild(priceEl);
+  function buildBuyActions(piece) {
+    const wrap = document.createElement('div');
+    wrap.className = 'buy-actions';
 
     const isSoldOut = typeof piece.stock === 'number' && piece.stock === 0;
-    if (isSoldOut) {
-      const soldOut = document.createElement('span');
-      soldOut.className = 'sold-out';
-      text(soldOut, 'Sold Out');
-      buyRow.appendChild(soldOut);
-    } else {
-      const btn = document.createElement('button');
-      btn.className = 'buy-btn';
-      text(btn, 'Add to Cart');
-      btn.addEventListener('click', () => addToCart({
-        price_id: piece.stripe_price_id,
-        title: piece.title,
-        price_display: piece.price_display,
-        image: piece.images && piece.images.length > 0 ? piece.images[0].src : '',
-      }));
-      buyRow.appendChild(btn);
-    }
-    return buyRow;
-  }
 
-  function buildRingsBanner() {
-    const banner = document.createElement('div');
-    banner.className = 'rings-dm-banner';
-    const link = document.createElement('a');
-    link.href = instagramDmUrl;
-    link.target = '_blank';
-    link.rel = 'noopener';
-    link.textContent = 'DM us for more sizes';
-    banner.appendChild(link);
-    return banner;
+    if (piece.for_sale && piece.stripe_price_id) {
+      if (isSoldOut) {
+        const btn = document.createElement('button');
+        btn.className = 'buy-btn buy-btn-disabled';
+        btn.disabled = true;
+        text(btn, 'Sold Out');
+        wrap.appendChild(btn);
+      } else {
+        const btn = document.createElement('button');
+        btn.className = 'buy-btn';
+        text(btn, 'Add to Cart');
+        btn.addEventListener('click', () => addToCart({
+          price_id: piece.stripe_price_id,
+          title: piece.title,
+          price_display: piece.price_display,
+          image: piece.images && piece.images.length > 0 ? piece.images[0].src : '',
+        }));
+        wrap.appendChild(btn);
+      }
+    }
+
+    const contactBtn = document.createElement('a');
+    contactBtn.className = 'contact-btn';
+    contactBtn.href = instagramDmUrl;
+    contactBtn.target = '_blank';
+    contactBtn.rel = 'noopener';
+    text(contactBtn, 'Contact us for options');
+    wrap.appendChild(contactBtn);
+
+    return wrap;
   }
 
   // ---- Render: Homepage ----
@@ -688,13 +685,7 @@
     text(descEl, piece.description);
     sidebar.appendChild(descEl);
 
-    if (piece.for_sale && piece.stripe_price_id) {
-      sidebar.appendChild(buildBuyRow(piece));
-    }
-
-    if (categorySlug === 'rings') {
-      sidebar.appendChild(buildRingsBanner());
-    }
+    sidebar.appendChild(buildBuyActions(piece));
 
     productPage.appendChild(sidebar);
 
@@ -706,11 +697,20 @@
       media.appendChild(buildCarousel(piece.images));
     }
 
-    // Mobile title (above carousel, hidden on desktop)
+    // Mobile header: title + price on same line (hidden on desktop)
+    const mobileHeader = document.createElement('div');
+    mobileHeader.className = 'product-header-mobile';
     const mobileTitle = document.createElement('h2');
     mobileTitle.className = 'product-title-mobile';
     text(mobileTitle, piece.title);
-    media.insertBefore(mobileTitle, media.firstChild);
+    mobileHeader.appendChild(mobileTitle);
+    if (piece.for_sale && piece.price_display) {
+      const mobilePrice = document.createElement('span');
+      mobilePrice.className = 'product-price-mobile';
+      text(mobilePrice, formatPrice(piece.price_display));
+      mobileHeader.appendChild(mobilePrice);
+    }
+    media.insertBefore(mobileHeader, media.firstChild);
 
     // Mobile description (below carousel, hidden on desktop)
     const mobileDesc = document.createElement('p');
@@ -718,24 +718,13 @@
     text(mobileDesc, piece.description);
     media.appendChild(mobileDesc);
 
+    // Mobile buy actions (below description, hidden on desktop)
+    const mobileBuy = buildBuyActions(piece);
+    mobileBuy.classList.add('buy-actions-mobile');
+    media.appendChild(mobileBuy);
+
     productPage.appendChild(media);
     section.appendChild(productPage);
-
-    // Mobile fixed bottom bar
-    bottomBar = document.createElement('div');
-    bottomBar.className = 'product-bottom-bar';
-
-    if (piece.for_sale && piece.stripe_price_id) {
-      bottomBar.appendChild(buildBuyRow(piece));
-    }
-    if (categorySlug === 'rings') {
-      bottomBar.appendChild(buildRingsBanner());
-    }
-
-    // Only add bottom bar if it has content
-    if (bottomBar.children.length > 0) {
-      productPage.appendChild(bottomBar);
-    }
   }
 
   // ---- Render: Consulting ----

@@ -464,23 +464,17 @@ a {
 }
 
 /* ===== BUY ROW (JEWELRY) ===== */
-.buy-row {
+.buy-actions {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1.5rem;
+  flex-direction: column;
+  gap: 0.5rem;
   margin-top: 1rem;
 }
 
-.buy-price {
-  font-size: 1.1rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  color: #333;
-}
-
 .buy-btn {
-  padding: 0.6rem 2rem;
+  display: block;
+  width: 100%;
+  padding: 0.65rem 2rem;
   font-family: 'IBM Plex Mono', monospace;
   font-size: 0.8rem;
   font-weight: 600;
@@ -490,6 +484,7 @@ a {
   background: #333;
   border: none;
   cursor: pointer;
+  text-align: center;
   transition: background 0.25s ease;
 }
 
@@ -497,13 +492,34 @@ a {
   background: #555;
 }
 
-.sold-out {
+.buy-btn-disabled {
+  background: rgba(0, 0, 0, 0.12);
+  color: rgba(0, 0, 0, 0.35);
+  cursor: not-allowed;
+}
+.buy-btn-disabled:hover {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.contact-btn {
+  display: block;
+  width: 100%;
+  padding: 0.65rem 2rem;
   font-family: 'IBM Plex Mono', monospace;
   font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: rgba(0, 0, 0, 0.35);
+  color: #333;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  text-align: center;
+  text-decoration: none;
+  transition: border-color 0.25s ease;
+}
+
+.contact-btn:hover {
+  border-color: rgba(0, 0, 0, 0.5);
 }
 
 /* ===== PRODUCT PAGE ===== */
@@ -551,21 +567,8 @@ a {
   margin-bottom: 1.5rem;
 }
 
-.product-sidebar .buy-row {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.75rem;
-}
-
-.product-sidebar .buy-btn {
-  width: 100%;
-  text-align: center;
-  padding: 0.65rem 1rem;
-}
-
-.product-sidebar .rings-dm-banner {
-  margin-top: 1.5rem;
-  margin-bottom: 0;
+.product-sidebar .buy-actions {
+  margin-top: auto;
 }
 
 .product-media {
@@ -583,11 +586,19 @@ a {
   width: 100%;
 }
 
+.product-header-mobile {
+  display: none;
+}
+
 .product-title-mobile {
   display: none;
 }
 
 .product-description-mobile {
+  display: none;
+}
+
+.buy-actions-mobile {
   display: none;
 }
 
@@ -1046,30 +1057,6 @@ a {
   cursor: default;
 }
 
-/* ===== RINGS DM BANNER ===== */
-.rings-dm-banner {
-  font-size: 0.78rem;
-  font-weight: 400;
-  color: rgba(0, 0, 0, 0.45);
-  line-height: 1.4;
-  padding: 0.65rem 0.85rem;
-  margin-bottom: 1rem;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 6px;
-  white-space: nowrap;
-  text-align: center;
-}
-
-.rings-dm-banner a {
-  color: #333;
-  font-weight: 600;
-  text-decoration: none;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-}
-
-.rings-dm-banner a:hover {
-  border-bottom-color: #333;
-}
 
 /* ===== MOBILE ===== */
 @media (max-width: 768px) {
@@ -1231,14 +1218,23 @@ a {
     flex: 1;
     flex-direction: column;
     align-items: stretch;
-    padding: 0 1.5rem 1.5rem;
+    padding: 0 1.5rem 0;
     padding-top: calc(60px + 0.75rem);
-    overflow-y: hidden;
+    overflow-y: auto;
   }
 
   .product-media .carousel {
     height: 350px;
     max-height: none;
+  }
+
+  .product-header-mobile {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 0.25rem;
+    margin-bottom: 0.5rem;
   }
 
   .product-title-mobile {
@@ -1247,8 +1243,14 @@ a {
     font-weight: 600;
     color: #333;
     letter-spacing: 0.05em;
-    margin-top: 0.25rem;
-    margin-bottom: 0.5rem;
+  }
+
+  .product-price-mobile {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
   }
 
   .product-description-mobile {
@@ -1258,27 +1260,16 @@ a {
     line-height: 1.7;
     color: rgba(0, 0, 0, 0.5);
     margin-top: 0.5rem;
-    padding-bottom: 1rem;
   }
 
-  .product-bottom-bar {
-    display: block;
-    flex-shrink: 0;
-    background: #fff;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-    padding: 0.75rem 1.5rem;
+  .buy-actions-mobile {
+    display: flex;
+    margin-top: 0.75rem;
+    padding-bottom: 1.5rem;
   }
 
-  .product-bottom-bar .buy-row {
-    margin-top: 0;
-  }
-
-  .product-bottom-bar .rings-dm-banner {
-    margin-top: 0.5rem;
-    margin-bottom: 0;
-    text-align: center;
-    font-size: 0.72rem;
-    white-space: normal;
+  .product-media {
+    overflow-y: auto;
   }
 
   body.scroll-down .product-sidebar {
