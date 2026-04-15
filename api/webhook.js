@@ -1,7 +1,7 @@
 const Stripe = require('stripe');
 
 const REPO = process.env.GITHUB_REPO || 'taoofdre/florezflorez';
-const CONTENT_FILES = ['content/art.json', 'content/necklaces.json', 'content/rings.json'];
+const SPECIAL_SECTIONS = ['consulting', 'about'];
 
 function getRawBody(req) {
   return new Promise((resolve, reject) => {
@@ -86,7 +86,19 @@ module.exports = async function handler(req, res) {
       sold[item.price.id] = (sold[item.price.id] || 0) + item.quantity;
     }
 
-    for (const filePath of CONTENT_FILES) {
+    // Load categories dynamically from homepage.json
+    let contentFiles = ['content/art.json', 'content/necklaces.json', 'content/rings.json'];
+    try {
+      const hpFile = await ghGet('content/homepage.json');
+      const hpData = JSON.parse(Buffer.from(hpFile.content.replace(/\n/g, ''), 'base64').toString('utf8'));
+      if (hpData.categories && hpData.categories.length > 0) {
+        contentFiles = hpData.categories
+          .filter(c => !SPECIAL_SECTIONS.includes(c.slug))
+          .map(c => 'content/' + c.slug + '.json');
+      }
+    } catch (e) {}
+
+    for (const filePath of contentFiles) {
       try {
         const file = await ghGet(filePath);
         const decoded = Buffer.from(file.content.replace(/\n/g, ''), 'base64').toString('utf8');

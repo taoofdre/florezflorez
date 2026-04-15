@@ -351,26 +351,50 @@
     return res.json();
   }
 
-  const CATEGORY_NAMES = {
-    art: 'Art',
-    necklaces: 'Necklaces',
-    rings: 'Rings',
-  };
+  let CATEGORY_NAMES = {};
+  let productCategories = [];
 
   // ---- Data loading ----
 
   async function loadAllData() {
-    const [art, necklaces, rings] = await Promise.all([
-      fetchJSON('/content/art.json'),
-      fetchJSON('/content/necklaces.json'),
-      fetchJSON('/content/rings.json'),
-    ]);
-    dataCache.art = art;
-    dataCache.necklaces = necklaces;
-    dataCache.rings = rings;
+    // Load categories from homepage.json
+    try {
+      const homepage = await fetchJSON('/content/homepage.json');
+      if (homepage.categories) {
+        homepage.categories.forEach(cat => {
+          // Skip non-product sections
+          if (cat.slug === 'consulting' || cat.slug === 'about') return;
+          CATEGORY_NAMES[cat.slug] = cat.label.charAt(0) + cat.label.slice(1).toLowerCase();
+          productCategories.push(cat.slug);
+        });
+      }
+    } catch (e) {
+      // Fallback
+      CATEGORY_NAMES = { art: 'Art', necklaces: 'Necklaces', rings: 'Rings' };
+      productCategories = ['art', 'necklaces', 'rings'];
+    }
 
-    [art, necklaces, rings].forEach(data => {
-      (data.pieces || []).forEach(piece => {
+    // Ensure section elements exist for each product category
+    productCategories.forEach(slug => {
+      if (!document.getElementById('section-' + slug)) {
+        const section = document.createElement('section');
+        section.id = 'section-' + slug;
+        section.className = 'section';
+        section.innerHTML = '<div class="art-layout"><aside class="art-sidebar"><ul class="art-nav" id="' + slug + '-nav"></ul></aside><main class="art-content" id="' + slug + '-content"></main></div>';
+        document.body.insertBefore(section, document.getElementById('cart-panel'));
+      }
+    });
+
+    // Load all product category JSON files
+    const results = await Promise.all(
+      productCategories.map(slug =>
+        fetchJSON('/content/' + slug + '.json').catch(() => ({ pieces: [] }))
+      )
+    );
+
+    productCategories.forEach((slug, i) => {
+      dataCache[slug] = results[i];
+      (results[i].pieces || []).forEach(piece => {
         if (piece.stripe_price_id) {
           stockByPriceId[piece.stripe_price_id] = piece.stock;
         }
@@ -803,12 +827,6 @@
     const parts = clean.split('/');
     const category = parts[0];
     const productId = parts[1] || null;
-
-    // Non-product sections
-    if (category === 'consulting' || category === 'about') {
-      showSection(category);
-      return;
-    }
 
     // Product sections
     const sectionId = 'section-' + category;

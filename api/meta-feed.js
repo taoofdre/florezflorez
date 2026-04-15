@@ -1,10 +1,5 @@
 const REPO = process.env.GITHUB_REPO || 'taoofdre/florezflorez';
-
-const CONTENT_FILES = [
-  { path: 'content/necklaces.json', category: 'necklaces' },
-  { path: 'content/rings.json', category: 'rings' },
-  { path: 'content/art.json', category: 'art' },
-];
+const SPECIAL_SECTIONS = ['consulting', 'about'];
 
 async function fetchJSON(filePath, pat) {
   const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${filePath}`, {
@@ -45,10 +40,25 @@ module.exports = async (req, res) => {
     return;
   }
 
+  // Load categories from homepage.json
+  const homepage = await fetchJSON('content/homepage.json', pat) || {};
+  const contentFiles = (homepage.categories || [])
+    .filter(c => !SPECIAL_SECTIONS.includes(c.slug))
+    .map(c => ({ path: 'content/' + c.slug + '.json', category: c.slug }));
+
+  if (contentFiles.length === 0) {
+    // Fallback
+    contentFiles.push(
+      { path: 'content/necklaces.json', category: 'necklaces' },
+      { path: 'content/rings.json', category: 'rings' },
+      { path: 'content/art.json', category: 'art' }
+    );
+  }
+
   const columns = ['id', 'title', 'description', 'availability', 'condition', 'price', 'link', 'image_link', 'brand'];
   const rows = [columns.join(',')];
 
-  for (const { path, category } of CONTENT_FILES) {
+  for (const { path, category } of contentFiles) {
     const data = await fetchJSON(path, pat);
     if (!data || !data.pieces) continue;
 

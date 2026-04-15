@@ -398,11 +398,7 @@
       <h2>Details</h2>
       <div class="field-group" id="cat-field">
         <label for="field-cat">Category</label>
-        <select id="field-cat" class="text-input">
-          <option value="necklaces">Necklaces</option>
-          <option value="rings">Rings</option>
-          <option value="art">Art</option>
-        </select>
+        <select id="field-cat" class="text-input" id="field-cat"></select>
       </div>
       <div class="field-group">
         <label for="field-title">Title</label>
@@ -469,11 +465,8 @@
     (() => {
       const REPO = 'taoofdre/florezflorez';
       const OUTPUT_SIZE = 1000;
-      const SECTIONS = {
-        necklaces: 'content/necklaces.json',
-        rings: 'content/rings.json',
-        art: 'content/art.json',
-      };
+      const SPECIAL_SECTIONS = ['consulting', 'about'];
+      let SECTIONS = {};
       const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 
       // URL params
@@ -647,6 +640,18 @@
 
       async function loadProduct() {
         try {
+          // Load categories from homepage.json
+          const homepageData = await loadFile('content/homepage.json').then(r => r.content || r);
+          catField.innerHTML = '';
+          (homepageData.categories || []).forEach(c => {
+            if (SPECIAL_SECTIONS.includes(c.slug)) return;
+            SECTIONS[c.slug] = 'content/' + c.slug + '.json';
+            const opt = document.createElement('option');
+            opt.value = c.slug;
+            opt.textContent = c.label.charAt(0) + c.label.slice(1).toLowerCase();
+            catField.appendChild(opt);
+          });
+
           if (isNew) {
             pageTitle.textContent = 'New Product';
             if (paramCat && SECTIONS[paramCat]) catField.value = paramCat;

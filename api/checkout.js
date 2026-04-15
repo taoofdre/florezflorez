@@ -1,13 +1,30 @@
 const Stripe = require('stripe');
 
 const REPO = process.env.GITHUB_REPO || 'taoofdre/florezflorez';
-const CONTENT_FILES = ['content/art.json', 'content/necklaces.json', 'content/rings.json'];
+const SPECIAL_SECTIONS = ['consulting', 'about'];
+
+async function getContentFiles(pat) {
+  try {
+    const res = await fetch(`https://api.github.com/repos/${REPO}/contents/content/homepage.json`, {
+      headers: { 'Authorization': 'token ' + pat, 'Accept': 'application/vnd.github.v3+json' },
+    });
+    if (!res.ok) return ['content/art.json', 'content/necklaces.json', 'content/rings.json'];
+    const file = await res.json();
+    const data = JSON.parse(Buffer.from(file.content.replace(/\n/g, ''), 'base64').toString('utf8'));
+    return (data.categories || [])
+      .filter(c => !SPECIAL_SECTIONS.includes(c.slug))
+      .map(c => 'content/' + c.slug + '.json');
+  } catch (e) {
+    return ['content/art.json', 'content/necklaces.json', 'content/rings.json'];
+  }
+}
 
 async function getStockMap() {
   const pat = process.env.GITHUB_PAT;
   if (!pat) return {};
+  const contentFiles = await getContentFiles(pat);
   const map = {};
-  await Promise.all(CONTENT_FILES.map(async (path) => {
+  await Promise.all(contentFiles.map(async (path) => {
     try {
       const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
         headers: {

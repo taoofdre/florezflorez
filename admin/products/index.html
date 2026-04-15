@@ -254,9 +254,6 @@
 
   <div class="filters" id="filters">
     <button class="filter-btn active" data-cat="all">All</button>
-    <button class="filter-btn" data-cat="necklaces">Necklaces</button>
-    <button class="filter-btn" data-cat="rings">Rings</button>
-    <button class="filter-btn" data-cat="art">Art</button>
   </div>
 
   <div class="page" id="page">
@@ -266,11 +263,8 @@
   <script>
     (() => {
       const REPO = 'taoofdre/florezflorez';
-      const SECTIONS = [
-        { key: 'necklaces', label: 'Necklaces', file: 'content/necklaces.json' },
-        { key: 'rings',     label: 'Rings',     file: 'content/rings.json' },
-        { key: 'art',       label: 'Art',       file: 'content/art.json' },
-      ];
+      const SPECIAL_SECTIONS = ['consulting', 'about'];
+      let SECTIONS = [];
       const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 
       const authOverlay = document.getElementById('auth-overlay');
@@ -401,7 +395,28 @@
         setStatus('');
 
         try {
-          const results = await Promise.all(SECTIONS.map(s => loadFile(s.file)));
+          // Load categories from homepage.json
+          const homepage = await loadFile('content/homepage.json');
+          SECTIONS = (homepage.categories || [])
+            .filter(c => !SPECIAL_SECTIONS.includes(c.slug))
+            .map(c => ({
+              key: c.slug,
+              label: c.label.charAt(0) + c.label.slice(1).toLowerCase(),
+              file: 'content/' + c.slug + '.json',
+            }));
+
+          // Build filter buttons
+          const filtersEl = document.getElementById('filters');
+          filtersEl.innerHTML = '<button class="filter-btn active" data-cat="all">All</button>';
+          SECTIONS.forEach(s => {
+            const btn = document.createElement('button');
+            btn.className = 'filter-btn';
+            btn.dataset.cat = s.key;
+            btn.textContent = s.label;
+            filtersEl.appendChild(btn);
+          });
+
+          const results = await Promise.all(SECTIONS.map(s => loadFile(s.file).catch(() => ({ pieces: [] }))));
           allProducts = [];
           SECTIONS.forEach((section, i) => {
             const pieces = results[i].pieces || [];
