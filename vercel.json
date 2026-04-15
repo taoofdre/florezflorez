@@ -1,6 +1,9 @@
 {
   "buildCommand": "",
   "outputDirectory": ".",
+  "headers": [
+    { "source": "/admin/(.*)", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] }
+  ],
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/:path*" },
     { "source": "/admin/:path*", "destination": "/admin/:path*" },
