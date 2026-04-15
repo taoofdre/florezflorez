@@ -29,26 +29,6 @@
       ]
     },
     {
-      "id": "ring002",
-      "title": "Triangle (size 9.5)",
-      "description": "Statement, triangular ring, 28 grams, size 9.5 | 950 silver",
-      "for_sale": true,
-      "price_display": "510",
-      "stripe_price_id": "price_1TMCAjGZz3PbqlU6A5QQ4q0B",
-      "stripe_product_id": "prod_UKru74uBM9hfGp",
-      "images": [
-        {
-          "src": "/uploads/triangle-size-9-5-1776222815490-1.png",
-          "alt": ""
-        },
-        {
-          "src": "/uploads/triangle-size-9-5-1776222910874-1.png",
-          "alt": ""
-        }
-      ],
-      "stock": 1
-    },
-    {
       "id": "ring003",
       "title": "Peak",
       "description": "Organic ring, 17 grams, size 9 | 950 silver",
