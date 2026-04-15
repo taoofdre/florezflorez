@@ -675,10 +675,19 @@
     back.addEventListener('click', (e) => { e.preventDefault(); navigate('/' + categorySlug); });
     sidebar.appendChild(back);
 
+    const headerRow = document.createElement('div');
+    headerRow.className = 'product-header';
     const titleEl = document.createElement('h2');
     titleEl.className = 'product-title';
     text(titleEl, piece.title);
-    sidebar.appendChild(titleEl);
+    headerRow.appendChild(titleEl);
+    if (piece.for_sale && piece.price_display) {
+      const priceEl = document.createElement('span');
+      priceEl.className = 'product-price';
+      text(priceEl, formatPrice(piece.price_display));
+      headerRow.appendChild(priceEl);
+    }
+    sidebar.appendChild(headerRow);
 
     const descEl = document.createElement('p');
     descEl.className = 'product-description';

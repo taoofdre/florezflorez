@@ -551,12 +551,27 @@ a {
 }
 .product-back:hover { color: #333; }
 
+.product-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
 .product-title {
   font-size: 1rem;
   font-weight: 600;
   color: #333;
   letter-spacing: 0.05em;
-  margin-bottom: 1rem;
+}
+
+.product-price {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
 }
 
 .product-description {
@@ -567,9 +582,6 @@ a {
   margin-bottom: 1.5rem;
 }
 
-.product-sidebar .buy-actions {
-  margin-top: auto;
-}
 
 .product-media {
   flex: 1;
