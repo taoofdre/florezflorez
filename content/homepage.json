@@ -1,5 +1,5 @@
 {
-  "logo": "https://img.florezflorez.com/florez-florez-black-logo.png",
+  "logo": "/uploads/florez-florez-black-logo.png",
   "font": "IBM Plex Mono",
   "gradients": [
     [
@@ -13,18 +13,6 @@
     [
       "#fffae0",
       "#fae274"
-    ],
-    [
-      "#dad9f2",
-      "#9c9cb0"
-    ],
-    [
-      "#e5cccc",
-      "#b48e8e"
-    ],
-    [
-      "#babac4",
-      "#85859c"
     ],
     [
       "#ffffff",
@@ -47,6 +35,14 @@
     {
       "slug": "earrings",
       "label": "EARRINGS"
+    },
+    {
+      "slug": "consulting",
+      "label": "CONSULTING"
+    },
+    {
+      "slug": "art",
+      "label": "ART"
     }
   ],
   "art_background": "https://img.florezflorez.com/whatsapp-image-2026-04-12-at-20.23.36.jpeg",
