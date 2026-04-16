@@ -467,7 +467,7 @@
           <span class="toggle-label" id="forsale-label">Hidden</span>
         </label>
       </div>
-      <div class="field-group">
+      <div class="field-group" id="stock-field-group">
         <label for="field-stock">Stock</label>
         <p class="field-desc">Leave blank for unlimited / made-to-order. Set to 0 for Sold Out.</p>
         <input type="number" id="field-stock" class="text-input" placeholder="Unlimited" min="0" step="1">
@@ -555,6 +555,7 @@
       const newSizeLabel = document.getElementById('new-size-label');
       const imageListEl = document.getElementById('image-list');
       const imageInput = document.getElementById('image-input');
+      const stockFieldGroup = document.getElementById('stock-field-group');
       const stripeSection = document.getElementById('stripe-section');
       const stripeIds = document.getElementById('stripe-ids');
       const cropModal = document.getElementById('crop-modal');
@@ -1096,6 +1097,8 @@
       // ---- Sizes ----
 
       function renderSizes() {
+        stockFieldGroup.style.display = sizes.length > 0 ? 'none' : '';
+        if (sizes.length > 0) stockField.value = '';
         sizesListEl.innerHTML = '';
         sizes.forEach((s, i) => {
           const row = document.createElement('div');
