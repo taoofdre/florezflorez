@@ -31,7 +31,7 @@
     {
       "id": "ring003",
       "title": "Peak",
-      "description": "Organic ring, 17 grams | 950 silver",
+      "description": "Organic ring, 17 grams, size 9 | 950 silver",
       "for_sale": true,
       "price_display": "285",
       "stripe_price_id": "price_1TMCAlGZz3PbqlU6wSlOVa9Z",
@@ -44,12 +44,6 @@
         {
           "src": "https://img.florezflorez.com/thepeakring_01.png",
           "alt": "peak ring close neutral background"
-        }
-      ],
-      "sizes": [
-        {
-          "label": "9",
-          "stock": 1
         }
       ]
     },
