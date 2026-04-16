@@ -1,7 +1,18 @@
 const Stripe = require('stripe');
+const fs = require('fs');
+const path = require('path');
 
 const REPO = process.env.GITHUB_REPO || 'taoofdre/florezflorez';
 const SPECIAL_SECTIONS = ['consulting', 'about'];
+
+function loadSettings() {
+  try {
+    const filePath = path.join(process.cwd(), 'content', 'settings.json');
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (e) {
+    return {};
+  }
+}
 
 async function getContentFiles(pat) {
   try {
@@ -101,29 +112,39 @@ module.exports = async function handler(req, res) {
     }, 0);
     const total = (totalCents / 100).toFixed(2);
 
+    const settings = loadSettings();
+    const shipping = settings.shipping || {};
+
     const sessionParams = {
       mode: 'payment',
       line_items,
       shipping_address_collection: {
         allowed_countries: ['US'],
       },
-      shipping_options: [
-        { shipping_rate: 'shr_1TLE6gGZz3PbqlU6QUzZfFdG' },
-      ],
       allow_promotion_codes: true,
       success_url: `${origin}/?checkout=success&total=${total}`,
       cancel_url: `${origin}/?checkout=cancel`,
     };
 
+    // Configure shipping based on settings
+    if (shipping.method === 'flat' && shipping.stripe_rate_id) {
+      sessionParams.shipping_options = [
+        { shipping_rate: shipping.stripe_rate_id },
+      ];
+
+      // Free shipping over threshold
+      if (shipping.free_threshold && totalCents >= shipping.free_threshold * 100) {
+        // Don't include shipping rate — order qualifies for free shipping
+        delete sessionParams.shipping_options;
+      }
+    } else if (shipping.method === 'pickup') {
+      // No shipping for local pickup
+      delete sessionParams.shipping_address_collection;
+    }
+    // method === 'free' or unset: no shipping_options needed (free by default)
+
     if (sizeInfo) {
       sessionParams.metadata = { sizes: sizeInfo };
-    }
-
-    // Auto-apply free shipping coupon on orders over $200
-    if (totalCents > 20000) {
-      sessionParams.discounts = [{ coupon: 'yfDilCGY' }];
-      // discounts and allow_promotion_codes are mutually exclusive in Stripe
-      delete sessionParams.allow_promotion_codes;
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams);

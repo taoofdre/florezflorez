@@ -27,6 +27,7 @@
   let activeSection = null;
   let activeObserver = null;
   let secondaryCta = null;
+  let shippingConfig = {};
   const dataCache = {};
 
   // ---- Settings ----
@@ -41,6 +42,9 @@
     }
     if (settings.secondary_cta) {
       secondaryCta = settings.secondary_cta;
+    }
+    if (settings.shipping) {
+      shippingConfig = settings.shipping;
     }
   });
 
@@ -137,7 +141,20 @@
       cartItemsEl.appendChild(cartEmpty);
       const note = document.createElement('div');
       note.className = 'cart-shipping-note';
-      note.innerHTML = '<p>Shipping to USA only</p><p>Arrives in 3\u20134 days</p><p>Free shipping on orders over $200</p>';
+      var noteLines = [];
+      if (shippingConfig.method === 'pickup') {
+        noteLines.push('Local pickup only');
+        if (shippingConfig.pickup_address) noteLines.push(shippingConfig.pickup_address);
+        if (shippingConfig.pickup_hours) noteLines.push(shippingConfig.pickup_hours);
+      } else {
+        noteLines.push('Shipping to USA only');
+        if (shippingConfig.method === 'free') {
+          noteLines.push('Free shipping');
+        } else if (shippingConfig.method === 'flat' && shippingConfig.free_threshold) {
+          noteLines.push('Free shipping on orders over $' + shippingConfig.free_threshold);
+        }
+      }
+      note.innerHTML = noteLines.map(function(l) { return '<p>' + l + '</p>'; }).join('');
       cartItemsEl.appendChild(note);
       return;
     }

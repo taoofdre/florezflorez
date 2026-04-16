@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Store Settings — Florez Florez</title>
+  <link rel="stylesheet" href="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.css">
   <style>
     @font-face {
       font-family: 'IBM Plex Mono';
@@ -302,6 +303,71 @@
       background: #c44;
       color: #fff;
     }
+
+    /* Crop modal */
+    .crop-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: rgba(255,255,255,0.97);
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+      overflow: hidden;
+    }
+    .crop-modal.open { display: flex; }
+    .crop-modal-inner {
+      max-width: 600px;
+      width: 100%;
+      flex: 1;
+      min-height: 0;
+    }
+    .crop-modal-inner img { display: block; max-width: 100%; }
+    .crop-modal-bar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      flex-shrink: 0;
+    }
+    .crop-modal-bar .crop-info {
+      font-size: 0.75rem;
+      color: rgba(0,0,0,0.4);
+      margin-right: auto;
+    }
+
+    /* Image field with preview and delete */
+    .image-field-preview {
+      display: inline-flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .image-field-preview img {
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+    .image-delete-btn {
+      font-family: inherit;
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #c44;
+      background: none;
+      border: 1px solid #c44;
+      padding: 0.2rem 0.5rem;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .image-delete-btn:hover { background: #c44; color: #fff; }
+
+    /* Cropper overrides */
+    .cropper-modal { background: rgba(0,0,0,0.5); }
+    .cropper-view-box { outline: 2px solid #fff; outline-offset: -1px; box-shadow: 0 0 0 1px rgba(0,0,0,0.5); }
+    .cropper-line { background-color: rgba(255,255,255,0.4); }
+    .cropper-point { background-color: #fff; border: 1px solid rgba(0,0,0,0.3); }
+    .cropper-dashed { border-color: rgba(255,255,255,0.5); }
   </style>
 </head>
 <body>
@@ -337,7 +403,7 @@
       </div>
       <div class="field-group">
         <label>Share Image</label>
-        <p class="field-desc">Shown when shared on social media. Optimal: <strong>1200 × 630 px</strong>.</p>
+        <p class="field-desc">Shown when shared on social media. Will be cropped to <strong>1200 × 630 px</strong>.</p>
         <div style="display:flex;gap:0.75rem;align-items:center;margin-top:0.25rem;">
           <label class="btn btn-outline" style="cursor:pointer;">
             Upload
@@ -345,7 +411,10 @@
           </label>
           <span class="field-desc" id="og-image-status"></span>
         </div>
-        <img id="og-image-preview" style="max-width:300px;max-height:160px;margin-top:0.5rem;display:none;border:1px solid rgba(0,0,0,0.08);">
+        <div id="og-image-preview-wrap" class="image-field-preview" style="display:none;">
+          <img id="og-image-preview" style="max-width:300px;max-height:160px;">
+          <button type="button" class="image-delete-btn" id="og-image-delete">Delete</button>
+        </div>
         <input type="hidden" id="og-image">
       </div>
       <div class="field-group">
@@ -355,28 +424,34 @@
       </div>
       <div class="field-group">
         <label>Favicon (32 × 32)</label>
-        <p class="field-desc">Small icon in browser tabs. PNG, 32 × 32 px.</p>
+        <p class="field-desc">Small icon in browser tabs. Will be cropped to <strong>32 × 32 px</strong>.</p>
         <div style="display:flex;gap:0.75rem;align-items:center;margin-top:0.25rem;">
           <label class="btn btn-outline" style="cursor:pointer;">
             Upload
-            <input type="file" id="favicon-file" accept="image/png" style="display:none;">
+            <input type="file" id="favicon-file" accept="image/*" style="display:none;">
           </label>
           <span class="field-desc" id="favicon-status"></span>
         </div>
-        <img id="favicon-preview" style="width:32px;height:32px;margin-top:0.5rem;display:none;border:1px solid rgba(0,0,0,0.08);">
+        <div id="favicon-preview-wrap" class="image-field-preview" style="display:none;">
+          <img id="favicon-preview" style="width:32px;height:32px;">
+          <button type="button" class="image-delete-btn" id="favicon-delete">Delete</button>
+        </div>
         <input type="hidden" id="favicon-url">
       </div>
       <div class="field-group">
         <label>Apple Touch Icon (180 × 180)</label>
-        <p class="field-desc">Icon for iOS home screen. PNG, 180 × 180 px.</p>
+        <p class="field-desc">Icon for iOS home screen. Will be cropped to <strong>180 × 180 px</strong>.</p>
         <div style="display:flex;gap:0.75rem;align-items:center;margin-top:0.25rem;">
           <label class="btn btn-outline" style="cursor:pointer;">
             Upload
-            <input type="file" id="apple-icon-file" accept="image/png" style="display:none;">
+            <input type="file" id="apple-icon-file" accept="image/*" style="display:none;">
           </label>
           <span class="field-desc" id="apple-icon-status"></span>
         </div>
-        <img id="apple-icon-preview" style="width:48px;height:48px;margin-top:0.5rem;display:none;border:1px solid rgba(0,0,0,0.08);">
+        <div id="apple-icon-preview-wrap" class="image-field-preview" style="display:none;">
+          <img id="apple-icon-preview" style="width:48px;height:48px;">
+          <button type="button" class="image-delete-btn" id="apple-icon-delete">Delete</button>
+        </div>
         <input type="hidden" id="apple-icon-url">
       </div>
     </div>
@@ -446,24 +521,27 @@
     <!-- Shipping -->
     <div class="settings-section">
       <h2>Shipping</h2>
-      <p class="field-desc" style="margin-bottom:1.25rem;">US-only shipping. Choose how orders are fulfilled.</p>
+      <p class="field-desc" style="margin-bottom:1.25rem;">US-only shipping. Choose how orders are fulfilled. Shipping rates are managed in your <a href="https://dashboard.stripe.com/shipping-rates" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">Stripe dashboard</a>.</p>
       <div class="field-group">
         <label for="shipping-method">Shipping Method</label>
         <select id="shipping-method" class="text-input">
           <option value="free">Free Shipping</option>
-          <option value="flat">Flat Rate</option>
+          <option value="flat">Flat Rate (Stripe Shipping Rate)</option>
           <option value="pickup">Local Pickup</option>
         </select>
       </div>
       <div id="shipping-flat-fields" style="display:none;">
         <div class="field-group">
-          <label for="shipping-flat-fee">Flat Fee (USD)</label>
-          <input type="number" id="shipping-flat-fee" class="text-input" placeholder="5.00" min="0" step="0.01">
+          <label for="shipping-rate-id">Stripe Shipping Rate</label>
+          <p class="field-desc">Select a shipping rate from your Stripe account.</p>
+          <select id="shipping-rate-id" class="text-input">
+            <option value="">Loading rates...</option>
+          </select>
         </div>
         <div class="field-group">
           <label for="shipping-free-threshold">Free Shipping Over (USD)</label>
-          <p class="field-desc">Orders above this amount get free shipping. Leave blank to always charge the flat fee.</p>
-          <input type="number" id="shipping-free-threshold" class="text-input" placeholder="e.g. 100" min="0" step="0.01">
+          <p class="field-desc">Orders above this amount get free shipping instead. Leave blank to always charge.</p>
+          <input type="number" id="shipping-free-threshold" class="text-input" placeholder="e.g. 200" min="0" step="0.01">
         </div>
       </div>
       <div id="shipping-pickup-fields" style="display:none;">
@@ -549,6 +627,19 @@
 
   </div>
 
+  <!-- Crop Modal -->
+  <div class="crop-modal" id="crop-modal">
+    <div class="crop-modal-inner">
+      <img id="crop-image" src="" alt="Crop">
+    </div>
+    <div class="crop-modal-bar">
+      <span class="crop-info" id="crop-info"></span>
+      <button class="btn" id="crop-confirm">Crop & Upload</button>
+      <button class="btn btn-outline" id="crop-cancel">Cancel</button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.js"></script>
   <script src="/js/git-batch.js"></script>
   <script>
     (() => {
@@ -566,16 +657,31 @@
       const ogImageInput = document.getElementById('og-image');
       const ogImageFile = document.getElementById('og-image-file');
       const ogImagePreview = document.getElementById('og-image-preview');
+      const ogImagePreviewWrap = document.getElementById('og-image-preview-wrap');
       const ogImageStatus = document.getElementById('og-image-status');
+      const ogImageDelete = document.getElementById('og-image-delete');
       const ogUrlInput = document.getElementById('og-url');
       const faviconInput = document.getElementById('favicon-url');
       const faviconFile = document.getElementById('favicon-file');
       const faviconPreview = document.getElementById('favicon-preview');
+      const faviconPreviewWrap = document.getElementById('favicon-preview-wrap');
       const faviconStatus = document.getElementById('favicon-status');
+      const faviconDelete = document.getElementById('favicon-delete');
       const appleIconInput = document.getElementById('apple-icon-url');
       const appleIconFile = document.getElementById('apple-icon-file');
       const appleIconPreview = document.getElementById('apple-icon-preview');
+      const appleIconPreviewWrap = document.getElementById('apple-icon-preview-wrap');
       const appleIconStatus = document.getElementById('apple-icon-status');
+      const appleIconDelete = document.getElementById('apple-icon-delete');
+
+      // Crop modal refs
+      const cropModal = document.getElementById('crop-modal');
+      const cropImageEl = document.getElementById('crop-image');
+      const cropInfo = document.getElementById('crop-info');
+      const cropConfirmBtn = document.getElementById('crop-confirm');
+      const cropCancelBtn = document.getElementById('crop-cancel');
+      let cropper = null;
+      let pendingCrop = null; // { hiddenInput, previewEl, previewWrap, statusEl, filename, outputW, outputH }
       const descCounter = document.getElementById('desc-counter');
       const metaPixelInput = document.getElementById('meta-pixel-id');
       const ctaButtonTextInput = document.getElementById('cta-button-text');
@@ -613,10 +719,11 @@
       const shippingMethodInput = document.getElementById('shipping-method');
       const shippingFlatFields = document.getElementById('shipping-flat-fields');
       const shippingPickupFields = document.getElementById('shipping-pickup-fields');
-      const shippingFlatFeeInput = document.getElementById('shipping-flat-fee');
+      const shippingRateIdInput = document.getElementById('shipping-rate-id');
       const shippingFreeThresholdInput = document.getElementById('shipping-free-threshold');
       const shippingPickupAddressInput = document.getElementById('shipping-pickup-address');
       const shippingPickupHoursInput = document.getElementById('shipping-pickup-hours');
+      let stripeShippingRates = [];
 
       function updateShippingFields() {
         const method = shippingMethodInput.value;
@@ -625,9 +732,38 @@
       }
       shippingMethodInput.addEventListener('change', updateShippingFields);
 
-      // ---- Image upload helper ----
+      async function loadStripeShippingRates() {
+        if (!ghToken) return;
+        try {
+          const res = await fetch('/api/shipping-rates', {
+            headers: { 'Authorization': 'Bearer ' + ghToken },
+          });
+          if (!res.ok) return;
+          const data = await res.json();
+          stripeShippingRates = data.rates || [];
+          shippingRateIdInput.innerHTML = '';
+          if (stripeShippingRates.length === 0) {
+            const opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = 'No shipping rates found in Stripe';
+            shippingRateIdInput.appendChild(opt);
+          } else {
+            stripeShippingRates.forEach(r => {
+              const opt = document.createElement('option');
+              opt.value = r.id;
+              const amt = r.amount != null ? ' — $' + (r.amount / 100).toFixed(2) : '';
+              opt.textContent = r.display_name + amt;
+              shippingRateIdInput.appendChild(opt);
+            });
+          }
+        } catch (e) {
+          shippingRateIdInput.innerHTML = '<option value="">Could not load rates</option>';
+        }
+      }
 
-      async function uploadSettingsImage(blob, filename) {
+      // ---- Image upload with crop ----
+
+      async function uploadCroppedImage(blob, filename) {
         const buffer = await blob.arrayBuffer();
         const bytes = new Uint8Array(buffer);
         let binary = '';
@@ -646,32 +782,99 @@
           const d = await res.json().catch(() => ({}));
           throw new Error(d.error || 'Upload failed');
         }
-        const data = await res.json();
-        return data.path;
+        return (await res.json()).path;
       }
 
-      function bindImageUpload(fileInput, hiddenInput, previewEl, statusEl, namePrefix) {
-        fileInput.addEventListener('change', async () => {
+      function openCropModal(src, outputW, outputH, config) {
+        pendingCrop = config;
+        cropInfo.textContent = outputW + ' × ' + outputH + ' px';
+        cropModal.classList.add('open');
+        cropImageEl.src = src;
+
+        if (cropper) cropper.destroy();
+        cropper = new Cropper(cropImageEl, {
+          viewMode: 1,
+          dragMode: 'move',
+          aspectRatio: outputW / outputH,
+          autoCropArea: 1,
+          restore: false,
+          guides: true,
+          center: true,
+          highlight: false,
+          cropBoxMovable: true,
+          cropBoxResizable: true,
+          toggleDragModeOnDblclick: false,
+        });
+      }
+
+      function closeCropModal() {
+        cropModal.classList.remove('open');
+        if (cropper) { cropper.destroy(); cropper = null; }
+        pendingCrop = null;
+      }
+
+      cropCancelBtn.addEventListener('click', closeCropModal);
+
+      cropConfirmBtn.addEventListener('click', async () => {
+        if (!cropper || !pendingCrop) return;
+        const cfg = pendingCrop;
+        const canvas = cropper.getCroppedCanvas({
+          width: cfg.outputW,
+          height: cfg.outputH,
+          imageSmoothingEnabled: true,
+          imageSmoothingQuality: 'high',
+        });
+        if (!canvas) return;
+
+        cropConfirmBtn.disabled = true;
+        cropConfirmBtn.textContent = 'Uploading...';
+
+        canvas.toBlob(async (blob) => {
+          try {
+            const path = await uploadCroppedImage(blob, cfg.filename);
+            cfg.hiddenInput.value = path;
+            cfg.previewEl.src = path;
+            cfg.previewWrap.style.display = '';
+            cfg.statusEl.textContent = 'Uploaded';
+            cfg.statusEl.style.color = '#3a3';
+            closeCropModal();
+          } catch (e) {
+            cfg.statusEl.textContent = 'Error: ' + e.message;
+            cfg.statusEl.style.color = '#c44';
+            closeCropModal();
+          }
+          cropConfirmBtn.disabled = false;
+          cropConfirmBtn.textContent = 'Crop & Upload';
+        }, 'image/png');
+      });
+
+      function bindImageField(fileInput, hiddenInput, previewEl, previewWrap, statusEl, deleteBtn, filename, outputW, outputH) {
+        fileInput.addEventListener('change', () => {
           const file = fileInput.files[0];
           if (!file) return;
           fileInput.value = '';
-          statusEl.textContent = 'Uploading...';
+          statusEl.textContent = '';
           statusEl.style.color = '';
-          try {
-            const ext = file.name.split('.').pop().toLowerCase();
-            const safeName = namePrefix + '.' + ext;
-            const path = await uploadSettingsImage(file, safeName);
-            hiddenInput.value = path;
-            previewEl.src = path;
-            previewEl.style.display = '';
-            statusEl.textContent = 'Uploaded';
-            statusEl.style.color = '#3a3';
-          } catch (e) {
-            statusEl.textContent = 'Error: ' + e.message;
-            statusEl.style.color = '#c44';
-          }
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            openCropModal(ev.target.result, outputW, outputH, {
+              hiddenInput, previewEl, previewWrap, statusEl, filename, outputW, outputH,
+            });
+          };
+          reader.readAsDataURL(file);
+        });
+
+        deleteBtn.addEventListener('click', () => {
+          hiddenInput.value = '';
+          previewEl.src = '';
+          previewWrap.style.display = 'none';
+          statusEl.textContent = '';
         });
       }
+
+      bindImageField(ogImageFile, ogImageInput, ogImagePreview, ogImagePreviewWrap, ogImageStatus, ogImageDelete, 'og-share-image.png', 1200, 630);
+      bindImageField(faviconFile, faviconInput, faviconPreview, faviconPreviewWrap, faviconStatus, faviconDelete, 'favicon-32.png', 32, 32);
+      bindImageField(appleIconFile, appleIconInput, appleIconPreview, appleIconPreviewWrap, appleIconStatus, appleIconDelete, 'apple-touch-icon.png', 180, 180);
 
       let ghToken = null;
 
@@ -730,11 +933,6 @@
         });
       }
 
-      // Bind image uploaders
-      bindImageUpload(ogImageFile, ogImageInput, ogImagePreview, ogImageStatus, 'og-share-image');
-      bindImageUpload(faviconFile, faviconInput, faviconPreview, faviconStatus, 'favicon-32');
-      bindImageUpload(appleIconFile, appleIconInput, appleIconPreview, appleIconStatus, 'apple-touch-icon');
-
       // ---- Helpers ----
 
       function escHtml(s) {
@@ -785,12 +983,12 @@
             siteTitleInput.value = data.site_title || '';
             siteDescInput.value = data.site_description || '';
             ogImageInput.value = data.og_image || '';
-            if (data.og_image) { ogImagePreview.src = data.og_image; ogImagePreview.style.display = ''; }
+            if (data.og_image) { ogImagePreview.src = data.og_image; ogImagePreviewWrap.style.display = ''; }
             ogUrlInput.value = data.og_url || '';
             faviconInput.value = data.favicon_url || '';
-            if (data.favicon_url) { faviconPreview.src = data.favicon_url; faviconPreview.style.display = ''; }
+            if (data.favicon_url) { faviconPreview.src = data.favicon_url; faviconPreviewWrap.style.display = ''; }
             appleIconInput.value = data.apple_icon_url || '';
-            if (data.apple_icon_url) { appleIconPreview.src = data.apple_icon_url; appleIconPreview.style.display = ''; }
+            if (data.apple_icon_url) { appleIconPreview.src = data.apple_icon_url; appleIconPreviewWrap.style.display = ''; }
             metaPixelInput.value = data.meta_pixel_id || '';
             // Secondary CTA
             const cta = data.secondary_cta || {};
@@ -809,11 +1007,12 @@
             // Shipping
             const ship = data.shipping || {};
             shippingMethodInput.value = ship.method || 'free';
-            shippingFlatFeeInput.value = ship.flat_fee || '';
             shippingFreeThresholdInput.value = ship.free_threshold || '';
             shippingPickupAddressInput.value = ship.pickup_address || '';
             shippingPickupHoursInput.value = ship.pickup_hours || '';
             updateShippingFields();
+            await loadStripeShippingRates();
+            if (ship.stripe_rate_id) shippingRateIdInput.value = ship.stripe_rate_id;
             // Populate feed URL from og_url
             const feedUrlInput = document.getElementById('meta-feed-url');
             if (feedUrlInput && data.og_url) {
@@ -860,7 +1059,7 @@
           },
           shipping: {
             method: shippingMethodInput.value,
-            flat_fee: shippingFlatFeeInput.value.trim() ? parseFloat(shippingFlatFeeInput.value) : null,
+            stripe_rate_id: shippingRateIdInput.value || null,
             free_threshold: shippingFreeThresholdInput.value.trim() ? parseFloat(shippingFreeThresholdInput.value) : null,
             pickup_address: shippingPickupAddressInput.value.trim(),
             pickup_hours: shippingPickupHoursInput.value.trim(),
