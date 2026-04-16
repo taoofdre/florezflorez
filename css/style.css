@@ -1312,6 +1312,7 @@ a {
     flex: 1;
     flex-direction: column;
     align-items: stretch;
+    justify-content: flex-start;
     padding: 0;
     padding-top: 60px;
     overflow-y: auto;
@@ -1322,6 +1323,11 @@ a {
     height: auto;
     aspect-ratio: 1;
     max-height: none;
+    flex-shrink: 0;
+  }
+
+  .product-media .carousel .art-image {
+    object-fit: cover;
   }
 
   .product-media .carousel-prev,
