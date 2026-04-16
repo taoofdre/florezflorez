@@ -275,12 +275,16 @@
   let lbImages = [];
   let lbIndex = 0;
 
+  var lightboxHistoryPushed = false;
+
   function openLightbox(images, index) {
     lbImages = images;
     lbIndex = index;
     showLightboxImage();
     lightbox.classList.add('open');
     document.body.style.overflow = 'hidden';
+    history.pushState({ lightbox: true }, '', window.location.pathname);
+    lightboxHistoryPushed = true;
   }
 
   function showLightboxImage() {
@@ -308,6 +312,10 @@
   function closeLightbox() {
     lightbox.classList.remove('open');
     document.body.style.overflow = '';
+    if (lightboxHistoryPushed) {
+      lightboxHistoryPushed = false;
+      history.back();
+    }
   }
 
   lightbox.querySelector('.lightbox-close').addEventListener('click', (e) => {
@@ -561,6 +569,12 @@
           });
         });
         wrap.appendChild(addBtn);
+
+        // Auto-select if only one available size
+        const availableSizeBtns = options.querySelectorAll('.size-option:not(.size-option-soldout)');
+        if (availableSizeBtns.length === 1) {
+          availableSizeBtns[0].click();
+        }
       } else {
         const btn = document.createElement('button');
         btn.className = 'buy-btn';
@@ -679,6 +693,22 @@
       content.appendChild(article);
     });
 
+    // Scroll indicator for multiple products
+    if (pieces.length > 1) {
+      const indicator = document.createElement('div');
+      indicator.className = 'scroll-indicator';
+      indicator.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+      content.appendChild(indicator);
+
+      content.addEventListener('scroll', function onScroll() {
+        if (content.scrollTop > 50) {
+          indicator.classList.add('hidden');
+        } else {
+          indicator.classList.remove('hidden');
+        }
+      });
+    }
+
     // Scroll tracking
     setupScrollTracking(section, categorySlug);
   }
@@ -780,18 +810,18 @@
       text(mobilePrice, formatPrice(piece.price_display));
       mobileHeader.appendChild(mobilePrice);
     }
-    media.insertBefore(mobileHeader, media.firstChild);
+    media.appendChild(mobileHeader);
 
-    // Mobile description (below carousel, hidden on desktop)
+    // Mobile buy actions (below title+price, hidden on desktop)
+    const mobileBuy = buildBuyActions(piece);
+    mobileBuy.classList.add('buy-actions-mobile');
+    media.appendChild(mobileBuy);
+
+    // Mobile description (below buy actions, hidden on desktop)
     const mobileDesc = document.createElement('p');
     mobileDesc.className = 'product-description-mobile';
     text(mobileDesc, piece.description);
     media.appendChild(mobileDesc);
-
-    // Mobile buy actions (below description, hidden on desktop)
-    const mobileBuy = buildBuyActions(piece);
-    mobileBuy.classList.add('buy-actions-mobile');
-    media.appendChild(mobileBuy);
 
     productPage.appendChild(media);
     section.appendChild(productPage);
@@ -938,6 +968,12 @@
   });
 
   window.addEventListener('popstate', () => {
+    if (lightboxHistoryPushed) {
+      lightboxHistoryPushed = false;
+      lightbox.classList.remove('open');
+      document.body.style.overflow = '';
+      return;
+    }
     navigate(window.location.pathname, false);
   });
 
