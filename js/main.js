@@ -26,10 +26,10 @@
   // ---- State ----
   let activeSection = null;
   let activeObserver = null;
-  let instagramDmUrl = 'https://ig.me/m/florezflorez.studio';
+  let secondaryCta = null;
   const dataCache = {};
 
-  // ---- Settings (pixel ID, Instagram URL) ----
+  // ---- Settings ----
   const settingsPromise = fetch('/content/settings.json?t=' + Date.now())
     .then(r => r.ok ? r.json() : {})
     .catch(() => ({}));
@@ -39,14 +39,35 @@
       fbq('init', settings.meta_pixel_id);
       fbq('track', 'PageView');
     }
-    const igLink = document.getElementById('instagram-dm-link');
-    if (igLink && settings.instagram_dm_url) {
-      igLink.href = settings.instagram_dm_url;
-    }
-    if (settings.instagram_dm_url) {
-      instagramDmUrl = settings.instagram_dm_url;
+    if (settings.secondary_cta) {
+      secondaryCta = settings.secondary_cta;
     }
   });
+
+  function buildCtaUrl(channelConfig, productTitle) {
+    var channel = channelConfig.channel;
+    var handle = channelConfig.handle;
+    var message = secondaryCta && secondaryCta.message_template
+      ? secondaryCta.message_template.replace(/\{product\}/g, productTitle || '')
+      : '';
+
+    switch (channel) {
+      case 'instagram':
+        return 'https://ig.me/m/' + handle;
+      case 'whatsapp':
+        return 'https://wa.me/' + handle.replace(/[^+\d]/g, '')
+          + (message ? '?text=' + encodeURIComponent(message) : '');
+      case 'sms':
+        return 'sms:' + handle.replace(/[^+\d]/g, '')
+          + (message ? '?body=' + encodeURIComponent(message) : '');
+      case 'email':
+        return 'mailto:' + handle
+          + '?subject=' + encodeURIComponent(productTitle || 'Inquiry')
+          + (message ? '&body=' + encodeURIComponent(message) : '');
+      default:
+        return '#';
+    }
+  }
 
   // ---- Cart state ----
   let cart = JSON.parse(localStorage.getItem('ff_cart') || '[]');
@@ -589,13 +610,20 @@
       }
     }
 
-    const contactBtn = document.createElement('a');
-    contactBtn.className = 'contact-btn';
-    contactBtn.href = instagramDmUrl;
-    contactBtn.target = '_blank';
-    contactBtn.rel = 'noopener';
-    text(contactBtn, 'Make me one');
-    wrap.appendChild(contactBtn);
+    if (secondaryCta) {
+      var isMobile = window.innerWidth <= 768;
+      var channelConfig = isMobile ? secondaryCta.mobile : secondaryCta.desktop;
+      if (channelConfig && channelConfig.handle) {
+        var ctaUrl = buildCtaUrl(channelConfig, piece.title);
+        var contactBtn = document.createElement('a');
+        contactBtn.className = 'contact-btn';
+        contactBtn.href = ctaUrl;
+        contactBtn.target = '_blank';
+        contactBtn.rel = 'noopener';
+        text(contactBtn, secondaryCta.button_text || 'Make me one');
+        wrap.appendChild(contactBtn);
+      }
+    }
 
     return wrap;
   }
@@ -783,12 +811,12 @@
     }
     sidebar.appendChild(headerRow);
 
+    sidebar.appendChild(buildBuyActions(piece));
+
     const descEl = document.createElement('p');
     descEl.className = 'product-description';
     text(descEl, piece.description);
     sidebar.appendChild(descEl);
-
-    sidebar.appendChild(buildBuyActions(piece));
 
     productPage.appendChild(sidebar);
 

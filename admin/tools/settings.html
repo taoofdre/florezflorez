@@ -76,6 +76,28 @@
     button.save-btn:hover { background: #555; }
     button.save-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
+    .btn {
+      padding: 0.5rem 1.5rem;
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #fff;
+      background: #333;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: #555; }
+
+    .btn-outline {
+      color: #333;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.2);
+    }
+    .btn-outline:hover { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.35); }
+
     .status {
       position: absolute;
       right: 2rem;
@@ -314,9 +336,17 @@
         <span id="desc-counter" style="font-size:0.7rem;color:rgba(0,0,0,0.3);margin-top:0.15rem;"></span>
       </div>
       <div class="field-group">
-        <label for="og-image">Share Image URL</label>
-        <p class="field-desc">Image shown when shared on social media. Optimal size: <strong>1200 × 630 px</strong>. Must be an absolute URL (https://…). Upload the image first via the CMS, then paste its full URL here.</p>
-        <input type="text" id="og-image" class="text-input" placeholder="https://florezflorez.vercel.app/uploads/share.jpg">
+        <label>Share Image</label>
+        <p class="field-desc">Shown when shared on social media. Optimal: <strong>1200 × 630 px</strong>.</p>
+        <div style="display:flex;gap:0.75rem;align-items:center;margin-top:0.25rem;">
+          <label class="btn btn-outline" style="cursor:pointer;">
+            Upload
+            <input type="file" id="og-image-file" accept="image/*" style="display:none;">
+          </label>
+          <span class="field-desc" id="og-image-status"></span>
+        </div>
+        <img id="og-image-preview" style="max-width:300px;max-height:160px;margin-top:0.5rem;display:none;border:1px solid rgba(0,0,0,0.08);">
+        <input type="hidden" id="og-image">
       </div>
       <div class="field-group">
         <label for="og-url">Canonical URL</label>
@@ -324,43 +354,128 @@
         <input type="text" id="og-url" class="text-input" placeholder="https://florezflorez.vercel.app">
       </div>
       <div class="field-group">
-        <label for="favicon-url">Favicon URL</label>
-        <p class="field-desc">The small icon shown in browser tabs. Optimal size: <strong>32 × 32 px</strong> (PNG). Upload the image first via the CMS, then paste its full URL here. For best results, also provide a 180×180 px version for Apple devices.</p>
-        <input type="text" id="favicon-url" class="text-input" placeholder="https://florezflorez.vercel.app/uploads/favicon.png">
+        <label>Favicon (32 × 32)</label>
+        <p class="field-desc">Small icon in browser tabs. PNG, 32 × 32 px.</p>
+        <div style="display:flex;gap:0.75rem;align-items:center;margin-top:0.25rem;">
+          <label class="btn btn-outline" style="cursor:pointer;">
+            Upload
+            <input type="file" id="favicon-file" accept="image/png" style="display:none;">
+          </label>
+          <span class="field-desc" id="favicon-status"></span>
+        </div>
+        <img id="favicon-preview" style="width:32px;height:32px;margin-top:0.5rem;display:none;border:1px solid rgba(0,0,0,0.08);">
+        <input type="hidden" id="favicon-url">
+      </div>
+      <div class="field-group">
+        <label>Apple Touch Icon (180 × 180)</label>
+        <p class="field-desc">Icon for iOS home screen. PNG, 180 × 180 px.</p>
+        <div style="display:flex;gap:0.75rem;align-items:center;margin-top:0.25rem;">
+          <label class="btn btn-outline" style="cursor:pointer;">
+            Upload
+            <input type="file" id="apple-icon-file" accept="image/png" style="display:none;">
+          </label>
+          <span class="field-desc" id="apple-icon-status"></span>
+        </div>
+        <img id="apple-icon-preview" style="width:48px;height:48px;margin-top:0.5rem;display:none;border:1px solid rgba(0,0,0,0.08);">
+        <input type="hidden" id="apple-icon-url">
       </div>
     </div>
 
-    <!-- Meta / Facebook Pixel -->
+    <!-- Marketing Integrations -->
     <div class="settings-section">
-      <h2>Meta / Facebook</h2>
+      <h2>Marketing Integrations</h2>
       <div class="field-group">
-        <label for="meta-pixel-id">Pixel ID</label>
+        <label for="meta-pixel-id">Meta / Facebook Pixel ID</label>
         <p class="field-desc">Found in Meta Events Manager under your pixel's settings.</p>
         <input type="text" id="meta-pixel-id" class="text-input" placeholder="e.g. 1234567890123456">
       </div>
-    </div>
-
-    <!-- Meta Product Feed -->
-    <div class="settings-section">
-      <h2>Meta Product Feed</h2>
-      <p class="section-desc">Use this URL in <a href="https://business.facebook.com/commerce" target="_blank" rel="noopener">Meta Commerce Manager</a> as a scheduled data feed to sync your product catalog for Instagram Shopping and Facebook Shops.</p>
-      <div class="field-group">
-        <label>Feed URL</label>
-        <div style="display:flex;gap:0.5rem;align-items:center;">
+      <div class="field-group" style="margin-top:1.5rem;">
+        <label>Meta Product Feed URL</label>
+        <p class="field-desc">Use in <a href="https://business.facebook.com/commerce" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">Meta Commerce Manager</a> to sync your catalog for Instagram Shopping and Facebook Shops.</p>
+        <div style="display:flex;gap:0.5rem;align-items:center;margin-top:0.25rem;">
           <input type="text" id="meta-feed-url" class="text-input" readonly style="flex:1;">
           <button type="button" id="copy-feed-url" class="btn" style="white-space:nowrap;padding:0.5rem 1rem;font-size:0.75rem;">COPY</button>
         </div>
-        <p class="field-desc" style="margin-top:0.5rem;">This feed auto-updates when you add or edit products in the CMS. Set Meta Commerce Manager to poll it daily.</p>
+        <p class="field-desc" style="margin-top:0.5rem;">Auto-updates when you add or edit products. Set Commerce Manager to poll daily.</p>
       </div>
     </div>
 
-    <!-- Contact & Social -->
+    <!-- Secondary CTA -->
     <div class="settings-section">
-      <h2>Contact &amp; Social</h2>
+      <h2>Secondary Call-to-Action</h2>
+      <p class="field-desc" style="margin-bottom:1.25rem;">The contact button shown below "Add to Cart" on product pages. Leave handle fields blank to hide the button.</p>
       <div class="field-group">
-        <label for="instagram-url">Instagram DM URL</label>
-        <p class="field-desc">Linked in the order confirmation message shown after checkout. Format: https://ig.me/m/yourusername</p>
-        <input type="text" id="instagram-url" class="text-input" placeholder="https://ig.me/m/yourusername">
+        <label for="cta-button-text">Button Text</label>
+        <input type="text" id="cta-button-text" class="text-input" placeholder="e.g. Make me one">
+      </div>
+      <div class="field-group">
+        <label for="cta-message-template">Message Template</label>
+        <p class="field-desc">Pre-filled message for the customer. Use <strong>{product}</strong> to insert the product name. Note: Instagram does not support pre-filled messages.</p>
+        <textarea id="cta-message-template" class="text-input" rows="2" placeholder="Hi! I'm interested in {product}. Can you tell me more?" style="resize:vertical;"></textarea>
+      </div>
+      <div class="field-group">
+        <label for="cta-desktop-channel">Desktop — Channel</label>
+        <select id="cta-desktop-channel" class="text-input">
+          <option value="instagram">Instagram DM</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="sms">SMS</option>
+          <option value="email">Email</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label for="cta-desktop-handle">Desktop — Handle / Number / Email</label>
+        <p class="field-desc" id="cta-desktop-handle-desc">Instagram username without @. Example: florezflorez.studio</p>
+        <input type="text" id="cta-desktop-handle" class="text-input" placeholder="florezflorez.studio">
+      </div>
+      <div class="field-group">
+        <label for="cta-mobile-channel">Mobile — Channel</label>
+        <select id="cta-mobile-channel" class="text-input">
+          <option value="instagram">Instagram DM</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="sms">SMS</option>
+          <option value="email">Email</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label for="cta-mobile-handle">Mobile — Handle / Number / Email</label>
+        <p class="field-desc" id="cta-mobile-handle-desc">Instagram username without @. Example: florezflorez.studio</p>
+        <input type="text" id="cta-mobile-handle" class="text-input" placeholder="florezflorez.studio">
+      </div>
+    </div>
+
+    <!-- Shipping -->
+    <div class="settings-section">
+      <h2>Shipping</h2>
+      <p class="field-desc" style="margin-bottom:1.25rem;">US-only shipping. Choose how orders are fulfilled.</p>
+      <div class="field-group">
+        <label for="shipping-method">Shipping Method</label>
+        <select id="shipping-method" class="text-input">
+          <option value="free">Free Shipping</option>
+          <option value="flat">Flat Rate</option>
+          <option value="pickup">Local Pickup</option>
+        </select>
+      </div>
+      <div id="shipping-flat-fields" style="display:none;">
+        <div class="field-group">
+          <label for="shipping-flat-fee">Flat Fee (USD)</label>
+          <input type="number" id="shipping-flat-fee" class="text-input" placeholder="5.00" min="0" step="0.01">
+        </div>
+        <div class="field-group">
+          <label for="shipping-free-threshold">Free Shipping Over (USD)</label>
+          <p class="field-desc">Orders above this amount get free shipping. Leave blank to always charge the flat fee.</p>
+          <input type="number" id="shipping-free-threshold" class="text-input" placeholder="e.g. 100" min="0" step="0.01">
+        </div>
+      </div>
+      <div id="shipping-pickup-fields" style="display:none;">
+        <div class="field-group">
+          <label for="shipping-pickup-address">Pickup Address</label>
+          <input type="text" id="shipping-pickup-address" class="text-input" placeholder="123 Main St, Brooklyn, NY 11201">
+        </div>
+        <div class="field-group">
+          <label for="shipping-pickup-hours">Pickup Hours</label>
+          <p class="field-desc">When customers can pick up their orders.</p>
+          <input type="text" id="shipping-pickup-hours" class="text-input" placeholder="e.g. Mon–Fri 10am–6pm">
+        </div>
       </div>
     </div>
 
@@ -432,24 +547,6 @@
       </div>
     </div>
 
-    <!-- GitHub OAuth -->
-    <div class="settings-section">
-      <h2>GitHub OAuth</h2>
-      <p class="section-desc">Powers the CMS and admin login. Set in Vercel under Settings &rarr; Environment Variables. Create or manage your OAuth app in GitHub developer settings.</p>
-      <div class="env-list">
-        <div class="env-item">
-          <span class="env-key">GITHUB_CLIENT_ID</span>
-          <span class="env-desc">OAuth App client ID. Public identifier for your GitHub OAuth app.</span>
-        </div>
-        <div class="env-item">
-          <span class="env-key">GITHUB_CLIENT_SECRET</span>
-          <span class="env-desc">OAuth App client secret. Keep this private &mdash; never commit it to your repository.</span>
-        </div>
-      </div>
-      <a href="https://github.com/settings/developers" target="_blank" rel="noopener" class="section-link">GitHub OAuth Apps &rarr;</a>
-      <a href="https://vercel.com/dashboard" target="_blank" rel="noopener" class="section-link">Vercel Dashboard &rarr;</a>
-    </div>
-
   </div>
 
   <script src="/js/git-batch.js"></script>
@@ -467,11 +564,114 @@
       const siteTitleInput = document.getElementById('site-title');
       const siteDescInput = document.getElementById('site-description');
       const ogImageInput = document.getElementById('og-image');
+      const ogImageFile = document.getElementById('og-image-file');
+      const ogImagePreview = document.getElementById('og-image-preview');
+      const ogImageStatus = document.getElementById('og-image-status');
       const ogUrlInput = document.getElementById('og-url');
       const faviconInput = document.getElementById('favicon-url');
+      const faviconFile = document.getElementById('favicon-file');
+      const faviconPreview = document.getElementById('favicon-preview');
+      const faviconStatus = document.getElementById('favicon-status');
+      const appleIconInput = document.getElementById('apple-icon-url');
+      const appleIconFile = document.getElementById('apple-icon-file');
+      const appleIconPreview = document.getElementById('apple-icon-preview');
+      const appleIconStatus = document.getElementById('apple-icon-status');
       const descCounter = document.getElementById('desc-counter');
       const metaPixelInput = document.getElementById('meta-pixel-id');
-      const instagramInput = document.getElementById('instagram-url');
+      const ctaButtonTextInput = document.getElementById('cta-button-text');
+      const ctaMessageTemplateInput = document.getElementById('cta-message-template');
+      const ctaDesktopChannelInput = document.getElementById('cta-desktop-channel');
+      const ctaDesktopHandleInput = document.getElementById('cta-desktop-handle');
+      const ctaMobileChannelInput = document.getElementById('cta-mobile-channel');
+      const ctaMobileHandleInput = document.getElementById('cta-mobile-handle');
+
+      const channelHints = {
+        instagram: 'Instagram username without @. Example: florezflorez.studio',
+        whatsapp: 'Phone number with country code. Example: +573001234567',
+        sms: 'Phone number with country code. Example: +13475551234',
+        email: 'Email address. Example: hello@florezflorez.com',
+      };
+      const channelPlaceholders = {
+        instagram: 'florezflorez.studio',
+        whatsapp: '+573001234567',
+        sms: '+13475551234',
+        email: 'hello@florezflorez.com',
+      };
+
+      function bindChannelHint(selectEl, descId, handleEl) {
+        const desc = document.getElementById(descId);
+        function update() {
+          desc.textContent = channelHints[selectEl.value] || '';
+          handleEl.placeholder = channelPlaceholders[selectEl.value] || '';
+        }
+        selectEl.addEventListener('change', update);
+      }
+      bindChannelHint(ctaDesktopChannelInput, 'cta-desktop-handle-desc', ctaDesktopHandleInput);
+      bindChannelHint(ctaMobileChannelInput, 'cta-mobile-handle-desc', ctaMobileHandleInput);
+
+      // Shipping
+      const shippingMethodInput = document.getElementById('shipping-method');
+      const shippingFlatFields = document.getElementById('shipping-flat-fields');
+      const shippingPickupFields = document.getElementById('shipping-pickup-fields');
+      const shippingFlatFeeInput = document.getElementById('shipping-flat-fee');
+      const shippingFreeThresholdInput = document.getElementById('shipping-free-threshold');
+      const shippingPickupAddressInput = document.getElementById('shipping-pickup-address');
+      const shippingPickupHoursInput = document.getElementById('shipping-pickup-hours');
+
+      function updateShippingFields() {
+        const method = shippingMethodInput.value;
+        shippingFlatFields.style.display = method === 'flat' ? '' : 'none';
+        shippingPickupFields.style.display = method === 'pickup' ? '' : 'none';
+      }
+      shippingMethodInput.addEventListener('change', updateShippingFields);
+
+      // ---- Image upload helper ----
+
+      async function uploadSettingsImage(blob, filename) {
+        const buffer = await blob.arrayBuffer();
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+        const base64 = btoa(binary);
+
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + ghToken,
+          },
+          body: JSON.stringify({ filename: filename, content: base64 }),
+        });
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          throw new Error(d.error || 'Upload failed');
+        }
+        const data = await res.json();
+        return data.path;
+      }
+
+      function bindImageUpload(fileInput, hiddenInput, previewEl, statusEl, namePrefix) {
+        fileInput.addEventListener('change', async () => {
+          const file = fileInput.files[0];
+          if (!file) return;
+          fileInput.value = '';
+          statusEl.textContent = 'Uploading...';
+          statusEl.style.color = '';
+          try {
+            const ext = file.name.split('.').pop().toLowerCase();
+            const safeName = namePrefix + '.' + ext;
+            const path = await uploadSettingsImage(file, safeName);
+            hiddenInput.value = path;
+            previewEl.src = path;
+            previewEl.style.display = '';
+            statusEl.textContent = 'Uploaded';
+            statusEl.style.color = '#3a3';
+          } catch (e) {
+            statusEl.textContent = 'Error: ' + e.message;
+            statusEl.style.color = '#c44';
+          }
+        });
+      }
 
       let ghToken = null;
 
@@ -530,22 +730,29 @@
         });
       }
 
+      // Bind image uploaders
+      bindImageUpload(ogImageFile, ogImageInput, ogImagePreview, ogImageStatus, 'og-share-image');
+      bindImageUpload(faviconFile, faviconInput, faviconPreview, faviconStatus, 'favicon-32');
+      bindImageUpload(appleIconFile, appleIconInput, appleIconPreview, appleIconStatus, 'apple-touch-icon');
+
       // ---- Helpers ----
 
       function escHtml(s) {
         return String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       }
 
-      function buildMetaBlock(title, desc, image, url, favicon) {
+      function buildMetaBlock(title, desc, image, url, favicon, appleIcon) {
         const t = (title || '').trim() || 'Florez Florez';
         const d = (desc || '').trim();
         const i = (image || '').trim();
         const u = (url || '').trim();
         const f = (favicon || '').trim();
+        const a = (appleIcon || '').trim();
         const parts = ['<!-- META:START -->'];
         parts.push('  <title>' + escHtml(t) + '</title>');
         if (d) parts.push('  <meta name="description" content="' + escHtml(d) + '">');
         if (f) parts.push('  <link rel="icon" type="image/png" href="' + escHtml(f) + '">');
+        if (a) parts.push('  <link rel="apple-touch-icon" href="' + escHtml(a) + '">');
         parts.push('  <meta property="og:type" content="website">');
         parts.push('  <meta property="og:title" content="' + escHtml(t) + '">');
         if (d) parts.push('  <meta property="og:description" content="' + escHtml(d) + '">');
@@ -578,10 +785,35 @@
             siteTitleInput.value = data.site_title || '';
             siteDescInput.value = data.site_description || '';
             ogImageInput.value = data.og_image || '';
+            if (data.og_image) { ogImagePreview.src = data.og_image; ogImagePreview.style.display = ''; }
             ogUrlInput.value = data.og_url || '';
             faviconInput.value = data.favicon_url || '';
+            if (data.favicon_url) { faviconPreview.src = data.favicon_url; faviconPreview.style.display = ''; }
+            appleIconInput.value = data.apple_icon_url || '';
+            if (data.apple_icon_url) { appleIconPreview.src = data.apple_icon_url; appleIconPreview.style.display = ''; }
             metaPixelInput.value = data.meta_pixel_id || '';
-            instagramInput.value = data.instagram_dm_url || '';
+            // Secondary CTA
+            const cta = data.secondary_cta || {};
+            ctaButtonTextInput.value = cta.button_text || '';
+            ctaMessageTemplateInput.value = cta.message_template || '';
+            if (cta.desktop) {
+              ctaDesktopChannelInput.value = cta.desktop.channel || 'instagram';
+              ctaDesktopHandleInput.value = cta.desktop.handle || '';
+            }
+            if (cta.mobile) {
+              ctaMobileChannelInput.value = cta.mobile.channel || 'instagram';
+              ctaMobileHandleInput.value = cta.mobile.handle || '';
+            }
+            ctaDesktopChannelInput.dispatchEvent(new Event('change'));
+            ctaMobileChannelInput.dispatchEvent(new Event('change'));
+            // Shipping
+            const ship = data.shipping || {};
+            shippingMethodInput.value = ship.method || 'free';
+            shippingFlatFeeInput.value = ship.flat_fee || '';
+            shippingFreeThresholdInput.value = ship.free_threshold || '';
+            shippingPickupAddressInput.value = ship.pickup_address || '';
+            shippingPickupHoursInput.value = ship.pickup_hours || '';
+            updateShippingFields();
             // Populate feed URL from og_url
             const feedUrlInput = document.getElementById('meta-feed-url');
             if (feedUrlInput && data.og_url) {
@@ -612,8 +844,27 @@
           og_image: ogImageInput.value.trim(),
           og_url: ogUrlInput.value.trim(),
           favicon_url: faviconInput.value.trim(),
+          apple_icon_url: appleIconInput.value.trim(),
           meta_pixel_id: metaPixelInput.value.trim(),
-          instagram_dm_url: instagramInput.value.trim(),
+          secondary_cta: {
+            button_text: ctaButtonTextInput.value.trim(),
+            message_template: ctaMessageTemplateInput.value.trim(),
+            desktop: {
+              channel: ctaDesktopChannelInput.value,
+              handle: ctaDesktopHandleInput.value.trim(),
+            },
+            mobile: {
+              channel: ctaMobileChannelInput.value,
+              handle: ctaMobileHandleInput.value.trim(),
+            },
+          },
+          shipping: {
+            method: shippingMethodInput.value,
+            flat_fee: shippingFlatFeeInput.value.trim() ? parseFloat(shippingFlatFeeInput.value) : null,
+            free_threshold: shippingFreeThresholdInput.value.trim() ? parseFloat(shippingFreeThresholdInput.value) : null,
+            pickup_address: shippingPickupAddressInput.value.trim(),
+            pickup_hours: shippingPickupHoursInput.value.trim(),
+          },
         };
 
         saveBtn.disabled = true;
@@ -634,7 +885,7 @@
           const indexFile = await indexRes.json();
           const indexContent = decodeURIComponent(escape(atob(indexFile.content.replace(/\n/g, ''))));
 
-          const newMetaBlock = buildMetaBlock(settings.site_title, settings.site_description, settings.og_image, settings.og_url, settings.favicon_url);
+          const newMetaBlock = buildMetaBlock(settings.site_title, settings.site_description, settings.og_image, settings.og_url, settings.favicon_url, settings.apple_icon_url);
 
           let updatedIndex;
           if (/<!-- META:START -->[\s\S]*?<!-- META:END -->/.test(indexContent)) {
