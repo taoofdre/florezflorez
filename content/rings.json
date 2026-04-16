@@ -85,7 +85,19 @@
       "stripe_product_id": "prod_UKWEFlzLZqKhPV",
       "images": [
         {
-          "src": "https://img.florezflorez.com/garnet-desert-ring01.png",
+          "src": "https://img.florezflorez.com/desert-garnet-ring-1776356315464-0.png",
+          "alt": ""
+        },
+        {
+          "src": "https://img.florezflorez.com/desert-garnet-ring-1776356317376-1.png",
+          "alt": ""
+        },
+        {
+          "src": "https://img.florezflorez.com/desert-garnet-ring-1776356318091-2.png",
+          "alt": ""
+        },
+        {
+          "src": "/uploads/garnet-desert-ring01.png",
           "alt": "Desert Garnet Ring"
         }
       ]
