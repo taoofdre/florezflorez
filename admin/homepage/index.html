@@ -498,18 +498,42 @@
         }
       }
 
-      // ---- Upload helper ----
+      // ---- Upload helpers ----
 
-      async function uploadFile(blob, filename, folder) {
+      // Upload images via /api/upload (R2)
+      async function uploadImage(blob, filename) {
         const buffer = await blob.arrayBuffer();
         const bytes = new Uint8Array(buffer);
         let binary = '';
         for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
         const base64 = btoa(binary);
 
-        const path = (folder || 'uploads') + '/' + filename;
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + ghToken,
+          },
+          body: JSON.stringify({ filename: filename, content: base64 }),
+        });
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          throw new Error(d.error || 'Upload failed');
+        }
+        const data = await res.json();
+        return data.path;
+      }
+
+      // Upload fonts via GitHub API (served from /fonts/ by CSS @font-face)
+      async function uploadFont(blob, filename) {
+        const buffer = await blob.arrayBuffer();
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+        const base64 = btoa(binary);
+
+        const path = 'fonts/' + filename;
         let sha = null;
-        // Check if file exists
         if (ghToken) {
           const existsRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}?ref=main`, {
             headers: { Authorization: 'token ' + ghToken },
@@ -542,7 +566,7 @@
         logoUploadStatus.style.color = '';
         try {
           const safeName = file.name.toLowerCase().replace(/[^a-z0-9._-]/g, '-');
-          const path = await uploadFile(file, safeName, 'uploads');
+          const path = await uploadImage(file, safeName);
           logoUrl.value = path;
           logoPreview.src = path;
           logoPreview.style.display = '';
@@ -565,7 +589,7 @@
         fontUploadStatus.style.color = '';
         try {
           const safeName = file.name.toLowerCase().replace(/[^a-z0-9._-]/g, '-');
-          await uploadFile(file, safeName, 'fonts');
+          await uploadFont(file, safeName);
           // Derive font family name from filename (e.g., "Inter-Regular.ttf" -> "Inter")
           const fontName = safeName.replace(/\.(ttf|woff2)$/, '').replace(/[-_](regular|bold|semibold|medium|light|italic|thin|black|extra)/gi, '').replace(/-+$/, '');
           // Capitalize

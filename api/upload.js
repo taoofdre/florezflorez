@@ -1,3 +1,14 @@
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+
+const s3 = new S3Client({
+  region: 'auto',
+  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+  },
+});
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
@@ -12,7 +23,6 @@ module.exports = async function handler(req, res) {
   }
   const token = authHeader.replace('Bearer ', '');
 
-  // Verify the token is valid and has repo access
   const userRes = await fetch('https://api.github.com/user', {
     headers: { 'Authorization': 'token ' + token },
   });
@@ -29,50 +39,31 @@ module.exports = async function handler(req, res) {
 
   // Sanitize filename
   const safeName = filename.replace(/[^a-z0-9._\-]/gi, '-');
-  const path = 'uploads/' + safeName;
 
-  const repo = 'taoofdre/florezflorez';
-  const branch = 'main';
+  // Determine content type from extension
+  const ext = safeName.split('.').pop().toLowerCase();
+  const contentTypes = {
+    webp: 'image/webp',
+    png: 'image/png',
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    svg: 'image/svg+xml',
+    gif: 'image/gif',
+  };
+  const contentType = contentTypes[ext] || 'application/octet-stream';
 
   try {
-    // Check if file already exists (need its SHA to update)
-    let sha = null;
-    const existsRes = await fetch(
-      `https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`,
-      { headers: { 'Authorization': 'token ' + token } }
-    );
-    if (existsRes.ok) {
-      const existsData = await existsRes.json();
-      sha = existsData.sha;
-    }
+    const buffer = Buffer.from(content, 'base64');
 
-    // Create or update the file
-    const body = {
-      message: 'Upload image: ' + safeName,
-      content: content,
-      branch: branch,
-    };
-    if (sha) body.sha = sha;
+    await s3.send(new PutObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME,
+      Key: safeName,
+      Body: buffer,
+      ContentType: contentType,
+    }));
 
-    const createRes = await fetch(
-      `https://api.github.com/repos/${repo}/contents/${path}`,
-      {
-        method: 'PUT',
-        headers: {
-          'Authorization': 'token ' + token,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      }
-    );
-
-    if (!createRes.ok) {
-      const err = await createRes.json().catch(() => ({}));
-      res.status(500).json({ error: err.message || 'GitHub API error' });
-      return;
-    }
-
-    res.status(200).json({ path: '/' + path, filename: safeName });
+    const publicUrl = `${process.env.R2_PUBLIC_URL}/${safeName}`;
+    res.status(200).json({ path: publicUrl, filename: safeName });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

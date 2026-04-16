@@ -5,6 +5,7 @@
     "test": "npx playwright test"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1030.0",
     "stripe": "^14.0.0"
   },
   "devDependencies": {
