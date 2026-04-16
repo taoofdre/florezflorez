@@ -10,15 +10,15 @@
       "stripe_product_id": "prod_UJs640Zim616GA",
       "images": [
         {
-          "src": "/uploads/image-4-11-26-at-11.06 pm.jpg",
+          "src": "https://img.florezflorez.com/image-4-11-26-at-11.06 pm.jpg",
           "alt": "pearl necklaace on white background"
         },
         {
-          "src": "/uploads/image-4-11-26-at-11.05 pm.jpg",
+          "src": "https://img.florezflorez.com/image-4-11-26-at-11.05 pm.jpg",
           "alt": "pearl necklace on black background"
         },
         {
-          "src": "/uploads/pearl-1776217000435-2.png",
+          "src": "https://img.florezflorez.com/pearl-1776217000435-2.png",
           "alt": ""
         }
       ],
@@ -34,7 +34,7 @@
       "stripe_product_id": "prod_UKui8UhSX35Qq9",
       "images": [
         {
-          "src": "/uploads/chameleon-1776203539092-0.png",
+          "src": "https://img.florezflorez.com/chameleon-1776203539092-0.png",
           "alt": ""
         }
       ],
@@ -50,11 +50,11 @@
       "stripe_product_id": "prod_UKv1AIJPziK0Wz",
       "images": [
         {
-          "src": "/uploads/lily-1776204682247-0.png",
+          "src": "https://img.florezflorez.com/lily-1776204682247-0.png",
           "alt": "necklace being worn from front"
         },
         {
-          "src": "/uploads/lily-1776204685432-1.png",
+          "src": "https://img.florezflorez.com/lily-1776204685432-1.png",
           "alt": "necklace being worn 3/4 view"
         }
       ],

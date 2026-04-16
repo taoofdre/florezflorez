@@ -1,5 +1,5 @@
 {
-  "logo": "/uploads/florez-florez-black-logo.png",
+  "logo": "https://img.florezflorez.com/florez-florez-black-logo.png",
   "font": "IBM Plex Mono",
   "gradients": [
     [
@@ -57,9 +57,9 @@
       "label": "ART"
     }
   ],
-  "art_background": "/uploads/whatsapp-image-2026-04-12-at-20.23.36.jpeg",
-  "necklaces_background": "/uploads/image-4-11-26-at-11.05 pm.jpg",
-  "rings_background": "/uploads/whatsapp-image-2026-04-12-at-20.25.44.jpeg",
-  "consulting_background": "/uploads/whatsapp-image-2026-04-12-at-20.27.12.jpeg",
+  "art_background": "https://img.florezflorez.com/whatsapp-image-2026-04-12-at-20.23.36.jpeg",
+  "necklaces_background": "https://img.florezflorez.com/image-4-11-26-at-11.05 pm.jpg",
+  "rings_background": "https://img.florezflorez.com/whatsapp-image-2026-04-12-at-20.25.44.jpeg",
+  "consulting_background": "https://img.florezflorez.com/whatsapp-image-2026-04-12-at-20.27.12.jpeg",
   "about_background": ""
 }
