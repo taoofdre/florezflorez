@@ -437,7 +437,7 @@
       track.appendChild(slide);
 
       slide.addEventListener('click', () => {
-        openLightbox(images, i);
+        if (window.innerWidth > 768) openLightbox(images, i);
       });
     });
 
@@ -700,13 +700,16 @@
       indicator.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
       content.appendChild(indicator);
 
-      content.addEventListener('scroll', function onScroll() {
-        if (content.scrollTop > 50) {
+      function onScroll() {
+        var scrolled = content.scrollTop || window.scrollY;
+        if (scrolled > 50) {
           indicator.classList.add('hidden');
         } else {
           indicator.classList.remove('hidden');
         }
-      });
+      }
+      content.addEventListener('scroll', onScroll);
+      window.addEventListener('scroll', onScroll, { passive: true });
     }
 
     // Scroll tracking

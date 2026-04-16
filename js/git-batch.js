@@ -35,7 +35,7 @@ class GitBatch {
 
   async _tryCommit(files, message, cachedBlobs) {
     // 1. Get current ref
-    const ref = await this._gh('GET', '/git/ref/heads/main');
+    const ref = await this._gh('GET', '/git/refs/heads/main');
     const headSha = ref.object.sha;
 
     // 2. Get current commit's tree
@@ -72,7 +72,7 @@ class GitBatch {
 
     // 6. Update ref
     try {
-      await this._gh('PATCH', '/git/ref/heads/main', {
+      await this._gh('PATCH', '/git/refs/heads/main', {
         sha: newCommit.sha,
       });
     } catch (err) {

@@ -695,12 +695,12 @@ a {
 .scroll-indicator {
   position: sticky;
   bottom: 1.5rem;
+  max-width: 600px;
   display: flex;
   justify-content: center;
-  opacity: 0.35;
+  opacity: 0.8;
   transition: opacity 0.4s ease;
   pointer-events: none;
-  margin-top: -2rem;
 }
 
 .scroll-indicator.hidden {
@@ -708,8 +708,8 @@ a {
 }
 
 .scroll-indicator svg {
-  width: 20px;
-  height: 20px;
+  width: 40px;
+  height: 40px;
   animation: scrollBounce 2s ease-in-out infinite;
 }
 
