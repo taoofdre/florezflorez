@@ -18,13 +18,14 @@
           "alt": ""
         }
       ],
-      "stock": 1,
       "sizes": [
         {
-          "label": "8.5"
+          "label": "8.5",
+          "stock": 1
         },
         {
-          "label": "9.5"
+          "label": "9.5",
+          "stock": 1
         }
       ]
     },
