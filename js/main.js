@@ -129,6 +129,30 @@
     saveCart();
   }
 
+  function buildShippingNoteHtml() {
+    var noteLines = [];
+    if (shippingConfig.method === 'pickup') {
+      noteLines.push('Local pickup only');
+      if (shippingConfig.pickup_address) noteLines.push(shippingConfig.pickup_address);
+      if (shippingConfig.pickup_hours) noteLines.push(shippingConfig.pickup_hours);
+    } else {
+      if (shippingConfig.method === 'free') {
+        noteLines.push('Free shipping, USA only');
+      } else if (shippingConfig.method === 'flat') {
+        noteLines.push('Shipping to USA only');
+        if (shippingConfig.free_threshold) {
+          noteLines.push('Free shipping on orders over $' + shippingConfig.free_threshold);
+        }
+      } else {
+        noteLines.push('Shipping to USA only');
+      }
+      if (shippingConfig.delivery_days) {
+        noteLines.push('Arrives in ' + shippingConfig.delivery_days + ' days');
+      }
+    }
+    return noteLines.map(function(l) { return '<p>' + l + '</p>'; }).join('');
+  }
+
   function updateCartUI() {
     const count = cart.reduce((sum, item) => sum + item.quantity, 0);
     cartBadge.textContent = count;
@@ -139,29 +163,9 @@
       cartEmpty.style.display = '';
       cartFooter.style.display = 'none';
       cartItemsEl.appendChild(cartEmpty);
-      const note = document.createElement('div');
+      var note = document.createElement('div');
       note.className = 'cart-shipping-note';
-      var noteLines = [];
-      if (shippingConfig.method === 'pickup') {
-        noteLines.push('Local pickup only');
-        if (shippingConfig.pickup_address) noteLines.push(shippingConfig.pickup_address);
-        if (shippingConfig.pickup_hours) noteLines.push(shippingConfig.pickup_hours);
-      } else {
-        if (shippingConfig.method === 'free') {
-          noteLines.push('Free shipping, USA only');
-        } else if (shippingConfig.method === 'flat') {
-          noteLines.push('Shipping to USA only');
-          if (shippingConfig.free_threshold) {
-            noteLines.push('Free shipping on orders over $' + shippingConfig.free_threshold);
-          }
-        } else {
-          noteLines.push('Shipping to USA only');
-        }
-        if (shippingConfig.delivery_days) {
-          noteLines.push('Arrives in ' + shippingConfig.delivery_days + ' days');
-        }
-      }
-      note.innerHTML = noteLines.map(function(l) { return '<p>' + l + '</p>'; }).join('');
+      note.innerHTML = buildShippingNoteHtml();
       cartItemsEl.appendChild(note);
       return;
     }
@@ -229,31 +233,11 @@
       cartItemsEl.appendChild(row);
     });
 
-    // Shipping note below items
-    const note = document.createElement('div');
-    note.className = 'cart-shipping-note';
-    var lines = [];
-    if (shippingConfig.method === 'pickup') {
-      lines.push('Local pickup only');
-      if (shippingConfig.pickup_address) lines.push(shippingConfig.pickup_address);
-      if (shippingConfig.pickup_hours) lines.push(shippingConfig.pickup_hours);
-    } else {
-      if (shippingConfig.method === 'free') {
-        lines.push('Free shipping, USA only');
-      } else if (shippingConfig.method === 'flat') {
-        lines.push('Shipping to USA only');
-        if (shippingConfig.free_threshold) {
-          lines.push('Free shipping on orders over $' + shippingConfig.free_threshold);
-        }
-      } else {
-        lines.push('Shipping to USA only');
-      }
-      if (shippingConfig.delivery_days) {
-        lines.push('Arrives in ' + shippingConfig.delivery_days + ' days');
-      }
+    // Update footer shipping note
+    var footerShipping = document.getElementById('cart-footer-shipping');
+    if (footerShipping) {
+      footerShipping.innerHTML = buildShippingNoteHtml();
     }
-    note.innerHTML = lines.map(function(l) { return '<p>' + l + '</p>'; }).join('');
-    cartItemsEl.appendChild(note);
   }
 
   function openCart() {
