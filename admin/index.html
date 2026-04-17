@@ -235,14 +235,12 @@
         <div id="pe-view" style="display:none;">
           <div class="toolbar">
             <h1 id="pe-title">Edit Product</h1>
-            <button class="link-btn" id="pe-back">Back to Products</button>
             <button class="btn" id="pe-save-btn" disabled>Save &amp; Exit</button>
             <button class="btn btn-danger" id="pe-delete-btn" style="display:none;">Delete</button>
             <span class="status" id="pe-status"></span>
           </div>
           <div class="settings-page" id="pe-editor">
-            <div class="editor-section">
-              <h2>Details</h2>
+            <div class="editor-section" style="border-top:none;">
               <div class="field-group"><label for="pe-cat">Category</label><select id="pe-cat" class="text-input"></select></div>
               <div class="field-group"><label for="pe-title-field">Title</label><input type="text" id="pe-title-field" class="text-input" placeholder="Product title"></div>
               <div class="field-group"><label for="pe-desc">Description</label><textarea id="pe-desc" class="text-input" placeholder="Product description"></textarea></div>
@@ -524,6 +522,12 @@
 
     function activateSection(name) {
       if (peIsDirty && !confirm('You have unsaved product changes. Leave anyway?')) return;
+      // Always reset to product list when entering or leaving products
+      if (document.getElementById('pe-view').style.display !== 'none') {
+        peIsDirty = false;
+        document.getElementById('pe-view').style.display = 'none';
+        document.getElementById('pl-view').style.display = '';
+      }
       sidebarLinks.forEach(l => l.classList.toggle('active', l.dataset.section === name));
       sections.forEach(s => s.classList.toggle('active', s.id === 'sec-' + name));
       if (!initialized[name]) {
@@ -531,6 +535,7 @@
         const initFn = sectionInits[name];
         if (initFn) initFn();
       }
+      if (name === 'products' && initialized.products) plLoadAll();
     }
 
     sidebarLinks.forEach(link => {
@@ -1160,13 +1165,6 @@
         peIsDirty = false;
         hideProductEditor();
       } catch (e) { peSetStatus('Error: ' + e.message, 'error'); document.getElementById('pe-delete-btn').disabled = false; }
-    });
-
-    // Product back button
-    document.getElementById('pe-back').addEventListener('click', () => {
-      if (peIsDirty && !confirm('You have unsaved changes. Leave anyway?')) return;
-      peIsDirty = false;
-      hideProductEditor();
     });
 
     // Product add size
