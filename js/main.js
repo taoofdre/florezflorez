@@ -228,6 +228,32 @@
       row.appendChild(info);
       cartItemsEl.appendChild(row);
     });
+
+    // Shipping note below items
+    const note = document.createElement('div');
+    note.className = 'cart-shipping-note';
+    var lines = [];
+    if (shippingConfig.method === 'pickup') {
+      lines.push('Local pickup only');
+      if (shippingConfig.pickup_address) lines.push(shippingConfig.pickup_address);
+      if (shippingConfig.pickup_hours) lines.push(shippingConfig.pickup_hours);
+    } else {
+      if (shippingConfig.method === 'free') {
+        lines.push('Free shipping, USA only');
+      } else if (shippingConfig.method === 'flat') {
+        lines.push('Shipping to USA only');
+        if (shippingConfig.free_threshold) {
+          lines.push('Free shipping on orders over $' + shippingConfig.free_threshold);
+        }
+      } else {
+        lines.push('Shipping to USA only');
+      }
+      if (shippingConfig.delivery_days) {
+        lines.push('Arrives in ' + shippingConfig.delivery_days + ' days');
+      }
+    }
+    note.innerHTML = lines.map(function(l) { return '<p>' + l + '</p>'; }).join('');
+    cartItemsEl.appendChild(note);
   }
 
   function openCart() {
