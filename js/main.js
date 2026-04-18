@@ -885,6 +885,25 @@
     media.className = 'product-media';
 
     if (piece.images && piece.images.length > 0) {
+      // Desktop: vertical stack of all images
+      const stack = document.createElement('div');
+      stack.className = 'product-stack';
+      piece.images.forEach((img, i) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'product-stack-image';
+        const imgEl = document.createElement('img');
+        imgEl.src = img.src;
+        imgEl.alt = img.alt;
+        imgEl.loading = i === 0 ? 'eager' : 'lazy';
+        wrap.appendChild(imgEl);
+        wrap.addEventListener('click', () => {
+          if (window.innerWidth > 768) openLightbox(piece.images, i);
+        });
+        stack.appendChild(wrap);
+      });
+      media.appendChild(stack);
+
+      // Mobile: existing carousel
       media.appendChild(buildCarousel(piece.images));
     }
 
@@ -913,6 +932,19 @@
     mobileDesc.className = 'product-description-mobile';
     text(mobileDesc, piece.description);
     media.appendChild(mobileDesc);
+
+    // Desktop scroll indicator (chevron) — only when there's more than one image
+    if (piece.images && piece.images.length > 1) {
+      const indicator = document.createElement('div');
+      indicator.className = 'scroll-indicator product-scroll-indicator';
+      indicator.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+      media.appendChild(indicator);
+
+      media.addEventListener('scroll', () => {
+        if (media.scrollTop > 50) indicator.classList.add('hidden');
+        else indicator.classList.remove('hidden');
+      }, { passive: true });
+    }
 
     productPage.appendChild(media);
     section.appendChild(productPage);
@@ -997,6 +1029,7 @@
 
   function navigate(path, push) {
     if (push !== false) history.pushState(null, '', path);
+    document.title = 'Florez Florez Studio';
 
     const clean = path.replace(/^\//, '').replace(/\/$/, '');
 
@@ -1009,23 +1042,41 @@
     const category = parts[0];
     const productId = parts[1] || null;
 
+    // Reject paths deeper than category/product
+    if (parts.length > 2) {
+      showNotFound();
+      return;
+    }
+
     // Product sections
     const sectionId = 'section-' + category;
-    if (!document.getElementById(sectionId)) return;
+    if (!document.getElementById(sectionId) || category === 'not-found') {
+      showNotFound();
+      return;
+    }
 
-    showSection(category);
-
-    if (productId && dataCache[category]) {
-      const piece = dataCache[category].pieces.find(p => p.id === productId);
-      if (piece) {
-        renderProductView(sectionId, piece, category);
+    if (productId) {
+      // Product slug requires a real product in the category cache
+      const piece = dataCache[category] && dataCache[category].pieces.find(p => p.id === productId);
+      if (!piece) {
+        showNotFound();
         return;
       }
+      showSection(category);
+      renderProductView(sectionId, piece, category);
+      return;
     }
+
+    showSection(category);
 
     if (dataCache[category]) {
       renderCategoryView(sectionId, dataCache[category].pieces, category);
     }
+  }
+
+  function showNotFound() {
+    showSection('not-found');
+    document.title = 'Page Not Found — Florez Florez Studio';
   }
 
   // ---- Event listeners ----

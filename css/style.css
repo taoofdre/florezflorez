@@ -303,7 +303,7 @@ a {
 .art-sidebar {
   position: sticky;
   top: 120px;
-  width: 280px;
+  width: 336px;
   height: calc(100vh - 120px);
   padding: 3rem 2rem;
   border-right: 1px solid rgba(0, 0, 0, 0.08);
@@ -340,13 +340,17 @@ a {
 .art-content {
   flex: 1;
   padding: 3rem 4rem 6rem;
-  max-width: 900px;
   overflow-y: auto;
   height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .art-piece {
   text-align: center;
+  width: 100%;
+  max-width: 600px;
 }
 
 .art-piece + .art-piece {
@@ -644,6 +648,7 @@ a {
   font-weight: 400;
   line-height: 1.7;
   color: rgba(0, 0, 0, 0.5);
+  margin-top: 1.5rem;
   margin-bottom: 1.5rem;
 }
 
@@ -652,8 +657,8 @@ a {
   flex: 1;
   overflow-y: auto;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   padding: 2rem;
 }
 
@@ -661,6 +666,42 @@ a {
   height: 70vh;
   max-height: 600px;
   width: 100%;
+}
+
+/* Desktop: vertical stack of product images */
+.product-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  width: 100%;
+  max-width: 600px;
+}
+
+.product-stack-image {
+  width: 100%;
+  cursor: zoom-in;
+}
+
+.product-stack-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: opacity 0.2s ease;
+}
+
+.product-stack-image:hover img {
+  opacity: 0.92;
+}
+
+/* Hide carousel on desktop — stack is used instead */
+.product-media > .carousel {
+  display: none;
+}
+
+.product-scroll-indicator {
+  margin-top: 1rem;
+  color: #333;
 }
 
 .product-header-mobile {
@@ -718,14 +759,81 @@ a {
 }
 
 .scroll-indicator svg {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
   animation: scrollBounce 2s ease-in-out infinite;
 }
 
 @keyframes scrollBounce {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(5px); }
+}
+
+/* ===== NOT FOUND ===== */
+.section-not-found {
+  padding-top: 0;
+  background: linear-gradient(135deg, #fafafa, #e1e0db, #d7eaee, #a6a8ab, #fffae0, #fae274, #dad9f2, #9c9cb0, #e5cccc, #b48e8e, #babac4, #85859c, #ffffff, #cccccc, #ececec, #a59e92);
+  background-size: 400% 400%;
+  animation: gradientShift 24s ease infinite;
+  color: #333;
+}
+
+.section-not-found.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.not-found-inner {
+  text-align: center;
+  padding: 2rem;
+}
+
+.not-found-title {
+  font-size: 4rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.15);
+}
+
+.not-found-message {
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  opacity: 0.8;
+  margin-bottom: 2.5rem;
+}
+
+.not-found-link {
+  display: inline-block;
+  padding: 0.75rem 2.5rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #333;
+  background: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.not-found-link:hover {
+  background: #fff;
+}
+
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  25%  { background-position: 100% 0%; }
+  50%  { background-position: 100% 100%; }
+  75%  { background-position: 0% 100%; }
+  100% { background-position: 0% 50%; }
 }
 
 /* ===== CONSULTING ===== */
@@ -1350,12 +1458,18 @@ a {
     overflow-y: auto;
   }
 
-  .product-media .carousel {
+  .product-media > .carousel {
+    display: block;
     width: 100%;
     height: auto;
     aspect-ratio: 1;
     max-height: none;
     flex-shrink: 0;
+  }
+
+  .product-stack,
+  .product-scroll-indicator {
+    display: none;
   }
 
   .product-media .carousel .art-image {
@@ -1421,6 +1535,11 @@ a {
     padding: 2rem 1.5rem 80vh;
     overflow-y: visible;
     height: auto;
+    display: block;
+  }
+
+  .art-piece {
+    max-width: none;
   }
 
   .art-piece + .art-piece {

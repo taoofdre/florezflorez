@@ -502,3 +502,131 @@ Florez Florez itself becomes merchant #1 on the platform once it launches.
 | Platform database | Postgres (provisioning metadata only) |
 | Platform app | Next.js or similar |
 | Merchant billing | Stripe Billing (platform's own Stripe account) |
+
+---
+
+## Local Development & Project Structure
+
+### Two Separate Projects
+
+The platform has two distinct codebases that live in separate repos and deploy independently:
+
+```
+~/Documents/
+├── ururu/                  # Platform app (ururu.store)
+│   ├── app/                # Next.js marketing site + provisioning API
+│   ├── api/                # Provisioning, auth, billing endpoints
+│   └── ...
+│
+└── florezflorez/           # Shop template (what gets forked per merchant)
+    ├── admin/              # Merchant admin panel
+    ├── api/                # Checkout, upload, stripe-sync (per-merchant)
+    ├── content/            # Product data, settings (per-merchant)
+    ├── js/                 # Storefront JS
+    └── ...
+```
+
+**ururu/** is the corporate platform — it owns:
+- Marketing site at `ururu.store`
+- Signup/onboarding flow
+- Provisioning API (creates repos, Vercel projects, R2 buckets)
+- Platform auth (magic link login)
+- Stripe Billing ($5/month subscriptions)
+- GitHub App credentials (private key for repo management)
+
+**florezflorez/** is the shop template — it becomes:
+- The repo that gets forked for each merchant
+- `florezflorez.com` is merchant #1 (Florez Florez the jewelry store)
+- Every new merchant gets a copy of this repo under the platform org
+
+### Domain Architecture
+
+| Domain | Purpose | Hosting |
+|---|---|---|
+| `ururu.store` | Platform marketing site + onboarding | Vercel (single project) |
+| `[store].ururu.store` | Merchant storefronts (wildcard subdomain) | Vercel (one project per merchant) |
+| `img.ururu.store` | Shared image CDN for all merchants | Cloudflare R2 (single bucket or per-merchant buckets) |
+| `florezflorez.com` | Florez Florez store (merchant #1, custom domain) | Vercel (points to florezflorez's project) |
+
+### DNS & Cloudflare Setup
+
+**ururu.store** (Cloudflare):
+- `A` / `CNAME` → Vercel (platform app)
+- `*.ururu.store` → Vercel wildcard (merchant subdomains)
+- `img.ururu.store` → R2 bucket custom domain
+
+**florezflorez.com** (already on Cloudflare):
+- Stays as-is, pointing to its own Vercel project
+- `img.florezflorez.com` → R2 (Florez Florez's own images, migrated)
+
+### Image Storage Decision
+
+Two options for R2 at scale:
+
+**Option A: Single shared bucket at `img.ururu.store`**
+- All merchant images in one bucket, namespaced by store: `img.ururu.store/{store-slug}/filename.webp`
+- Simpler provisioning (no per-merchant bucket creation)
+- Single CDN domain
+- Risk: one bucket's rate limits shared across all merchants
+
+**Option B: Per-merchant buckets**
+- Each merchant gets their own bucket: `{store-slug}-uploads`
+- Isolated rate limits and storage quotas
+- More provisioning complexity
+- Each bucket can use the shared `img.ururu.store` domain with path-based routing, or merchant-specific subdomains
+
+**Recommendation: Option A for MVP.** Single bucket with path namespacing. The R2 free tier (10GB storage, 10M reads/month) is per-account not per-bucket, so multiple buckets don't help with limits. Switch to per-merchant buckets only if you hit isolation issues.
+
+### Wildcard Subdomain Routing on Vercel
+
+Vercel supports wildcard domains on Pro plans. Each merchant's Vercel project gets assigned `{store-slug}.ururu.store`:
+
+```
+Provisioning step:
+1. Create Vercel project from template repo
+2. Add domain: luna-silver.ururu.store → project
+3. Vercel handles SSL automatically
+```
+
+For custom domains (e.g., `florezflorez.com`):
+- Merchant adds a CNAME pointing to `cname.vercel-dns.com`
+- Platform API calls Vercel to add the domain to their project
+- Vercel handles SSL via Let's Encrypt
+
+### Local Development Workflow
+
+**Working on the shop template (florezflorez/):**
+```bash
+cd ~/Documents/florezflorez
+npx serve . -l 3000
+# Open http://localhost:3000 for storefront
+# Open http://localhost:3000/admin for admin panel
+```
+
+**Working on the platform (ururu/):**
+```bash
+cd ~/Documents/ururu
+npm run dev
+# Open http://localhost:3001 for platform site
+# Provisioning API available at localhost:3001/api/...
+```
+
+**Testing provisioning end-to-end:**
+The platform's provisioning API creates real GitHub repos and Vercel projects — this can't be fully tested locally. Use a staging environment:
+- Staging GitHub org (e.g., `ururu-staging`)
+- Staging Vercel team
+- Staging Stripe account (test mode)
+- Platform dev server points to staging services
+
+### Migration Path: Florez Florez → Platform Merchant
+
+When the platform launches, Florez Florez transitions from "the product" to "merchant #1":
+
+1. Move the florezflorez repo under the platform org (`ururu-stores/florezflorez`)
+2. Install the GitHub App on it
+3. Replace GitHub OAuth in admin with platform auth
+4. Update R2 URLs from `img.florezflorez.com` to `img.ururu.store/florezflorez/` (or keep custom domain)
+5. `florezflorez.com` custom domain stays, just points to the Vercel project under the platform
+6. Create merchant record in platform DB with existing Stripe account ID
+
+The template repo becomes a clean, generalized version without Florez Florez-specific content.

@@ -36,13 +36,13 @@
     .admin-section.active { display: block; }
 
     /* Toolbar */
-    .toolbar { position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 1px solid rgba(0,0,0,0.1); padding: 1rem 2rem; display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; position: relative; }
+    .toolbar { position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 1px solid rgba(0,0,0,0.1); padding: 1rem 2rem; display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; min-height: 68px; }
     .toolbar h1 { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(0,0,0,0.35); margin-right: auto; }
     .toolbar a, .toolbar button.link-btn { color: rgba(0,0,0,0.35); font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; text-decoration: none; background: none; border: none; cursor: pointer; font-family: inherit; font-weight: 600; }
     .toolbar a:hover, .toolbar button.link-btn:hover { color: #333; }
 
     /* Buttons */
-    .btn { padding: 0.5rem 1.5rem; font-family: inherit; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: #fff; background: #333; border: none; cursor: pointer; transition: background 0.2s; }
+    .btn { padding: 0.5rem 1.5rem; font-family: inherit; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: #fff; background: #333; border: 1px solid transparent; cursor: pointer; transition: background 0.2s; }
     .btn:hover { background: #555; }
     .btn:disabled { opacity: 0.3; cursor: not-allowed; }
     .btn-outline { color: #333; background: #fff; border: 1px solid rgba(0,0,0,0.2); }
@@ -56,8 +56,9 @@
     .status.success { color: #3a3; }
 
     /* Form */
-    .settings-page { max-width: 640px; padding: 3rem 2rem 6rem; }
+    .settings-page { max-width: 640px; padding: 1.5rem 2rem 6rem; }
     .settings-section, .editor-section { border-top: 1px solid rgba(0,0,0,0.1); padding: 2.5rem 0; }
+    .settings-page > .settings-section:first-child, .settings-page > .editor-section:first-child { padding-top: 0; }
     .settings-section h2, .editor-section h2 { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(0,0,0,0.35); margin-bottom: 1.75rem; }
     .section-desc { font-size: 0.8rem; font-weight: 400; color: rgba(0,0,0,0.4); line-height: 1.65; margin-bottom: 1.25rem; }
     .field-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.25rem; }
@@ -164,6 +165,7 @@
 
     /* Coupons */
     .coupon-item { display: flex; align-items: center; gap: 1rem; padding: 0.85rem 1rem; border: 1px solid rgba(0,0,0,0.1); margin-bottom: 0.5rem; }
+    #st-coupons-list:not(:empty) { margin-bottom: 2rem; }
     .coupon-item .coupon-code { font-family: inherit; font-size: 0.82rem; font-weight: 600; color: #333; min-width: 120px; }
     .coupon-item .coupon-detail { font-size: 0.75rem; color: rgba(0,0,0,0.45); flex: 1; }
     .coupon-item .coupon-deactivate { font-family: inherit; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #c44; background: none; border: 1px solid #c44; padding: 0.3rem 0.75rem; cursor: pointer; flex-shrink: 0; }
@@ -339,7 +341,7 @@
           <div class="settings-section" style="border-top:none;">
             <p class="field-desc" style="margin-bottom:1rem;">Homepage panels and navigation links. Drag to reorder.</p>
             <div class="cat-list" id="hp-cat-list"></div>
-            <div style="border:1px solid rgba(0,0,0,0.1);padding:1.25rem;margin-top:1rem;">
+            <div style="margin-top:2rem;">
               <p style="font-size:0.72rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:rgba(0,0,0,0.35);margin-bottom:1rem;">Add Category</p>
               <div class="field-group"><label for="hp-new-cat-slug">Slug</label><p class="field-desc">URL path (lowercase, no spaces).</p><input type="text" id="hp-new-cat-slug" class="text-input" placeholder="e.g. earrings"></div>
               <div class="field-group"><label for="hp-new-cat-label">Label</label><input type="text" id="hp-new-cat-label" class="text-input" placeholder="e.g. EARRINGS" style="text-transform:uppercase;"></div>
@@ -394,7 +396,7 @@
         <div class="settings-page">
           <div class="settings-section" style="border-top:none;">
             <div id="st-coupons-list"></div>
-            <div style="border:1px solid rgba(0,0,0,0.1);padding:1.25rem;margin-top:1rem;">
+            <div>
               <p style="font-size:0.72rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:rgba(0,0,0,0.35);margin-bottom:1rem;">Create Coupon</p>
               <div class="field-group"><label for="st-coupon-code">Code</label><input type="text" id="st-coupon-code" class="text-input" placeholder="e.g. WELCOME10" style="text-transform:uppercase;"></div>
               <div class="field-group"><label for="st-coupon-name">Name</label><input type="text" id="st-coupon-name" class="text-input" placeholder="e.g. Welcome discount"></div>
