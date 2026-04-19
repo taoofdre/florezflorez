@@ -23,6 +23,25 @@
           "alt": ""
         }
       ]
+    },
+    {
+      "id": "time-in-nature",
+      "title": "TIME IN NATURE",
+      "description": "",
+      "for_sale": false,
+      "price_display": "",
+      "stripe_price_id": "",
+      "stripe_product_id": "",
+      "images": [
+        {
+          "src": "https://img.florezflorez.com/time-in-nature-1776627054955-0.webp",
+          "alt": ""
+        },
+        {
+          "src": "https://img.florezflorez.com/time-in-nature-1776627056831-1.webp",
+          "alt": ""
+        }
+      ]
     }
   ]
 }
