@@ -35,6 +35,11 @@
     {
       "slug": "earrings",
       "label": "EARRINGS"
+    },
+    {
+      "slug": "art",
+      "label": "ART",
+      "visible": false
     }
   ],
   "necklaces_background": "https://img.florezflorez.com/image-4-11-26-at-11.05 pm.jpg",
