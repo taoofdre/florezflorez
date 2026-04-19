@@ -1,3 +1,20 @@
 {
-  "pieces": []
+  "pieces": [
+    {
+      "id": "whittled-woods",
+      "title": "Whittled Woods",
+      "description": "",
+      "for_sale": true,
+      "purchasable": false,
+      "price_display": "",
+      "stripe_price_id": "",
+      "stripe_product_id": "",
+      "images": [
+        {
+          "src": "https://img.florezflorez.com/whittled-woods-1776626345056-0.webp",
+          "alt": ""
+        }
+      ]
+    }
+  ]
 }
