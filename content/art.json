@@ -127,6 +127,24 @@
           "alt": ""
         }
       ]
+    },
+    {
+      "id": "nyc-power",
+      "title": "NYC POWER",
+      "description": "",
+      "for_sale": false,
+      "purchasable": false,
+      "secondary_cta_enabled": true,
+      "price_display": "",
+      "stripe_price_id": "",
+      "stripe_product_id": "",
+      "images": [
+        {
+          "src": "https://img.florezflorez.com/nyc-power-1776638947443-0.webp",
+          "alt": ""
+        }
+      ],
+      "stock": 4
     }
   ]
 }
