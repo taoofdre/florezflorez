@@ -120,16 +120,18 @@
       ]
     },
     {
-      "id": "and",
-      "title": "AND",
+      "id": "ans",
+      "title": "ANS",
       "description": "Esta pieza representa el punto de reflexión donde lo lento se vuelve meditación. En el contexto actual, se dice que los procesos manuales y los oficios tradicionales están destinados a desaparecer ante el afán y la inmediatez de una sociedad que todo lo quiere para \"ya\". Como dicen los afanados en mi tierra: \"para ayer es tarde\". \nPara mí, esta obra defiende la idea de que el arte lleva en sí mismo los pensamientos del artista, la sabiduría empírica de sus antepasados, su tradición y, fundamentalmente, su visión única sobre el mundo que conoce.\nVisualmente, la obra plasma este diálogo entre el tiempo, el recuerdo y la resistencia de lo hecho a mano.\n\nMATERIALES: Mostacilla, piedras semipreciosas, hilo.",
       "for_sale": false,
+      "purchasable": false,
+      "secondary_cta_enabled": true,
       "price_display": "",
       "stripe_price_id": "",
       "stripe_product_id": "",
       "images": [
         {
-          "src": "https://img.florezflorez.com/and-1776634381380-0.webp",
+          "src": "https://img.florezflorez.com/ans-1776634440247-0.webp",
           "alt": ""
         }
       ]
