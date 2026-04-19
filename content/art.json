@@ -149,6 +149,28 @@
         }
       ],
       "stock": 0
+    },
+    {
+      "id": "blue",
+      "title": "BLUE",
+      "description": "",
+      "for_sale": false,
+      "purchasable": false,
+      "secondary_cta_enabled": true,
+      "price_display": "",
+      "stripe_price_id": "",
+      "stripe_product_id": "",
+      "images": [
+        {
+          "src": "https://img.florezflorez.com/blue-1776639225930-0.webp",
+          "alt": ""
+        },
+        {
+          "src": "https://img.florezflorez.com/blue-1776639226709-1.webp",
+          "alt": ""
+        }
+      ],
+      "stock": 0
     }
   ]
 }
