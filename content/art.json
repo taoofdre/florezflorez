@@ -30,6 +30,8 @@
       "title": "TIME IN NATURE",
       "description": "",
       "for_sale": false,
+      "purchasable": false,
+      "secondary_cta_enabled": true,
       "price_display": "",
       "stripe_price_id": "",
       "stripe_product_id": "",
@@ -99,7 +101,7 @@
     {
       "id": "ans",
       "title": "AND",
-      "description": "Esta pieza representa el punto de reflexiÃÂ³n donde lo lento se vuelve meditaciÃÂ³n. En el contexto actual, se dice que los procesos manuales y los oficios tradicionales estÃÂ¡n destinados a desaparecer ante el afÃÂ¡n y la inmediatez de una sociedad que todo lo quiere para \"ya\". Como dicen los afanados en mi tierra: \"para ayer es tarde\". \nPara mÃÂ­, esta obra defiende la idea de que el arte lleva en sÃÂ­ mismo los pensamientos del artista, la sabidurÃÂ­a empÃÂ­rica de sus antepasados, su tradiciÃÂ³n y, fundamentalmente, su visiÃÂ³n ÃÂºnica sobre el mundo que conoce.\nVisualmente, la obra plasma este diÃÂ¡logo entre el tiempo, el recuerdo y la resistencia de lo hecho a mano.\n\nMATERIALES: Mostacilla, piedras semipreciosas, hilo.",
+      "description": "Esta pieza representa el punto de reflexiÃÂÃÂ³n donde lo lento se vuelve meditaciÃÂÃÂ³n. En el contexto actual, se dice que los procesos manuales y los oficios tradicionales estÃÂÃÂ¡n destinados a desaparecer ante el afÃÂÃÂ¡n y la inmediatez de una sociedad que todo lo quiere para \"ya\". Como dicen los afanados en mi tierra: \"para ayer es tarde\". \nPara mÃÂÃÂ­, esta obra defiende la idea de que el arte lleva en sÃÂÃÂ­ mismo los pensamientos del artista, la sabidurÃÂÃÂ­a empÃÂÃÂ­rica de sus antepasados, su tradiciÃÂÃÂ³n y, fundamentalmente, su visiÃÂÃÂ³n ÃÂÃÂºnica sobre el mundo que conoce.\nVisualmente, la obra plasma este diÃÂÃÂ¡logo entre el tiempo, el recuerdo y la resistencia de lo hecho a mano.\n\nMATERIALES: Mostacilla, piedras semipreciosas, hilo.",
       "for_sale": false,
       "purchasable": false,
       "secondary_cta_enabled": true,
