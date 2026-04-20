@@ -1,25 +1,6 @@
 {
   "pieces": [
     {
-      "id": "flower-bud",
-      "title": "FLOWER BUD",
-      "description": "",
-      "for_sale": false,
-      "price_display": "",
-      "stripe_price_id": "",
-      "stripe_product_id": "",
-      "images": [
-        {
-          "src": "https://img.florezflorez.com/flower-bud-1776630500292-0.webp",
-          "alt": ""
-        },
-        {
-          "src": "https://img.florezflorez.com/flower-bud-1776630501418-1.webp",
-          "alt": ""
-        }
-      ]
-    },
-    {
       "id": "prod_UMlVU2Xr1870xt",
       "title": "FLOWER BUD",
       "description": "",
