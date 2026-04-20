@@ -1312,7 +1312,8 @@
   Promise.all([
     loadAllData(),
     renderConsulting(),
-    renderAbout()
+    renderAbout(),
+    settingsPromise
   ]).then(() => {
     // Route based on current path
     const path = window.location.pathname;
