@@ -214,6 +214,35 @@
           "alt": ""
         }
       ]
+    },
+    {
+      "id": "light",
+      "title": "LIGHT",
+      "description": "",
+      "for_sale": false,
+      "purchasable": false,
+      "secondary_cta_enabled": true,
+      "price_display": "",
+      "stripe_price_id": "",
+      "stripe_product_id": "",
+      "images": [
+        {
+          "src": "https://img.florezflorez.com/light-1776648758025-0.webp",
+          "alt": ""
+        },
+        {
+          "src": "https://img.florezflorez.com/light-1776648758705-1.webp",
+          "alt": ""
+        },
+        {
+          "src": "https://img.florezflorez.com/light-1776648759112-2.webp",
+          "alt": ""
+        },
+        {
+          "src": "https://img.florezflorez.com/light-1776648759629-3.webp",
+          "alt": ""
+        }
+      ]
     }
   ]
 }
