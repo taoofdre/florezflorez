@@ -103,7 +103,7 @@
     {
       "id": "ans",
       "title": "AND",
-      "description": "Estas piezas representa el punto de reflexiÃ³n donde lo lento se vuelve meditaciÃ³n. En el contexto actual, se dice que los procesos manuales y los oficios tradicionales estÃ¡n destinados a desaparecer ante el afÃ¡n y la inmediatez de una sociedad que todo lo quiere para \"ya\". Como dicen los afanados en mi tierra: \"para ayer es tarde\". \n\nEsta obra defiende la idea de que el arte lleva en sÃ­ mismo los pensamientos del artista, la sabidurÃ­a empÃ­rica de sus antepasados, su tradiciÃ³n y, fundamentalmente, su visiÃ³n Ãºnica sobre el mundo que conoce.\n\nVisualmente, la obra plasma este diÃ¡logo entre el tiempo, el recuerdo y la resistencia de lo hecho a mano.\n\nMATERIALES: Madera, mostacilla, piedras semipreciosas, hilo.",
+      "description": "These pieces represent the point of reflection where slowness becomes meditation. In our current context, it is said that manual processes and traditional trades are destined to disappear in the face of the urgency and immediacy of a society that wants everything \"now.\" As the restless people in my homeland say: \"Yesterday was already too late.\"\n\nTo me, this work defends the idea that art carries within it the artist's thoughts, the empirical wisdom of their ancestors, their tradition, and, fundamentally, their unique vision of the world they know. Visually, the work captures this dialogue between time, memory, and the resistance of the handmade.\n\nMATERIALS: Glass beads, semi-precious stones, thread.",
       "for_sale": false,
       "purchasable": false,
       "secondary_cta_enabled": true,
@@ -111,14 +111,6 @@
       "stripe_price_id": "",
       "stripe_product_id": "",
       "images": [
-        {
-          "src": "https://img.florezflorez.com/and-1776642881200-0.webp",
-          "alt": ""
-        },
-        {
-          "src": "https://img.florezflorez.com/and-1776642882926-1.webp",
-          "alt": ""
-        },
         {
           "src": "https://img.florezflorez.com/ans-1776634440247-0.webp",
           "alt": ""
