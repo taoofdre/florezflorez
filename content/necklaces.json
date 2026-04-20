@@ -74,7 +74,7 @@
       "id": "prod_UN38k5zBM0NffP",
       "title": "Gardenia",
       "description": "950 silver | Natural pearl",
-      "for_sale": false,
+      "for_sale": true,
       "purchasable": true,
       "secondary_cta_enabled": true,
       "price_display": "530",
@@ -89,7 +89,8 @@
           "src": "https://img.florezflorez.com/gardenia-1776696181872-1.webp",
           "alt": ""
         }
-      ]
+      ],
+      "stock": 1
     }
   ]
 }
