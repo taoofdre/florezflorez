@@ -4,8 +4,10 @@
       "id": "prod_UJs640Zim616GA",
       "title": "Pearl",
       "description": "Natural pearls and hand-woven black flowers | 950 silver brooch",
-      "for_sale": true,
-      "price_display": "170",
+      "for_sale": false,
+      "purchasable": false,
+      "secondary_cta_enabled": true,
+      "price_display": "",
       "stripe_price_id": "price_1TLEMbGZz3PbqlU6mgDgOG0W",
       "stripe_product_id": "prod_UJs640Zim616GA",
       "images": [
