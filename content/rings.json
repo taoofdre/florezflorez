@@ -162,6 +162,23 @@
         }
       ],
       "stock": 1
+    },
+    {
+      "id": "mis-s-custum-ring",
+      "title": "Mis's custum ring",
+      "description": "18k gold & sapphire",
+      "for_sale": true,
+      "purchasable": false,
+      "secondary_cta_enabled": true,
+      "price_display": "",
+      "stripe_price_id": "",
+      "stripe_product_id": "",
+      "images": [
+        {
+          "src": "https://img.florezflorez.com/mis-s-custum-ring-1776781344228-0.webp",
+          "alt": ""
+        }
+      ]
     }
   ]
 }
