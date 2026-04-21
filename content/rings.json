@@ -165,8 +165,8 @@
     },
     {
       "id": "mis-s-custum-ring",
-      "title": "Mis's custum ring",
-      "description": "18k gold & sapphire",
+      "title": "Min's ring",
+      "description": "I met Min one Saturday as I in Fort Greene as I manned a table selling my jewelry at the farmers market.\n\nI was immediately awed by her style. She travels constantly and told me about a sapphire she had found in Madagascar. That sapphire needed a band. \n\nShe and I exchanged ideas we found online and settled on a less traditional organic, liquid shape. I'm still over the moon about how well it turned out, and that she entrusted me with such an important travel memory.\n\n18k gold & sapphire",
       "for_sale": true,
       "purchasable": false,
       "secondary_cta_enabled": true,
@@ -176,6 +176,10 @@
       "images": [
         {
           "src": "https://img.florezflorez.com/mis-s-custum-ring-1776782040147-0.webp",
+          "alt": ""
+        },
+        {
+          "src": "https://img.florezflorez.com/min-s-ring-1776813487023-1.webp",
           "alt": ""
         }
       ]
