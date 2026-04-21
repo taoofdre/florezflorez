@@ -91,6 +91,9 @@ module.exports = async function handler(req, res) {
           unit_amount: priceCents,
           currency: 'usd',
         });
+        // Stripe refuses to archive a price that's still the product's default_price,
+        // so promote the new price to default before archiving the old one.
+        await stripe.products.update(stripe_product_id, { default_price: newPrice.id });
         await stripe.prices.update(stripe_price_id, { active: false });
         stripe_price_id = newPrice.id;
       }
