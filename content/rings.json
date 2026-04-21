@@ -144,16 +144,18 @@
       "title": "Labradorita",
       "description": "Bauhaus-inspired with labradorite stone, size 9, 12 grams | 950 silver",
       "for_sale": true,
+      "purchasable": true,
+      "secondary_cta_enabled": true,
       "price_display": "240",
       "stripe_price_id": "price_1TMCAyGZz3PbqlU6Uej9RG5z",
       "stripe_product_id": "prod_UKruTfFRR8r0R9",
       "images": [
         {
-          "src": "https://img.florezflorez.com/labradorita-1776225266655-0.png",
+          "src": "https://img.florezflorez.com/labradorita-1776739817510-0.webp",
           "alt": ""
         },
         {
-          "src": "https://img.florezflorez.com/labradorita-1776225268512-1.png",
+          "src": "https://img.florezflorez.com/labradorita-1776739819038-1.webp",
           "alt": ""
         }
       ],
