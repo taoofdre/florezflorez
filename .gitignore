@@ -3,3 +3,5 @@ node_modules/
 .vercel
 uploads/
 .env*.local
+.DS_Store
+test-results/
