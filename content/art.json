@@ -1,6 +1,27 @@
 {
   "pieces": [
     {
+      "id": "no-gender",
+      "title": "NO GENDER",
+      "description": "A visual deconstruction of the label of \"being\" No Gender is a piece that invites the viewer into an exercise of introspection regarding gender. The same character is presented twice and meant to uncover our bias to name and categorize every image almost instantaneously.\nThe public is confronted with the arbitrariness of these labels, questioning why certain tones or jewelry define \"what we should be\" in the eyes of society. Digital Illustration.",
+      "for_sale": false,
+      "purchasable": false,
+      "secondary_cta_enabled": true,
+      "price_display": "",
+      "stripe_price_id": "",
+      "stripe_product_id": "",
+      "images": [
+        {
+          "src": "https://img.ururu.store/florezflorez/no-gender-1776638895342-0.webp",
+          "alt": ""
+        },
+        {
+          "src": "https://img.ururu.store/florezflorez/no-gender-1776638978009-1.webp",
+          "alt": ""
+        }
+      ]
+    },
+    {
       "id": "whittled-woods",
       "title": "WHITTLED WOODS",
       "description": "Miniature sculptures crafted on a wood lathe with calm precision. It is a one-by-one process where there is no time limit, nor the urgency of the masses.\n\n\nMATERIALS: Wood, glass beads, leather, thread",
@@ -21,27 +42,6 @@
         },
         {
           "src": "https://img.ururu.store/florezflorez/whittled-woods-1776626521006-2.webp",
-          "alt": ""
-        }
-      ]
-    },
-    {
-      "id": "time-in-nature",
-      "title": "TIME IN NATURE",
-      "description": "This work is a point of reflection on the collective blindness regarding the climate crisis. Our society operates under the false premise that the Earth is an infinite, inexhaustible resource, an eternal stage for consumption. \"TIME IN NATURE\" confronts that false sense of infinity by stripping the clock of its hands to challenge our utilitarian perception of time. How many hours are left for the Earth?\n\n\nMATERIALS: Wood chips collected during my walks in the forest. Pine.",
-      "for_sale": false,
-      "purchasable": false,
-      "secondary_cta_enabled": true,
-      "price_display": "",
-      "stripe_price_id": "",
-      "stripe_product_id": "",
-      "images": [
-        {
-          "src": "https://img.ururu.store/florezflorez/time-in-nature-1776653362857-0.webp",
-          "alt": ""
-        },
-        {
-          "src": "https://img.ururu.store/florezflorez/time-in-nature-1776627056831-1.webp",
           "alt": ""
         }
       ]
@@ -71,6 +71,56 @@
         },
         {
           "src": "https://img.ururu.store/florezflorez/geometric-silver-1776649246487-3.webp",
+          "alt": ""
+        }
+      ]
+    },
+    {
+      "id": "time-in-nature",
+      "title": "TIME IN NATURE",
+      "description": "This work is a point of reflection on the collective blindness regarding the climate crisis. Our society operates under the false premise that the Earth is an infinite, inexhaustible resource, an eternal stage for consumption. \"TIME IN NATURE\" confronts that false sense of infinity by stripping the clock of its hands to challenge our utilitarian perception of time. How many hours are left for the Earth?\n\n\nMATERIALS: Wood chips collected during my walks in the forest. Pine.",
+      "for_sale": false,
+      "purchasable": false,
+      "secondary_cta_enabled": true,
+      "price_display": "",
+      "stripe_price_id": "",
+      "stripe_product_id": "",
+      "images": [
+        {
+          "src": "https://img.ururu.store/florezflorez/time-in-nature-1776653362857-0.webp",
+          "alt": ""
+        },
+        {
+          "src": "https://img.ururu.store/florezflorez/time-in-nature-1776627056831-1.webp",
+          "alt": ""
+        }
+      ]
+    },
+    {
+      "id": "light",
+      "title": "LIGHT",
+      "description": "This series of four panels explores the intersection between geometry and lighting an interpretation of rhythm, order, and balance. These forms represent a sense of clarity.\n\nThe series dives into the critical intersection between geometry and illumination. Through an economy of visual resources, the work proposes a profound interpretation of rhythm, order, and balance, where each shape acts as a weighted counterpoint in a space of silence. The arrangement of the elements seeks to represent a feeling of clarity and serenity.\n\nDigital Illustration.",
+      "for_sale": false,
+      "purchasable": false,
+      "secondary_cta_enabled": true,
+      "price_display": "",
+      "stripe_price_id": "",
+      "stripe_product_id": "",
+      "images": [
+        {
+          "src": "https://img.ururu.store/florezflorez/light-1776648758025-0.webp",
+          "alt": ""
+        },
+        {
+          "src": "https://img.ururu.store/florezflorez/light-1776648758705-1.webp",
+          "alt": ""
+        },
+        {
+          "src": "https://img.ururu.store/florezflorez/light-1776648759112-2.webp",
+          "alt": ""
+        },
+        {
+          "src": "https://img.ururu.store/florezflorez/light-1776648759629-3.webp",
           "alt": ""
         }
       ]
@@ -130,45 +180,6 @@
       ]
     },
     {
-      "id": "no-gender",
-      "title": "NO GENDER",
-      "description": "A visual deconstruction of the label of \"being\" No Gender is a piece that invites the viewer into an exercise of introspection regarding gender. The same character is presented twice and meant to uncover our bias to name and categorize every image almost instantaneously.\nThe public is confronted with the arbitrariness of these labels, questioning why certain tones or jewelry define \"what we should be\" in the eyes of society. Digital Illustration.",
-      "for_sale": false,
-      "purchasable": false,
-      "secondary_cta_enabled": true,
-      "price_display": "",
-      "stripe_price_id": "",
-      "stripe_product_id": "",
-      "images": [
-        {
-          "src": "https://img.ururu.store/florezflorez/no-gender-1776638895342-0.webp",
-          "alt": ""
-        },
-        {
-          "src": "https://img.ururu.store/florezflorez/no-gender-1776638978009-1.webp",
-          "alt": ""
-        }
-      ]
-    },
-    {
-      "id": "nyc-power",
-      "title": "RAT POWER",
-      "description": "The power of the socially ugly is the ability to make us uncomfortable. \n\nDigital illustration.",
-      "for_sale": false,
-      "purchasable": false,
-      "secondary_cta_enabled": true,
-      "price_display": "",
-      "stripe_price_id": "",
-      "stripe_product_id": "",
-      "images": [
-        {
-          "src": "https://img.ururu.store/florezflorez/nyc-power-1776638947443-0.webp",
-          "alt": ""
-        }
-      ],
-      "stock": 0
-    },
-    {
       "id": "blue",
       "title": "BLUE",
       "description": "An ode to melancholy.\nThis is a visual diptych that explores emotional depth through a vibrant monochromatic palette and geometric symbolism. \"BLUE\" is a color used here to describe a state of being.",
@@ -191,9 +202,9 @@
       "stock": 0
     },
     {
-      "id": "light",
-      "title": "LIGHT",
-      "description": "This series of four panels explores the intersection between geometry and lighting an interpretation of rhythm, order, and balance. These forms represent a sense of clarity.\n\nThe series dives into the critical intersection between geometry and illumination. Through an economy of visual resources, the work proposes a profound interpretation of rhythm, order, and balance, where each shape acts as a weighted counterpoint in a space of silence. The arrangement of the elements seeks to represent a feeling of clarity and serenity.\n\nDigital Illustration.",
+      "id": "nyc-power",
+      "title": "RAT POWER",
+      "description": "The power of the socially ugly is the ability to make us uncomfortable. \n\nDigital illustration.",
       "for_sale": false,
       "purchasable": false,
       "secondary_cta_enabled": true,
@@ -202,22 +213,11 @@
       "stripe_product_id": "",
       "images": [
         {
-          "src": "https://img.ururu.store/florezflorez/light-1776648758025-0.webp",
-          "alt": ""
-        },
-        {
-          "src": "https://img.ururu.store/florezflorez/light-1776648758705-1.webp",
-          "alt": ""
-        },
-        {
-          "src": "https://img.ururu.store/florezflorez/light-1776648759112-2.webp",
-          "alt": ""
-        },
-        {
-          "src": "https://img.ururu.store/florezflorez/light-1776648759629-3.webp",
+          "src": "https://img.ururu.store/florezflorez/nyc-power-1776638947443-0.webp",
           "alt": ""
         }
-      ]
+      ],
+      "stock": 0
     }
   ]
 }

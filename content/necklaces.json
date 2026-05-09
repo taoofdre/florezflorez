@@ -1,27 +1,27 @@
 {
   "pieces": [
     {
-      "id": "pearl",
-      "title": "Pearl",
-      "description": "Natural pearls and hand-woven black flowers | 950 silver brooch",
+      "id": "gardenia",
+      "title": "Gardenia",
+      "description": "950 silver | Natural pearl",
       "for_sale": true,
       "purchasable": true,
       "secondary_cta_enabled": true,
-      "price_display": "220",
-      "stripe_price_id": "price_1TRGU2IXKxhklI6B4daXW1bt",
-      "stripe_product_id": "prod_UQ6hiIl25T5R60",
+      "price_display": "530",
+      "stripe_price_id": "price_1TRGU5IXKxhklI6BlTpb6QIc",
+      "stripe_product_id": "prod_UQ6h8FotElxHZU",
       "images": [
         {
-          "src": "https://img.ururu.store/florezflorez/pearl-1776734496702-0.webp",
-          "alt": "pearl necklace on black background"
+          "src": "https://img.ururu.store/florezflorez/gardenia-1776696180399-0.webp",
+          "alt": ""
         },
         {
-          "src": "https://img.ururu.store/florezflorez/pearl-1776734498005-1.webp",
-          "alt": "pearl necklace on white background with a hand drawn pattern"
+          "src": "https://img.ururu.store/florezflorez/gardenia-1776696181872-1.webp",
+          "alt": ""
         }
       ],
       "stock": 1,
-      "weight_oz": 10
+      "weight_oz": 12
     },
     {
       "id": "chameleon",
@@ -41,6 +41,29 @@
         {
           "src": "https://img.ururu.store/florezflorez/chameleon-1776203539092-0.png",
           "alt": ""
+        }
+      ],
+      "stock": 1,
+      "weight_oz": 10
+    },
+    {
+      "id": "pearl",
+      "title": "Pearl",
+      "description": "Natural pearls and hand-woven black flowers | 950 silver brooch",
+      "for_sale": true,
+      "purchasable": true,
+      "secondary_cta_enabled": true,
+      "price_display": "220",
+      "stripe_price_id": "price_1TRGU2IXKxhklI6B4daXW1bt",
+      "stripe_product_id": "prod_UQ6hiIl25T5R60",
+      "images": [
+        {
+          "src": "https://img.ururu.store/florezflorez/pearl-1776734496702-0.webp",
+          "alt": "pearl necklace on black background"
+        },
+        {
+          "src": "https://img.ururu.store/florezflorez/pearl-1776734498005-1.webp",
+          "alt": "pearl necklace on white background with a hand drawn pattern"
         }
       ],
       "stock": 1,
@@ -68,29 +91,6 @@
       ],
       "stock": 1,
       "weight_oz": 10
-    },
-    {
-      "id": "gardenia",
-      "title": "Gardenia",
-      "description": "950 silver | Natural pearl",
-      "for_sale": true,
-      "purchasable": true,
-      "secondary_cta_enabled": true,
-      "price_display": "530",
-      "stripe_price_id": "price_1TRGU5IXKxhklI6BlTpb6QIc",
-      "stripe_product_id": "prod_UQ6h8FotElxHZU",
-      "images": [
-        {
-          "src": "https://img.ururu.store/florezflorez/gardenia-1776696180399-0.webp",
-          "alt": ""
-        },
-        {
-          "src": "https://img.ururu.store/florezflorez/gardenia-1776696181872-1.webp",
-          "alt": ""
-        }
-      ],
-      "stock": 1,
-      "weight_oz": 12
     }
   ]
 }

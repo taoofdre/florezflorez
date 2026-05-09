@@ -33,6 +33,29 @@
       "weight_oz": 7
     },
     {
+      "id": "ring008",
+      "title": "Labradorita",
+      "description": "Bauhaus-inspired with labradorite stone, size 9, 12 grams | 950 silver",
+      "for_sale": true,
+      "purchasable": true,
+      "secondary_cta_enabled": true,
+      "price_display": "240",
+      "stripe_price_id": "price_1TRGU7IXKxhklI6Benk7esOc",
+      "stripe_product_id": "prod_UQ6hmvHSew6GLW",
+      "images": [
+        {
+          "src": "https://img.florezflorez.com/labradorita-1776740608847-0.webp",
+          "alt": ""
+        },
+        {
+          "src": "https://img.florezflorez.com/labradorita-1776740610082-1.webp",
+          "alt": ""
+        }
+      ],
+      "stock": 1,
+      "weight_oz": 7
+    },
+    {
       "id": "ring003",
       "title": "Peak",
       "description": "Organic ring, 17 grams, size 9 | 950 silver",
@@ -150,29 +173,6 @@
       "description": "Organic, thin and broad ring, size 10, 7 grams | 950 silver",
       "stripe_product_id": "prod_UKruduih3YRXNz",
       "for_sale": true,
-      "weight_oz": 7
-    },
-    {
-      "id": "ring008",
-      "title": "Labradorita",
-      "description": "Bauhaus-inspired with labradorite stone, size 9, 12 grams | 950 silver",
-      "for_sale": true,
-      "purchasable": true,
-      "secondary_cta_enabled": true,
-      "price_display": "240",
-      "stripe_price_id": "price_1TRGU7IXKxhklI6Benk7esOc",
-      "stripe_product_id": "prod_UQ6hmvHSew6GLW",
-      "images": [
-        {
-          "src": "https://img.florezflorez.com/labradorita-1776740608847-0.webp",
-          "alt": ""
-        },
-        {
-          "src": "https://img.florezflorez.com/labradorita-1776740610082-1.webp",
-          "alt": ""
-        }
-      ],
-      "stock": 1,
       "weight_oz": 7
     },
     {
