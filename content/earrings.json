@@ -21,24 +21,6 @@
         }
       ],
       "weight_oz": 7
-    },
-    {
-      "id": "test-earrings",
-      "title": "Test earrings",
-      "description": "$2 earrings",
-      "for_sale": true,
-      "purchasable": true,
-      "price_display": "2",
-      "images": [
-        {
-          "src": "https://img.ururu.store/florezflorez/1777840840726-gemini_generated_image_2v561s2v561s2v56.webp",
-          "alt": ""
-        }
-      ],
-      "sizes": [],
-      "weight_oz": 1,
-      "stripe_product_id": "prod_US0rGoc99RiFfC",
-      "stripe_price_id": "price_1TT6q1IXKxhklI6BYQHBDYmP"
     }
   ]
 }
