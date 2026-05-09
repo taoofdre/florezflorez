@@ -48,9 +48,14 @@
         {
           "src": "https://img.florezflorez.com/thepeakring_01.png",
           "alt": "peak ring close neutral background"
+        },
+        {
+          "src": "https://img.ururu.store/florezflorez/1778346960047-instagram-1.webp",
+          "alt": "artsy peak ring"
         }
       ],
-      "weight_oz": 7
+      "weight_oz": 7,
+      "stock": 0
     },
     {
       "id": "ring004",
@@ -241,6 +246,33 @@
         }
       ],
       "weight_oz": 7
+    },
+    {
+      "id": "desert-garnet-wide",
+      "title": "Desert Garnet Wide",
+      "description": "Organic, wider profile than other Desert Garnet ring, 7 grams, size 7 | 935 Silver",
+      "for_sale": true,
+      "purchasable": true,
+      "price_display": "310",
+      "images": [
+        {
+          "src": "https://img.ururu.store/florezflorez/1778349051182-instagram-1.webp",
+          "alt": ""
+        },
+        {
+          "src": "https://img.ururu.store/florezflorez/1778349060863-instagram-2.webp",
+          "alt": ""
+        },
+        {
+          "src": "https://img.ururu.store/florezflorez/1778349076311-instagram-3.webp",
+          "alt": ""
+        }
+      ],
+      "sizes": [],
+      "weight_oz": 7,
+      "stock": 1,
+      "stripe_product_id": "prod_UUDaTOtnfxBFtl",
+      "stripe_price_id": "price_1TVF93IXKxhklI6BgCdjcbgQ"
     }
   ]
 }
