@@ -2,9 +2,9 @@
 // direct charges. The platform owns the API key (PLATFORM_STRIPE_SK); the
 // merchant owns the connected Stripe account (MERCHANT_STRIPE_ACCOUNT_ID). All
 // requests pass `{ stripeAccount }` so the session is created on — and money
-// lands in — the merchant's account directly. The platform takes a 1.1%
-// application fee (PLATFORM_FEE_BPS) deducted from the merchant's balance per
-// charge.
+// lands in — the merchant's account directly. The platform takes no
+// application fee on top of Stripe's standard rates; ururu's revenue is the
+// merchant's $5/mo or $50/yr subscription only.
 //
 // Both env vars are injected by the platform at provision time (or by the
 // Stripe Connect callback once the merchant authorizes). If either is missing,
@@ -23,13 +23,6 @@
 const Stripe = require('stripe');
 const fs = require('fs');
 const path = require('path');
-
-const PLATFORM_FEE_BPS = (() => {
-  const raw = process.env.URURU_PLATFORM_FEE_BPS;
-  if (raw === undefined || raw === '') return 110;
-  const n = parseInt(raw, 10);
-  return Number.isFinite(n) && n >= 0 ? n : 110;
-})();
 // ui_mode='embedded_page' (the variant that supports onShippingDetailsChange)
 // was introduced in the dahlia API release. The installed stripe-node@14 pins
 // 2023-10-16, which rejects the value, so we override Stripe-Version per-call
@@ -98,17 +91,12 @@ module.exports = async function handler(req, res) {
     const settings = loadSettings();
     const shipping = settings.shipping || {};
 
-    const applicationFeeAmount = Math.round((totalCents * PLATFORM_FEE_BPS) / 10000);
-
     const sessionParams = {
       ui_mode: 'embedded_page',
       mode: 'payment',
       line_items,
       shipping_address_collection: { allowed_countries: ['US'] },
       allow_promotion_codes: true,
-      payment_intent_data: {
-        application_fee_amount: applicationFeeAmount,
-      },
       return_url: `${origin}/?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
     };
 
