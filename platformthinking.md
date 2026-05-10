@@ -60,7 +60,6 @@ const session = await stripe.checkout.sessions.create({
   // ...line_items, shipping, etc.
 }, {
   stripeAccount: process.env.MERCHANT_STRIPE_ACCOUNT_ID, // e.g. acct_1ABC...
-  application_fee_amount: Math.round(totalCents * 0.005), // 0.5% platform fee
 });
 ```
 
@@ -68,7 +67,7 @@ This means:
 - Every fork has the **same** platform Stripe key — update once, applies everywhere
 - `MERCHANT_STRIPE_ACCOUNT_ID` is the only merchant-specific credential
 - Money flows directly to the merchant's Stripe account
-- Platform collects a small % application fee on every transaction (on top of $5/month)
+- No `application_fee_amount` is set — the platform takes nothing on top of Stripe's standard rates. Revenue is entirely the $5/mo or $50/yr subscription.
 - Merchant never touches API keys — they connect Stripe via OAuth during onboarding
 
 This is how Shopify, Squarespace, and every serious platform handles Stripe.
