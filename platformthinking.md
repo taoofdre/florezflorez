@@ -361,6 +361,74 @@ The KV namespace is shared between dev and prod (one binding to one namespace), 
 
 ---
 
+## Pending Strategy Work
+
+### 1. Rename `for_sale` → `visible` on disk (deferred field migration)
+
+Piece editor labels were updated in 2026-05 (Visible / For sale), but the underlying JSON field names still read `for_sale` (visibility) and `purchasable` (buy-button toggle). The mismatch is a usability footgun — every future contributor has to learn that "for_sale" actually means "visible".
+
+**Settled plan: rename one field only.**
+
+| Field on disk (today) | Field on disk (after migration) |
+|---|---|
+| `for_sale` (= visibility) | **`visible`** (renamed) |
+| `purchasable` | `purchasable` (unchanged) |
+
+`purchasable` keeps its name; the UI label "For sale" is just a presentation choice and the field name is clear on its own. Renaming only `for_sale` avoids a name collision and keeps the back-compat fallback to one line.
+
+**Sequencing**:
+1. Platform admin reads with `piece.visible ?? piece.for_sale ?? true`. Writes drop `for_sale`. Rename code variables `for_sale` → `visible` in `PieceForm`, `AddProductButton`, `ProductsList`, `products/page.tsx`.
+2. Storefront Worker (`storefront/static/js/main.js`) reads with same fallback.
+3. One-shot script renames `for_sale` → `visible` in every R2 `<slug>/content/<category>.json`. Runs against `ururu-content`.
+4. Drop the read fallbacks once content is fully migrated.
+
+Meta product feed (`api/meta-feed.js` in florezflorez) also reads `piece.for_sale` — needs the fallback in step 2.
+
+### 2. Replace USPS direct integration with EasyPost (Phase 4 — deferred indefinitely)
+
+Current shipping path: Worker calls USPS API directly via `/api/calculate-shipping-options`. Works, but locks the platform to USPS and forces every merchant to set up their own USPS Enterprise Payment System (EPS) account if they want to actually buy labels — non-starter for casual makers.
+
+**Settled plan: EasyPost as a multi-carrier abstraction.** Wrapped behind `lib/shipping.ts` so a future direct-USPS-EPS swap is a one-file change. Prototype lives at `scripts/easypost-prototype.mjs` (never run live — no test key was ever provided).
+
+**Critical design rule — buyer-quoted rate equals merchant cost:**
+- Storefront `/api/shipping/rates` proxies to EasyPost `/v2/shipments`, returns rate options.
+- Chosen `shipment_id` + `rate_id` persist on the Stripe Checkout Session metadata.
+- "Buy label" later calls EasyPost `/v2/shipments/{id}/buy` with the same `rate_id` — guarantees merchant cost = buyer quote, no daylight.
+
+**Funding model — platform-managed postage ONLY in USPS dynamic mode:**
+
+| Shipping mode | application_fee_amount | Postage destination | Label buyer |
+| --- | --- | --- | --- |
+| USPS dynamic | `1.1% × subtotal + dynamic_postage_cents` | Platform Stripe account | ururu (via EasyPost) |
+| Flat rate | `1.1% × total` | Merchant's Connect balance | Merchant handles independently |
+| Free | `1.1% × total` | N/A | Merchant |
+| Pickup | `1.1% × total` | N/A | N/A |
+
+The platform only intercepts shipping money when it's actually performing the shipping service. For flat/free/pickup, the platform never touches shipping money — no refund-back-to-merchant escape hatch needed.
+
+**Schema additions to `order_fulfillments`:** `easypost_shipment_id`, `easypost_rate_id`, `shipping_label_qr_url`, `shipping_label_pdf_url`, `postage_cents`, `shipping_carrier`, `shipping_service`, `voided_at`, `purchased_at`. Plus piece-level box dimensions (`box_length`, `box_width`, `box_height`) on `PieceShape`.
+
+**Why deferred**: 2026-05-04 confirmation that florezflorez (and current candidate merchants) are comfortable with flat-rate / free shipping. Revisit when a merchant explicitly asks for dynamic USPS rates at checkout.
+
+### 3. Smoke tests we still owe ourselves
+
+The migration is live and florezflorez renders, but several paths aren't exercised live yet. List in priority order:
+
+1. **Onboarding a fresh new-arch merchant end-to-end.** `provisionMerchantOnCloudflare` ran live for the test slug in Phase 4 (then was torn down) and again on florezflorez via the migration script — but a real flow from `/onboarding/create-store` after Phase 7 has never been run. First brand-new merchant onboarding will exercise the full path.
+2. **Live Stripe Connect on a new-arch merchant.** Florezflorez prod has `stripe_account_id=NULL`; live Connect was only ever done on sandbox. The `refreshMerchantIndex` KV write in the Connect callback was rewritten in Phase 7 and has never run live.
+3. **Drafts → R2 publish flow against a real merchant.** Dashboard staging + publish was tested mid-migration on dev only. First florezflorez publish post-cutover will validate the round trip (R2 PUT → KV propagation → storefront re-render within ~60s).
+4. **Embedded Stripe Checkout flow on the Worker.** The new bundled `main.js` ports florezflorez's embedded checkout but has never run live (florezflorez is gated by step 2). Will fire as soon as Stripe Connect is wired.
+5. **USPS rate calc through the Worker.** `/api/calculate-shipping-options` was ported from florezflorez's checkout JS in Phase 3 but never invoked live. Needs a real Stripe checkout session to fire the Stripe `onShippingDetailsChange` callback against the Worker.
+6. **Customer + merchant order email delivery from the Worker's Connect webhook.** Sandbox webhooks worked via Stripe CLI tunneling to localhost; the prod path (`POST` from Stripe → ururu.store/api/stripe/connect-webhook → Resend send) hasn't completed an end-to-end loop. Re-register the webhook destination on the Stripe Connect platform once the prod admin URL is live; set `STRIPE_CONNECT_WEBHOOK_SECRET`.
+7. **Mark-shipped + tracking number flow.** UI works in dev DB; never exercised on a prod-merchant order with a real customer email round-trip.
+8. **Subscription cancellation grace state.** Plan was: when `customer.subscription.deleted` fires, flip merchant to a "store under construction" page. With the new architecture this is just a `merchant.status = 'cancelled'` flag the Worker checks before serving — but no code yet.
+9. **Coupon creation + redemption.** Coupons CRUD shipped (Phase 1 of platform admin); never tested with a real Stripe checkout that applies one.
+10. **Stripe Connect disconnect.** API endpoint exists; flow never exercised live.
+
+The first three are the only ones that block routine merchant operation. The rest are gaps to close opportunistically as merchants hit them.
+
+---
+
 ## Florez Florez's Place in This
 
 The current `florezflorez/` repo is the **historical pre-migration storefront**. Florez Florez itself is now merchant #1 on the platform — served by the Cloudflare Worker, content in R2 `ururu-content/florezflorez/content/`. The repo is kept around as a reference (working CSS, working main.js with embedded checkout + USPS handlers) but is no longer on the request path. The Worker's `static/` directory is the canonical storefront bundle now.
