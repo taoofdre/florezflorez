@@ -2,157 +2,142 @@
 
 ## The Vision
 
-Build a multi-tenant shopping platform powered by Stripe that charges merchants $5/month — dramatically cheaper than Shopify ($29/month) or Wix/Squarespace ($23-40/month). Merchants only pay the flat fee plus standard Stripe transaction fees (2.9% + $0.30). No platform markup on transactions beyond a small application fee.
+Build a multi-tenant shopping platform powered by Stripe that charges merchants $5/month — dramatically cheaper than Shopify ($29/month) or Wix/Squarespace ($23-40/month). Merchants only pay the flat fee plus standard Stripe transaction fees (2.9% + $0.30). No platform markup on transactions.
 
 Target: small makers, artisans, independent sellers who don't need the full Shopify feature set but want a real storefront.
 
 ---
 
-## Architecture: Fork-Based Provisioning (Not Traditional Multi-Tenancy)
+## Architecture: Multi-Tenant Cloudflare Worker
 
-Instead of one database with tenant isolation, the platform is a **provisioner**. Each merchant gets their own isolated instance:
+One Cloudflare Worker serves every merchant. Tenant is resolved per request via hostname → Cloudflare KV → R2 content prefix. Per-merchant content (`settings.json`, `homepage.json`, category JSONs) lives in a single shared R2 bucket under per-merchant prefixes; per-merchant images live in a separate R2 bucket on the same prefix shape. Platform admin (signup, dashboard, provisioning) is a Next.js app on Vercel at `ururu.store`.
 
-- Their own GitHub repo (fork of the template)
-- Their own Vercel project
-- Their own Stripe account (connected via Stripe Connect)
-- Their own subdomain (or custom domain)
+**The platform is a provisioner, not a host of content** — but in the multi-tenant Worker sense rather than the original fork-based sense. Merchant content is namespaced in R2; the Worker reads the right prefix per request based on the hostname it received.
 
-The platform's job is connecting these pieces together. After provisioning, the merchant's shop is self-contained. Their content lives in their GitHub, their store runs on Vercel, their money goes to their Stripe.
-
----
-
-## What the Platform Needs to Build
-
-### 1. The Platform App (separate from the shop template)
-- Signup/onboarding: GitHub OAuth → fork repo → Stripe Connect → provision Vercel → assign URL
-- Thin database — provisioning metadata only (not merchant content):
-  ```
-  merchants: {
-    github_username,
-    repo_name,
-    vercel_project_id,
-    stripe_account_id,
-    subscription_status
-  }
-  ```
-- Provisioning API: orchestrates GitHub fork, Vercel project creation, env var injection
-- Billing: Stripe Billing on the platform's own Stripe account ($5/month subscriptions)
-- Subdomain routing: merchant.yourplatform.com
-
-### 2. The Shop Template (what gets forked — the current Florez Florez codebase, generalized)
-- Decap CMS config reads repo from the fork's own settings
-- Serverless functions use the platform's Stripe key + merchant's connected account ID
-- All hardcoded references (repo names, domains) replaced with env vars
+| Layer | Implementation |
+|---|---|
+| Storefront runtime | One Cloudflare Worker (`ururu-storefront`), Hono, serves every merchant |
+| Tenant routing | Wildcard `*.ururu.store/*` Workers Route → Worker reads hostname → KV `MERCHANT_INDEX` lookup |
+| Per-merchant content | R2 bucket `ururu-content`, keys `<slug>/content/<file>.json` |
+| Per-merchant images | R2 bucket `ururu-images`, keys `<slug>/<filename>`, served via `img.ururu.store` (the Worker proxies these too) |
+| Platform admin | Next.js on Vercel at `ururu.store` |
+| Platform DB | Turso (libSQL) — provisioning metadata + drafts only |
+| Auth | Magic link + WebAuthn passkeys |
+| Payments | Stripe Connect (Standard, `stripeAccount` header pattern) |
 
 ---
 
-## Stripe Architecture — Critical Detail
+## What's Different vs the Original Fork Plan
 
-**Do not store each merchant's Stripe secret key in their fork's env vars.**
+The first cut of this platform shipped with per-merchant GitHub forks + per-merchant Vercel projects (one fork + one project per merchant). It worked, but unit economics broke down past ~100 merchants — mostly Vercel bandwidth + build minutes scaling linearly with merchant count, plus operational chores ("update template across N forks") becoming the bottleneck.
 
-Use Stripe Connect's `stripe-account` header pattern instead:
+The migration to a single multi-tenant Worker happened in 7 phases through 2026-04 to 2026-05. After Phase 6 cutover, florezflorez (merchant #1) serves entirely from the Worker; per-merchant Vercel projects and GitHub forks are gone. Phase 7 deleted the legacy code paths.
+
+What's preserved from the original plan:
+- Stripe Connect direct charges with the `stripeAccount` header (every merchant uses the platform's Stripe key, only `stripe_account_id` is per-merchant)
+- Per-merchant Stripe accounts via Connect Standard onboarding
+- Magic-link platform auth (no GitHub account required for merchants)
+- Cloudflare R2 for image storage
+- The `[store].ururu.store` subdomain pattern
+
+What changed:
+- No GitHub fork per merchant. The Worker bundle is the template.
+- No Vercel project per merchant. One Worker serves everyone.
+- No per-merchant Decap CMS / git OAuth flow. The platform admin writes directly to R2.
+- No `application_fee_amount`. The platform takes nothing on top of Stripe's standard rates; revenue is purely the $5/mo or $50/yr subscription.
+
+---
+
+## Stripe Architecture (unchanged)
+
+Use Stripe Connect's `stripeAccount` header pattern:
 
 ```javascript
-// In every merchant's /api/checkout.js
-const stripe = new Stripe(process.env.PLATFORM_STRIPE_KEY); // same key in every fork
+const stripe = new Stripe(env.PLATFORM_STRIPE_SK);
 
-const session = await stripe.checkout.sessions.create({
-  // ...line_items, shipping, etc.
-}, {
-  stripeAccount: process.env.MERCHANT_STRIPE_ACCOUNT_ID, // e.g. acct_1ABC...
-});
+const session = await stripe.checkout.sessions.create(
+  { /* line_items, shipping, etc. */ },
+  { stripeAccount: merchant.stripe_account_id }
+);
 ```
 
-This means:
-- Every fork has the **same** platform Stripe key — update once, applies everywhere
-- `MERCHANT_STRIPE_ACCOUNT_ID` is the only merchant-specific credential
-- Money flows directly to the merchant's Stripe account
-- No `application_fee_amount` is set — the platform takes nothing on top of Stripe's standard rates. Revenue is entirely the $5/mo or $50/yr subscription.
-- Merchant never touches API keys — they connect Stripe via OAuth during onboarding
+The Worker holds the platform's Stripe secret as a Wrangler secret. The connected account ID lives in the KV `MERCHANT_INDEX` entry alongside the tenant's slug + store name. Money flows directly to the merchant's Stripe account; the platform takes nothing on top.
 
-This is how Shopify, Squarespace, and every serious platform handles Stripe.
+When a merchant completes Stripe Connect, the platform admin's callback updates the DB row and mirrors the new `stripe_account_id` into the KV entry (`refreshMerchantIndex`).
+
+---
+
+## Provisioning Flow
+
+A new merchant onboarding is a flat KV + R2 write:
+
+1. **Sign up + payment** — magic link, $5/mo or $50/yr (30-day free trial), Stripe Billing on the platform's account.
+2. **Brand + categories + Stripe Connect** — collected through the dashboard.
+3. **Provision** (`provisionMerchantOnCloudflare`):
+   - Write starter `settings.json` + `homepage.json` to R2 `ururu-content/<slug>/content/`
+   - Write `<slug>.ururu.store` → identity entry to KV `MERCHANT_INDEX`
+   - Set `merchant.custom_domain` = `<slug>.ururu.store`, status = `live`
+4. **Live**. Once the KV entry exists the wildcard Workers Route catches the merchant's hostname and the Worker resolves them.
+
+No per-merchant API calls beyond R2 + KV. No GitHub fork, no Vercel project, no env-var injection. The same Worker bundle serves every merchant — bug fixes and feature ships happen via a single `wrangler deploy` instead of a per-merchant fork update.
+
+---
+
+## Publish Flow (drafts → R2)
+
+Dashboard form edits are staged into a `draft_changes` table in the platform DB. A "publish" action validates the daily cap (10/day per merchant), writes each draft to R2 in parallel, records a row in `publishes`, and clears the drafts. KV is read-through with ~60s eventual consistency globally; the storefront sees changes within a minute.
+
+This replaced the original "git commit per publish" flow, which created separate auditable history but required per-merchant write tokens and tied publish frequency to GitHub rate limits.
 
 ---
 
 ## Key Challenges
 
-### 1. Template Updates (hardest long-term problem)
-When the template gets a bug fix or new feature, existing merchant forks don't automatically receive it. Options:
-- Automated PRs from template → each fork via GitHub API
-- Keep "core" JS/CSS loaded from a platform CDN (outside the fork)
-- Accept slower update propagation early, solve properly later
+### 1. KV is shared across dev + prod
+There's a single `MERCHANT_INDEX` namespace bound to the storefront Worker. Both `.env.local` and `.env.production.local` point at the same namespace ID. Anything that writes the KV entry from a dev tool will overwrite the live entry — discovered the hard way during the Phase 6 cutover, when running the migration script against the dev DB clobbered prod's `store_name` and `stripe_account_id`. Fix: keep dev DB rows in lockstep with prod for any merchant whose KV entry is live.
 
-### 2. Vercel Costs at Scale
-Each merchant = one Vercel project. Model this early:
-- Vercel Pro: ~$20/month for team account, usage-based beyond that
-- Estimated ~$0.10–$0.40/month per low-traffic merchant project
-- Margins are tight at small scale, improve as you grow
-- At 500+ merchants: evaluate Vercel Enterprise or self-hosted deployment
+### 2. img.ururu.store and Workers Routes
+Adding a wildcard `*.ururu.store/*` route makes it intercept `img.ururu.store` too. The original "no script" carve-out approach for `img.ururu.store/*` doesn't actually skip Workers in current Cloudflare behavior. Fix: bind `ururu-images` directly to the Worker as the `IMAGES` R2 binding and have the Worker serve `img.ururu.store` requests itself. Trade-off is image fetches now bill Workers requests instead of the free Custom Domain path; cheaper than wrestling with carve-out semantics.
 
-### 3. Decap CMS OAuth Across Custom Domains
-GitHub OAuth apps require pre-registered callback URLs — no wildcards supported. If a merchant uses `mystore.com`, the CMS OAuth flow breaks.
+### 3. New-arch custom domain support is unbuilt
+For a merchant who wants `mystore.com` instead of `mystore.ururu.store`, the legacy flow attached the domain to a per-merchant Vercel project. New-arch needs Cloudflare for SaaS / Custom Hostnames on the storefront Worker. Not yet built; the dashboard's custom-url page is currently a "coming back" stub.
 
-**Solution:** Route all OAuth callbacks through `auth.yourplatform.com` — a single proxy that all merchants use regardless of their custom domain. The storefront can be at any domain; the CMS is always accessed via the platform's auth proxy.
-
-### 4. Provisioning Reliability
-Forking a repo + creating a Vercel project + setting env vars + mapping a subdomain + completing Stripe Connect OAuth — all in sequence, with error handling and rollback if anything fails midway — is the hardest part of the MVP to get right. This IS the core product.
+### 4. Provisioning reliability
+Both R2 PUT and KV PUT are individually idempotent, so partial failures roll forward cleanly on retry. Real failure modes are credentials being wrong or quota exceeded; surface those clearly in the onboarding UI rather than retrying silently.
 
 ---
 
-## Why This Model Works
-
-The key insight: **the platform is a provisioner, not a host of content.** This sidesteps almost all hard multi-tenancy problems:
-
-- No shared database for merchant content (each repo is isolated)
-- No content isolation bugs
-- Merchant truly owns their data (it's in their GitHub)
-- Decap CMS works naturally per-fork
-- No complex tenant-aware query logic
-
-The platform's database only stores provisioning metadata — a fraction of what a traditional multi-tenant SaaS requires.
-
----
-
-## Unit Economics (rough)
+## Unit Economics
 
 | Revenue | |
 |---|---|
-| Subscription | $5.00/merchant/month |
-| Transaction fee (0.5% on $1,000 GMV) | ~$5.00/merchant/month |
-| **Total per merchant** | **~$10/month** |
+| Subscription | $5.00/merchant/month (or $50/year) |
+| **Total per merchant** | **$5/month** |
 
 | Costs | |
 |---|---|
-| Vercel (est. per merchant) | ~$0.25/month |
-| Stripe Connect fees | negligible |
-| Platform infrastructure | amortized |
-| **Net margin** | **high at scale** |
+| Cloudflare Workers Paid plan | $5/month flat across all merchants |
+| R2 storage + reads | Negligible at small scale; class A ops priced sub-dollar at hundreds of merchants |
+| Cloudflare KV | Free tier covers thousands of merchants |
+| Vercel (platform admin only) | Hobby plan suffices for the admin app |
+| Turso | Free tier through ~100 merchants |
+| Stripe Connect fees | Negligible to the platform |
+| **Net margin** | **High at scale** — costs are roughly flat past the Workers Paid floor |
+
+Pre-migration the dominant cost was Vercel bandwidth + build minutes scaling per merchant (~$0.10–0.40/merchant/month). Post-migration it's flat-ish, dominated by the Workers $5/mo floor.
 
 ---
 
 ## Dynamic Shipping with USPS
 
-### How It Works
-
-Use the USPS API to calculate real shipping rates after the customer enters their address during Stripe Checkout. This replaces flat-rate shipping with accurate, per-order pricing based on package weight, dimensions, and destination.
-
-**Flow using Stripe's `onShippingDetailsChange` callback:**
-
-1. Customer starts checkout, enters their shipping address
-2. Stripe fires `onShippingDetailsChange` with the address
-3. Your callback calls the USPS rate API with package details + destination zip
-4. Return the calculated shipping options to Stripe for the customer to see
+USPS rates are calculated at checkout via Stripe's `onShippingDetailsChange` callback. The Worker's `/api/calculate-shipping-options` endpoint hits the USPS API, returns options, and Stripe updates the checkout session.
 
 ```javascript
 onShippingDetailsChange(address) {
   const uspsRate = await getUSPSRate(address, packageDetails);
 
   if (cartTotal >= 20000) { // $200 in cents
-    return {
-      shippingOptions: [
-        { name: "Free Shipping", amount: 0 }
-      ]
-    };
+    return { shippingOptions: [{ name: "Free Shipping", amount: 0 }] };
   }
 
   return {
@@ -163,70 +148,40 @@ onShippingDetailsChange(address) {
 }
 ```
 
-### Free Shipping on Orders Over $200
+### Free Shipping Threshold
+- Cart ≥ merchant-configured threshold → "Free Shipping" at $0 (platform absorbs the real USPS cost)
+- Cart < threshold → real USPS rates passed through
+- Even when free, the shipping address is collected for fulfillment.
 
-The free shipping decision happens inside the same `onShippingDetailsChange` callback, before the customer ever sees shipping options:
-
-- **Cart >= $200** → return a single option: "Free Shipping" at $0. The platform absorbs the real USPS cost.
-- **Cart < $200** → return the real USPS rates for the customer to pay.
-
-Even when shipping is free, you still need the customer's address to fulfill the order. You can also still calculate the real USPS cost internally for margin tracking — just don't charge the customer for it.
-
-**Important margin consideration:** Unlike a flat $10 coupon, free shipping means absorbing whatever USPS returns — could be $8 or $22 depending on weight and destination. Consider capping it (e.g., free shipping up to $15, customer pays the difference) to protect margins on heavy or distant orders.
-
-### Platform Implications (Stripe Connect)
-
-In the multi-tenant model, each merchant configures their own:
-- Product weights and dimensions
-- Free shipping threshold (if any)
-- Whether to offer free shipping at all
-
-The USPS rate call and free shipping logic live in the merchant's checkout serverless function. The platform template provides the wiring; merchants customize the thresholds via env vars or CMS config.
+### Per-Merchant Configuration
+Each merchant configures their own shipping mode (free, flat, USPS, pickup), threshold (if any), and origin ZIP via the dashboard. The Worker reads these from the merchant's `settings.json` at request time.
 
 ---
 
 ## Analytics & Ad Performance — Platform Strategy
 
-### Why Not Self-Hosted Web Analytics
+### No Self-Hosted Web Analytics
+Self-hosted analytics (Umami, Plausible, Ackee) requires a real database with high write rate. At $5/month pricing the math doesn't work — adding a per-merchant Postgres or Clickhouse instance erodes margins fast. **Decision: skip self-hosted web analytics** in favor of platform-level Cloudflare Analytics on the Worker (free, no per-merchant cost, no DB).
 
-Self-hosted analytics platforms (Umami, Plausible, Ackee) all require a real database — analytics is high-frequency write data that can't live in git. Offering this as a platform feature means scaling another resource per tenant:
+### Consolidated Ad Performance Dashboard
 
-- A shared Umami/Postgres instance works at small scale but grows with every merchant's traffic. 100 merchants × 1,000 pageviews/day = 100K writes/day. Free database tiers get exhausted quickly, and a paid database adds operational cost that erodes margins at $5/month pricing.
-- Per-merchant databases are not viable at this price point.
-- Self-hosted analytics also adds operational burden (backups, uptime, storage monitoring) for something that isn't the platform's core value.
-
-**Decision: skip self-hosted web analytics.** It doesn't fit the economics.
-
-### Consolidated Ad Performance Dashboard (the better play)
-
-Instead of general web analytics, surface **ad campaign performance data** from the platforms merchants are already using to drive traffic. The target merchants are small makers running Instagram, TikTok, and Google ads — they want to know "is my ad working?" not "what's my bounce rate?"
-
-**Supported platforms:**
-- **Meta** — Marketing API (free, OAuth connect, read campaign spend/reach/clicks/purchases/ROAS)
-- **Google** — Google Ads API (free, developer token required, read campaign performance)
-- **TikTok** — TikTok Marketing API (free, OAuth connect, read campaign metrics)
-- **Reddit** — Reddit Ads API (free, more limited but growing)
+Surface ad campaign performance from platforms merchants are already using:
+- **Meta** — Marketing API (free, OAuth, read campaign spend/reach/clicks/purchases/ROAS)
+- **Google** — Google Ads API (free, developer token required)
+- **TikTok** — TikTok Marketing API (free, OAuth)
+- **Reddit** — Reddit Ads API (free)
 
 **How it works:**
-1. During onboarding, merchants connect their ad accounts via OAuth (similar to Stripe Connect flow)
-2. The CMS admin page calls each platform's API on demand to pull performance metrics
-3. Display a unified dashboard: spend, clicks, add-to-carts, purchases, and ROAS — side by side across all platforms
-4. **No database needed** — all data is read from the ad platform APIs on page load, not stored locally
+1. Merchant connects ad accounts via OAuth during onboarding (similar to Stripe Connect)
+2. The dashboard calls each platform's API on demand on page load — no DB writes
+3. Display unified view: spend, clicks, add-to-carts, purchases, ROAS across platforms
 
-**Cost to the platform:** Zero per merchant. All ad platform APIs are free to read. Data lives on Meta/Google/TikTok/Reddit's servers.
+Cost to the platform: zero per merchant. All ad platform APIs are free to read. Data lives on the upstream platforms.
 
-**Why this is a differentiator:** Shopify doesn't consolidate ad data in their admin — merchants have to check Meta Ads Manager, Google Ads, and TikTok Ads separately. A clean, unified view of "I spent $200 this month across three platforms, here's where my 15 purchases came from" is something no small-merchant tool does well today.
+This is a real differentiator — Shopify doesn't consolidate ad data in their admin. A clean "I spent $X across three platforms, here's where my N purchases came from" is unmet in the small-merchant tool space.
 
-### Ad Creation — On-Platform, Not In Our Admin
-
-All four ad platforms offer APIs for programmatic campaign creation. However, building a unified ad creator is not viable as an early feature:
-
-- Each platform's ad creation is a product unto itself — audience targeting, bid strategies, creative formats, and placement options differ wildly across platforms
-- Merchants already know how to create ads on-platform (boosting an Instagram post, setting up a TikTok ad)
-- The real unmet need is understanding performance across platforms, not creating ads from a different UI
-
-**v1:** Read-only consolidated dashboard. Pull metrics, show them cleanly, no database.
-**Future (v2/v3):** Consider simple "boost this product" flows that create basic campaigns with sensible defaults on Meta/TikTok — but only after validating merchant demand.
+### Ad Creation — Out of Scope
+v1: read-only consolidated dashboard. v2/v3: maybe simple "boost this product" flows that create basic campaigns with sensible defaults — only after validating demand.
 
 ---
 
@@ -234,398 +189,180 @@ All four ad platforms offer APIs for programmatic campaign creation. However, bu
 
 ### How It Works
 
-Merchants create affiliate links (e.g., `mystore.com?ref=creator123`) and set a revenue share percentage per creator. Creators share the link, and when a purchase happens, the affiliate's cut is paid out automatically via Stripe.
+Merchants create affiliate links (e.g., `mystore.com?ref=creator123`) and set a per-creator revenue share. Creators share the link; on a successful purchase the affiliate's cut is paid out automatically via Stripe Connect.
 
 **Flow:**
-1. Merchant creates an affiliate link in the CMS admin — generates a unique `ref` code, sets commission rate
-2. Creator connects their Stripe account via Stripe Connect Express (lightweight onboarding, Stripe handles tax forms)
-3. Customer clicks the affiliate link — the `ref` param is stored in a cookie or localStorage
-4. At checkout, the `ref` value is passed as metadata on the Stripe session
-5. After successful purchase, Stripe transfers the affiliate's cut to their connected account
+1. Merchant creates affiliate link in admin (unique `ref`, commission rate)
+2. Creator connects via Stripe Connect Express (lightweight, Stripe handles tax forms)
+3. Customer click sets a cookie/localStorage with the `ref`
+4. Checkout passes `ref` as Stripe session metadata
+5. After charge succeeds, `stripe.transfers.create` pays the affiliate
 
-### No-Database Approach (Recommended for v1)
+### No-Database Approach (v1)
 
-Affiliate metadata (ref codes, creator names, commission rates) lives in JSON in the merchant's repo — same git-based pattern as product content. Conversion tracking leans entirely on Stripe:
+Affiliate metadata (ref → creator mapping, commission rates) lives in JSON in R2 alongside the merchant's other content. Conversion tracking leans entirely on Stripe — query Sessions API filtered by metadata. Click-through rates aren't surfaced; if needed later, add a minimal Turso table per click event.
 
-- Every checkout session includes the `ref` code in its metadata
-- The admin dashboard queries Stripe's API for sessions with affiliate metadata
-- Shows: conversions, revenue, and payout amount per affiliate
-- Payouts happen via Stripe transfers API after successful charges
+### Tax Reporting
 
-**What this gives you:** Link generation, automatic payouts, conversion tracking, per-affiliate revenue dashboards — all without a database.
+Stripe Connect Express accounts handle 1099 issuance automatically. The platform issues no 1099s itself.
 
-**What you lose:** Click-through rates. Without a database to log click events, you only see conversions, not clicks. For most small merchants this is fine — they care about "how much revenue did this creator drive?" not click-through rates. If click tracking becomes important later, a minimal Supabase table (one row per click) would add it cheaply.
+### Differentiator
 
-### Stripe Implementation
-
-Creators onboard as Stripe Connect Express accounts (same pattern as merchant onboarding). After a referred purchase:
-
-```javascript
-await stripe.transfers.create({
-  amount: Math.round(orderTotal * affiliatePercent),
-  currency: 'usd',
-  destination: affiliateStripeAccountId,
-}, {
-  stripeAccount: merchantStripeAccountId
-});
-```
-
-### Tax Reporting (1099s)
-
-Stripe handles all 1099 issuance and IRS filing for Connect accounts. The platform does not issue any 1099s itself.
-
-- **Store owners:** Stripe issues 1099-K forms for sales revenue to any merchant exceeding IRS thresholds ($600/year)
-- **Affiliate creators:** Stripe tracks transfers made via `stripe.transfers.create()` and includes them in 1099 reporting automatically
-- **Requirement:** Use Express or Standard Connect account types (not Custom). Custom accounts shift the tax reporting burden to the platform. Express is the right choice for both merchants and affiliates — lightest onboarding, Stripe collects W-9/tax info, Stripe handles all compliance.
-
-### Why This Is a Differentiator
-
-Shopify merchants need third-party affiliate apps ($30-49/month). Offering built-in affiliate tracking with automatic tax reporting at $5/month total is a strong selling point for the creator-economy merchants this platform targets.
+Shopify merchants pay $30-49/month for third-party affiliate apps. Built-in affiliate at $5/month total is a strong creator-economy hook.
 
 ---
 
-## Instagram Import — Product Listing from Posts
+## Instagram Integration
 
-### How It Works
+Already shipped end-to-end (see project memory for details). Two flows:
+1. Import images + caption from an Instagram post into a product listing
+2. Browse a merchant's IG media to start a new product from a post
 
-Merchants connect their Instagram Business account via Meta OAuth. They paste an Instagram post URL into the admin panel, and the platform pulls the images and caption to pre-populate a product listing.
+**Auth:** Instagram Business Login (OAuth, separate from Meta Business). Long-lived tokens (60 days) auto-refresh. Token storage is per-merchant in `merchant_integrations` (provider-agnostic table designed for future ad-platform OAuth flows).
 
-**Flow:**
-1. Merchant connects Instagram during onboarding (same Meta OAuth used for the ad performance dashboard)
-2. In the product editor, merchant pastes an Instagram post URL
-3. Admin calls the Instagram Graph API to fetch the post's media and caption
-4. Images are downloaded, cropped/resized, and uploaded to R2
-5. Caption text pre-fills the product description field
-6. Merchant reviews, sets price/sizes/stock, and publishes
+**Permissions:** `instagram_basic` only. Read-only.
 
-### Instagram Graph API Details
-
-**Required endpoints:**
-- `GET /me/media` — list merchant's posts (for a browse/picker UI later)
-- `GET /{media-id}?fields=caption,media_url,media_type,children` — fetch a single post's data
-- For carousel posts: `GET /{media-id}/children?fields=media_url,media_type` — fetch all images in a multi-image post
-
-**Required permissions:**
-- `instagram_basic` — read profile and media
-- `instagram_content_publish` is NOT needed (read-only)
-
-**Access requirements:**
-- Facebook App (shared across the platform, same app used for ad dashboard)
-- Merchant must have an Instagram Business or Creator account (not Personal)
-- App must pass Facebook App Review for `instagram_basic` permission
-
-### What Gets Imported
-
-| Instagram field | Maps to | Notes |
-|---|---|---|
-| `media_url` (images) | `images[].src` | Downloaded, resized to 1000x1000, converted to WebP, uploaded to R2 |
-| `caption` | `description` | Pre-filled, merchant can edit before saving |
-| Carousel children | Multiple `images[]` entries | Each carousel image becomes a product image |
-| Video posts | Skipped or thumbnail only | Product listings are image-based |
-
-### What the Merchant Still Sets Manually
-- Title (Instagram captions aren't titles)
-- Price
-- Sizes and stock
-- Category
-- For-sale toggle
-
-### Platform Implications
-
-- **Single Meta OAuth flow** serves both the ad performance dashboard and Instagram import — one connection, two features
-- **No per-merchant cost** — Instagram Graph API is free to read
-- **Token storage:** Long-lived tokens (60 days) stored as env vars or in provisioning metadata, auto-refreshed
-- **Rate limits:** 200 calls/user/hour — more than enough for importing a few posts per session
-
-### Why This Is a Differentiator
-
-Small makers and artisans already showcase products on Instagram before listing them anywhere. "Import from Instagram" removes the friction of re-uploading photos and rewriting descriptions. Shopify has this via third-party apps ($10-30/month). Offering it built-in at $5/month total is a strong selling point.
+**Required state to go beyond test users:** Meta App Review submission for `instagram_basic` permission. Currently dev mode (works only for accounts added as testers).
 
 ---
 
-## GitHub Architecture — GitHub App Model
+## Storefront Updates (no longer a hard problem)
 
-### The Problem
+Pre-migration this was the hardest long-term problem — propagating template changes to N forked repos. Post-migration it's a single `wrangler deploy`. The Worker bundle is the template; one deploy ships to every merchant simultaneously.
 
-The current CMS authenticates via GitHub OAuth — the store owner logs in with GitHub, gets a token, and uses it to read/write their repo. This works for a developer but not for target merchants (artisans, small makers). Requiring a GitHub account to sell jewelry kills onboarding conversion.
+**Migration window**: when the Worker's `main.js` changes, in-flight cart sessions on the old code finish whatever they're doing; new requests get the new code. No per-merchant version skew.
 
-### The Solution: GitHub App + Platform Auth
+---
 
-Register a **GitHub App** on a platform-owned GitHub org. Merchants never interact with GitHub — they log into the platform with email, and the GitHub App handles all repo operations behind the scenes.
+## Auth (unchanged)
 
-### One-Time Platform Setup
-
-1. Create a GitHub org (e.g., `florezflorez-stores`)
-2. Register a GitHub App on that org
-3. Install the app on the org with write access to all repos
-4. Store the app's private key as a platform secret
-
-### Merchant Onboarding Flow
-
-1. Merchant signs up with email — no GitHub account needed
-2. Provisioning API creates a repo from the template in the platform org (e.g., `florezflorez-stores/merchant-name`)
-3. The GitHub App auto-has access (installed on the org)
-4. Merchant logs into their admin via **platform auth** (magic link or email/password)
-5. When admin reads/writes content, the platform backend generates a short-lived GitHub App installation token and proxies the request
-
-**What the merchant experiences:** Sign up, pick a store name, connect Stripe, start adding products. They never see the word "GitHub."
-
-### Architecture Change from Current Model
-
-| Current (Florez Florez) | Platform (GitHub App) |
-|---|---|
-| Admin sends GitHub OAuth token directly to GitHub API | Admin sends platform session token to platform API, which uses GitHub App token |
-| Merchant needs a GitHub account | Merchant needs only an email |
-| Merchant's GitHub token stored in browser | GitHub App token generated server-side, never exposed to client |
-| `/api/upload.js` receives merchant's GitHub token | Upload goes to R2 (no GitHub involvement for images) |
-| Product save writes JSON via merchant's GitHub token | Product save goes through platform API → GitHub App token → GitHub |
-| Merchant directly owns their GitHub repo | Platform org owns repos; merchant owns their data conceptually |
-
-### Merchant Auth
-
-Since the platform already uses Stripe for billing, auth can be lightweight:
-
-- **Magic link login** (email a login link, no password) — cheapest to build, lowest friction for non-technical merchants
-- **Session management:** JWTs or simple cookies
-- **Stripe Customer Portal** for account/billing management
-- GitHub OAuth is eliminated entirely as a merchant-facing flow
-
-### Data Ownership & Export
-
-With repos under the platform org, merchants don't directly own their repo. To address this:
-
-- Provide a **data export** feature in the admin (download content JSON + images as a zip)
-- This is a standard platform practice (Shopify, Squarespace all do this)
-- For the target market ($5/month artisans), direct GitHub access is not a selling point
-
-### GitHub App Token Details
-
-- GitHub Apps generate **installation access tokens** (valid for 1 hour)
-- The platform backend requests a token when needed: `POST /app/installations/{id}/access_tokens`
-- Tokens can be scoped to specific repos for extra security
-- No long-lived tokens stored — generated on demand from the app's private key
-- Rate limit: 5,000 requests/hour per installation (more than enough)
+**Magic link** (email a login link, no password) plus **WebAuthn passkeys** (registered on first successful magic-link login, used for subsequent sessions). Cheap to build, lowest friction for non-technical merchants. Sessions are JWTs in HttpOnly cookies; rotation handled by the platform's session module.
 
 ---
 
 ## Merchant Onboarding Flow
 
 ### Step 1: Account + Payment
-- Email address (becomes their login via magic link)
+- Email (becomes login via magic link)
 - Store name (e.g., "Luna Silver Studio")
-- Choose plan: $5/month or $50/year
-- Stripe Checkout for platform subscription (on the platform's own Stripe account)
-- **Nothing is provisioned until payment succeeds**
+- Plan: $5/mo or $50/yr (30-day free trial on both)
+- Stripe Checkout for platform subscription
+- **Nothing is provisioned until payment succeeds (or trial begins)**
 
-### Step 2: Branding
-- Upload logo
-- Pick color palette (gradient pairs — offer presets or a picker)
-- Font choice (offer 3-4 curated options, default IBM Plex Mono)
+### Step 2: Brand + Categories + Stripe Connect
+- Collect logo, color palette (gradient pairs), font, category names
+- Stripe Connect OAuth flow (separate from platform billing)
 
-### Step 3: Categories
-- Choose or name their product categories (e.g., "Rings, Necklaces, Bracelets")
-- Minimum 1, add more later
-- Optional: upload a background image per category (or skip, use gradient-only)
+### Step 3: Provision
+- Write starter `settings.json` + `homepage.json` to R2 (with merchant's branding + categories baked in)
+- Write KV `MERCHANT_INDEX` entry for `<slug>.ururu.store`
+- Set merchant row `custom_domain`, `status='live'`
 
-### Step 4: Connect Stripe
-- Stripe Connect OAuth flow (separate from the platform subscription in Step 1)
-- This connects their payout account — where their sales revenue goes
-- Stripe handles bank account setup, identity verification, tax info
-
-### Step 5: Store is Live
-- Show them their URL: `luna-silver-studio.florezflorez.com`
-- Empty store with their branding — ready for products
+### Step 4: Live
+- Show URL: `luna-silver-studio.ururu.store`
 - CTA: "Add your first product"
 
-### What Happens Behind the Scenes
+### Behind the Scenes Per Step
 
-| After step | Platform provisions |
+| After step | Platform action |
 |---|---|
-| 1. Payment succeeds | Create merchant record in platform DB, create Stripe Billing subscription |
-| 2. Branding submitted | Upload logo to R2 |
-| 3. Categories chosen | Hold in memory (not written yet — no repo exists) |
-| 4. Stripe connected | Store `stripe_account_id` in platform DB |
-| 5. Store goes live | Create repo from template via GitHub App, write `homepage.json` + `settings.json` + empty category JSONs, create R2 bucket, create Vercel project, set all env vars, deploy |
+| 1. Payment / trial start | Create merchant row, create Stripe Billing subscription |
+| 2. Brand + categories submitted | Hold in memory until provision time |
+| 2b. Stripe connected | Store `stripe_account_id` on merchant row |
+| 3. Provision | R2 `<slug>/content/{settings,homepage}.json`, KV entry, DB row update |
+| 4. Live | Merchant lands on dashboard; can start adding products |
 
-All provisioning happens in one batch at the end. Steps 1-4 collect inputs; Step 5 builds everything.
-
-### What Merchants Configure Later (in their admin)
-
+### What Merchants Configure Later in the Dashboard
 - Add/edit/delete products (with optional Instagram import)
-- Shipping settings (defaults: US only, free over $200)
+- Shipping settings (free / flat / USPS / pickup)
 - Meta Pixel ID for tracking
 - Connect Instagram for product import + ad dashboard
 - Connect ad platforms (Google, TikTok, Reddit) for consolidated dashboard
 - Set up affiliate program
-- Request custom domain
-- Update branding (logo, colors, font)
+- Request custom domain (once Cloudflare for SaaS flow ships)
+- Update branding
 
 ---
 
-## Build Order
+## Build Status
 
-1. **Generalize the template** — remove hardcoded repo names, domains, credentials. Everything merchant-specific becomes an env var.
-2. **Migrate images to Cloudflare R2** — eliminate deploy-per-image, serve via `img.florezflorez.com`.
-3. **Register GitHub App + create platform org** — foundation for all merchant repo management.
-4. **Stripe Connect onboarding** — OAuth flow, store `stripe_account_id`, update checkout to use `stripe-account` header.
-5. **Platform auth (magic link)** — replace GitHub OAuth with email-based merchant login.
-6. **Provisioning API** — repo creation via GitHub App + Vercel project creation + R2 bucket + env var injection.
-7. **Platform landing page + signup flow.**
-8. **Subdomain routing.**
-9. **Custom domain support.**
-10. **Template update mechanism.**
-
----
-
-## Relationship to Current Florez Florez Site
-
-The current site is the template. Finish it cleanly with the platform in mind:
-- Replace hardcoded values with env vars
-- The Decap → Stripe sync complexity (currently being worked on) becomes trivial on the platform — Stripe calls happen against the merchant's connected account, price IDs live in their repo's JSON
-
-Florez Florez itself becomes merchant #1 on the platform once it launches.
+| Phase | Status |
+|---|---|
+| Landing page | ✓ done |
+| Platform auth (magic link + passkeys) | ✓ done |
+| Stripe Billing ($5/mo + $50/yr, 30-day trial) | ✓ done |
+| Per-merchant Stripe Connect | ✓ done |
+| R2 image CDN | ✓ done |
+| Platform admin: branding, categories, products, shipping, contact, thank-you, secondary CTA, marketing, account, orders, coupons, custom-url stub | ✓ done |
+| Instagram integration (import + create-from-post) | ✓ done (pending App Review) |
+| Storefront orders + branded emails + fulfillment marking | ✓ done |
+| Multi-tenant Cloudflare Worker storefront | ✓ done (Phase 6 cutover 2026-05-10) |
+| New-arch publishing (drafts → R2) | ✓ done |
+| Custom domain support (Cloudflare for SaaS / Custom Hostnames) | pending |
+| Live Stripe Connect for florezflorez prod | pending |
+| Storefront update mechanism | obsolete (single Worker deploy = update every merchant) |
 
 ---
 
-## Stack Recommendation
+## Stack Recommendation (current)
 
 | Layer | Technology |
 |---|---|
-| Shop template | Vanilla JS + custom git-based CMS |
-| Hosting per merchant | Vercel (one project per repo) |
-| Content per merchant | GitHub (one repo per merchant, under platform org) |
-| Image storage | Cloudflare R2 (one bucket per merchant, custom domain) |
-| Repo management | GitHub App (platform-owned, server-side tokens) |
-| Merchant auth | Magic link (email-based, no GitHub account needed) |
-| Payments | Stripe Connect (Standard accounts) |
-| Platform database | Postgres (provisioning metadata only) |
-| Platform app | Next.js or similar |
-| Merchant billing | Stripe Billing (platform's own Stripe account) |
+| Storefront runtime | Cloudflare Workers (Hono framework, one binary serves all merchants) |
+| Platform admin | Next.js on Vercel at ururu.store |
+| Auth | Magic link + WebAuthn passkeys, JWT sessions |
+| Payments | Stripe Connect (Standard, `stripeAccount` header) |
+| Platform billing | Stripe Billing |
+| Per-merchant content | Cloudflare R2 (bucket `ururu-content`, prefix `<slug>/content/`) |
+| Per-merchant images | Cloudflare R2 (bucket `ururu-images`, prefix `<slug>/`) served via `img.ururu.store` |
+| Tenant lookup cache | Cloudflare KV (`MERCHANT_INDEX`, hostname → identity) |
+| Platform DB | Turso (libSQL) — provisioning metadata + drafts |
 
 ---
 
-## Local Development & Project Structure
+## Local Development
 
-### Two Separate Projects
-
-The platform has two distinct codebases that live in separate repos and deploy independently:
+The platform admin and the storefront Worker are both in the same `ururu` repo:
 
 ```
-~/Documents/
-├── ururu/                  # Platform app (ururu.store)
-│   ├── app/                # Next.js marketing site + provisioning API
-│   ├── api/                # Provisioning, auth, billing endpoints
-│   └── ...
-│
-└── florezflorez/           # Shop template (what gets forked per merchant)
-    ├── admin/              # Merchant admin panel
-    ├── api/                # Checkout, upload, stripe-sync (per-merchant)
-    ├── content/            # Product data, settings (per-merchant)
-    ├── js/                 # Storefront JS
-    └── ...
+~/Documents/ururu/
+├── src/                      # Platform admin (Next.js)
+├── storefront/               # Cloudflare Worker
+│   ├── src/                  # Worker entry + routes + tenant resolution
+│   ├── static/               # Bundled storefront assets (main.js, css, fonts, etc.)
+│   └── wrangler.toml
+└── scripts/                  # Operational helpers (KV mapping, env push, etc.)
 ```
 
-**ururu/** is the corporate platform — it owns:
-- Marketing site at `ururu.store`
-- Signup/onboarding flow
-- Provisioning API (creates repos, Vercel projects, R2 buckets)
-- Platform auth (magic link login)
-- Stripe Billing ($5/month subscriptions)
-- GitHub App credentials (private key for repo management)
-
-**florezflorez/** is the shop template — it becomes:
-- The repo that gets forked for each merchant
-- `florezflorez.com` is merchant #1 (Florez Florez the jewelry store)
-- Every new merchant gets a copy of this repo under the platform org
-
-### Domain Architecture
-
-| Domain | Purpose | Hosting |
-|---|---|---|
-| `ururu.store` | Platform marketing site + onboarding | Vercel (single project) |
-| `[store].ururu.store` | Merchant storefronts (wildcard subdomain) | Vercel (one project per merchant) |
-| `img.ururu.store` | Shared image CDN for all merchants | Cloudflare R2 (single bucket or per-merchant buckets) |
-| `florezflorez.com` | Florez Florez store (merchant #1, custom domain) | Vercel (points to florezflorez's project) |
-
-### DNS & Cloudflare Setup
-
-**ururu.store** (Cloudflare):
-- `A` / `CNAME` → Vercel (platform app)
-- `*.ururu.store` → Vercel wildcard (merchant subdomains)
-- `img.ururu.store` → R2 bucket custom domain
-
-**florezflorez.com** (already on Cloudflare):
-- Stays as-is, pointing to its own Vercel project
-- `img.florezflorez.com` → R2 (Florez Florez's own images, migrated)
-
-### Image Storage Decision
-
-Two options for R2 at scale:
-
-**Option A: Single shared bucket at `img.ururu.store`**
-- All merchant images in one bucket, namespaced by store: `img.ururu.store/{store-slug}/filename.webp`
-- Simpler provisioning (no per-merchant bucket creation)
-- Single CDN domain
-- Risk: one bucket's rate limits shared across all merchants
-
-**Option B: Per-merchant buckets**
-- Each merchant gets their own bucket: `{store-slug}-uploads`
-- Isolated rate limits and storage quotas
-- More provisioning complexity
-- Each bucket can use the shared `img.ururu.store` domain with path-based routing, or merchant-specific subdomains
-
-**Recommendation: Option A for MVP.** Single bucket with path namespacing. The R2 free tier (10GB storage, 10M reads/month) is per-account not per-bucket, so multiple buckets don't help with limits. Switch to per-merchant buckets only if you hit isolation issues.
-
-### Wildcard Subdomain Routing on Vercel
-
-Vercel supports wildcard domains on Pro plans. Each merchant's Vercel project gets assigned `{store-slug}.ururu.store`:
-
-```
-Provisioning step:
-1. Create Vercel project from template repo
-2. Add domain: luna-silver.ururu.store → project
-3. Vercel handles SSL automatically
-```
-
-For custom domains (e.g., `florezflorez.com`):
-- Merchant adds a CNAME pointing to `cname.vercel-dns.com`
-- Platform API calls Vercel to add the domain to their project
-- Vercel handles SSL via Let's Encrypt
-
-### Local Development Workflow
-
-**Working on the shop template (florezflorez/):**
-```bash
-cd ~/Documents/florezflorez
-npx serve . -l 3000
-# Open http://localhost:3000 for storefront
-# Open http://localhost:3000/admin for admin panel
-```
-
-**Working on the platform (ururu/):**
+**Platform admin:**
 ```bash
 cd ~/Documents/ururu
-npm run dev
-# Open http://localhost:3001 for platform site
-# Provisioning API available at localhost:3001/api/...
+npm run dev      # https://localhost:3001 (--experimental-https)
 ```
 
-**Testing provisioning end-to-end:**
-The platform's provisioning API creates real GitHub repos and Vercel projects — this can't be fully tested locally. Use a staging environment:
-- Staging GitHub org (e.g., `ururu-staging`)
-- Staging Vercel team
-- Staging Stripe account (test mode)
-- Platform dev server points to staging services
+**Storefront Worker:**
+```bash
+cd ~/Documents/ururu/storefront
+npm run dev      # http://localhost:8787 via wrangler dev
+```
 
-### Migration Path: Florez Florez → Platform Merchant
+The KV namespace is shared between dev and prod (one binding to one namespace), so any KV writes from a dev tool affect the live storefront. Treat dev DB rows that have a corresponding live KV entry as read-mostly.
 
-When the platform launches, Florez Florez transitions from "the product" to "merchant #1":
+---
 
-1. Move the florezflorez repo under the platform org (`ururu-stores/florezflorez`)
-2. Install the GitHub App on it
-3. Replace GitHub OAuth in admin with platform auth
-4. Update R2 URLs from `img.florezflorez.com` to `img.ururu.store/florezflorez/` (or keep custom domain)
-5. `florezflorez.com` custom domain stays, just points to the Vercel project under the platform
-6. Create merchant record in platform DB with existing Stripe account ID
+## Domain Architecture
 
-The template repo becomes a clean, generalized version without Florez Florez-specific content.
+| Domain | Purpose |
+|---|---|
+| `ururu.store` | Platform admin (Next.js on Vercel) — marketing, dashboard, provisioning API |
+| `*.ururu.store` | Merchant storefronts. Wildcard DNS is orange-cloud; the wildcard Workers Route routes everything to `ururu-storefront`. |
+| `img.ururu.store` | Shared image CDN. Served by the Worker via the `IMAGES` R2 binding (bucket `ururu-images`). |
+| `florezflorez.com` | Florez Florez's planned custom domain (not yet active; depends on Cloudflare for SaaS work). |
+
+---
+
+## Florez Florez's Place in This
+
+The current `florezflorez/` repo is the **historical pre-migration storefront**. Florez Florez itself is now merchant #1 on the platform — served by the Cloudflare Worker, content in R2 `ururu-content/florezflorez/content/`. The repo is kept around as a reference (working CSS, working main.js with embedded checkout + USPS handlers) but is no longer on the request path. The Worker's `static/` directory is the canonical storefront bundle now.
+
+Florez Florez's Vercel project is still alive as a soak-period rollback path post-cutover, scheduled for decommission once normal use confirms no surprises.
