@@ -458,6 +458,70 @@ That's it. No embedded component, no setup wizard, no per-step checklist.
 
 ---
 
+## Legal & Privacy
+
+Two layers with different owners. US-only scope means **CCPA is the binding regime**; GDPR is out of scope until we sell outside the US.
+
+### Platform (`ururu.store`)
+
+What we collect and need to disclose at the platform level:
+- **Signup form** — email address only (no password is stored; auth is magic link + WebAuthn passkeys).
+- **Auth cookies** — `ururu_session` JWT, session token.
+- **Email delivery via Resend** — magic links, email-change confirmations, order receipts forwarded from merchant Stripe accounts. Email addresses are shared with Resend for delivery.
+- **Merchant profile data in Turso** — slug, store name, Stripe account ID, custom domain.
+
+**No third-party ad trackers run on the marketing site**, so there's no advertising disclosure to make. Meta Pixel and friends live on merchant storefronts, not on `ururu.store`.
+
+Surface:
+- `ururu.store/privacy` — basic privacy policy covering the four buckets above.
+- `ururu.store/terms` — basic Terms of Service covering the merchant–platform relationship, acceptable-use (what merchants can't sell), platform's right to suspend, dispute resolution. Implicit acceptance via signup.
+- Linked from the marketing-page footer and from the signup form ("by creating an account, you agree to…").
+- Content hardcoded for v1, authored or reviewed by a lawyer. Not editable through the `/admin` admin tool — too easy to break a legal document with a stray edit, and the update cadence is rare enough that a deploy is fine.
+
+### Per-merchant storefronts (`<slug>.ururu.store`)
+
+Each merchant is the **data controller / "business" under CCPA** for their own customers. The storefront does the data collection (checkout fields, ad pixels); the merchant — not the platform — owes their customers the disclosure. Our job is to make compliance the path of least resistance.
+
+Three pieces, designed to work together:
+
+**1. Worker-rendered privacy page.** Replace `storefront/static/privacy.html` (currently identical-boilerplate-for-everyone) with a route in the Worker that pulls from `settings.json` per request. Two parts:
+- **Static base** — reviewed boilerplate covering checkout-data collection, the merchant contact email pulled from settings, retention defaults. Identical structure across merchants but with merchant-specific name/email injected.
+- **Dynamic "Third-party services" section** — auto-populated from which trackers the merchant has configured. If `meta_pixel_id` is set, a Meta Pixel disclosure block renders. Future pixels (`google_analytics_id`, `tiktok_pixel_id`, …) slot in alongside via the same registry. Merchant doesn't edit this section — it's keyed off configuration so the disclosure can't drift from reality.
+
+**2. Global Privacy Control (GPC) respect at pixel init.** GPC is the de-facto CCPA opt-out signal that Firefox, Brave, and some Chrome extensions send. Gate every pixel's `init` call on `navigator.globalPrivacyControl` in the storefront's shell template:
+
+```js
+if (settings.meta_pixel_id && !navigator.globalPrivacyControl) {
+  fbq('init', settings.meta_pixel_id);
+}
+```
+
+A few lines, applies to every merchant who has any pixel configured. Closes the largest CCPA-tail risk for negligible effort.
+
+**3. "Do Not Sell or Share My Personal Information" footer link.** Renders only when the storefront has at least one ad tracker configured. Links to a per-storefront opt-out page that records the choice in `localStorage` and prevents pixel init on subsequent loads via the same gate as GPC. The opt-out page also exposes a contact form routing to the merchant's contact email for formal CCPA requests.
+
+Returns and shipping policies stay merchant-editable (existing `returns_policy` free-text field plus a shipping-specific equivalent rendered into the public returns/shipping pages), but the privacy page itself is structurally generated — too much room for legal drift if merchants write their own.
+
+### Stripe ACS connection
+
+When a merchant configures agentic commerce in their Stripe Profile, Stripe asks for refund / ToS / privacy URLs. Those URLs already exist per merchant (`<slug>.ururu.store/privacy`, `/returns.html`, etc.); after this work, they point to real merchant-specific content rather than shared boilerplate. Required precondition for ACS adoption but not blocking ACS planning.
+
+### Phase plan
+
+1. **Platform legal pages** (`/terms`, `/privacy` on `ururu.store`) — content authored or templated via Termly / iubenda, reviewed before live. Footer link on marketing pages and signup form. ~2 days once content exists.
+2. **Worker-rendered merchant privacy page** — replace static `privacy.html` with a Worker route; build the tracker-disclosure template registry; inject merchant name + contact email from `settings.json`. ~1 day.
+3. **GPC + opt-out link** — pixel-init gate in `shell.ts`, DNS footer link, opt-out page that flips a `localStorage` flag and surfaces a CCPA contact form. ~0.5 day.
+4. **Returns / shipping per-merchant rendering (deferred)** — the `returns_policy` field already exists; rendering it into `/returns.html` is the missing piece. ~0.5 day. Low priority; current static page is acceptable as a starter.
+
+### Explicitly out of scope (for now)
+
+- **GDPR / EEA users** — US-only product, no EU traffic to serve.
+- **Cookie banner** — CCPA doesn't require it; sale/sharing opt-out + GPC respect cover the obligation. Re-evaluate if we add platform-side analytics or expand outside the US.
+- **Per-merchant ToS** — most small makers don't need one. Add a templated version if/when a merchant requests it.
+- **DSAR / CCPA "right to know" automation** — handled manually by the merchant via their contact email until volume justifies tooling.
+
+---
+
 ## Florez Florez's Place in This
 
 The current `florezflorez/` repo is the **historical pre-migration storefront**. Florez Florez itself is now merchant #1 on the platform — served by the Cloudflare Worker, content in R2 `ururu-content/florezflorez/content/`. The repo is kept around as a reference (working CSS, working main.js with embedded checkout + USPS handlers) but is no longer on the request path. The Worker's `static/` directory is the canonical storefront bundle now.
