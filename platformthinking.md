@@ -429,6 +429,35 @@ The first three are the only ones that block routine merchant operation. The res
 
 ---
 
+## Agentic Commerce (Stripe ACS)
+
+Stripe Agentic Commerce Suite is the path. Push a single Stripe-format catalog feed per merchant; Stripe handles the per-agent integration with ChatGPT, Operator, Gemini, and whoever else they sign. Same Stripe Connect plumbing we already use, same `checkout.session.completed` webhook that fires on normal orders.
+
+**Key decisions:**
+
+- **Charge type: direct charges.** Matches our existing Connect Standard setup; connected account stays merchant of record. (Destination + `on_behalf_of` also works but adds complexity for no benefit here.)
+- **No application fee.** Consistent with the platform's no-cut policy. The `v1.delegated_checkout.finalize_checkout` hook is therefore not load-bearing — we don't need to set `application_fee_details` to preserve revenue. The hook only becomes useful if we want pre-approval (inventory / fraud / cart sanity), and is optional.
+- **No Ururu onboarding UX for agentic.** For Connect Standard merchants, Stripe Profile creation, Stripe Tax setup, legal-policy URLs (refund / ToS / privacy), agent enablement, and OCA approvals all live in the merchant's own Stripe Dashboard. We don't mirror or wrap that surface.
+
+Why the small surface: Ururu's only must-do is the catalog feed, because Stripe can't read merchant content out of R2. Everything else Stripe already exposes to the connected account through their own Dashboard. The embedded `agentic-commerce-settings` component is a UX-cohesion nice-to-have, not a requirement — small makers already touch their Stripe Dashboard for Connect onboarding.
+
+**Phase plan (simplified to two pieces):**
+
+1. **Stripe-CSV exporter + `ProductCatalogImport` upload pipeline.** Port the existing Meta-feed plumbing (one row per piece, globally unique IDs already enforced cross-category) to Stripe's CSV schema. Upload per-merchant via the v2 commerce API with the `Stripe-Account` header, triggered on merchant publish. `mode=upsert` for the full product feed; incremental `inventory` and `pricing` feeds for stock/price-only edits.
+2. **Shipping customization hook.** Implement `v1.delegated_checkout.customize_checkout` to return shipping rates from our existing dynamic-USPS logic. Without this, ACS would fall back to static feed-defined rates and lose our shipping accuracy. Tax stays on Stripe Tax (set `stripe_product_tax_code` per piece or use a platform default); we don't write a custom tax hook unless Stripe Tax falls short.
+
+That's it. No embedded component, no setup wizard, no per-step checklist.
+
+**Status:** Waitlist-gated. Platform-level ACS requires approval via `go.stripe.global/agentic-commerce-contact-sales`. Pre-approval work that can ship behind a feature flag: the CSV exporter and upload pipeline (will 4xx against the v2 API until approved; the code path is identical). The shipping hook can be built and ngrok-tested against stubbed payloads in the meantime.
+
+**Caveats to revisit:**
+
+- ACS endpoints are on preview API versions (`2026-04-22.preview`, `2025-12-15.preview`). Schema may shift before GA — keep both endpoints and CSV schema isolated behind a thin internal interface so a future version bump is one-file work.
+- Marketplace facilitator (MPF) tax obligations attach to the agent that mediated the sale, not the platform, per Stripe's note. Still worth periodic review by a tax advisor.
+- Restricted API key needs `Product Catalog Import` write permission. Separate from existing Connect keys; rotation schedule is independent.
+
+---
+
 ## Florez Florez's Place in This
 
 The current `florezflorez/` repo is the **historical pre-migration storefront**. Florez Florez itself is now merchant #1 on the platform — served by the Cloudflare Worker, content in R2 `ururu-content/florezflorez/content/`. The repo is kept around as a reference (working CSS, working main.js with embedded checkout + USPS handlers) but is no longer on the request path. The Worker's `static/` directory is the canonical storefront bundle now.
